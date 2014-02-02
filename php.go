@@ -6,11 +6,20 @@ import (
 )
 
 type lexer struct {
-	pos   int
-	start int
-	width int
-	input string
-	items chan item // channel of scanned items.
+	lastPos int
+	pos     int
+	start   int
+	width   int
+	input   string
+	items   chan item // channel of scanned items.
+}
+
+func newLexer(input string) *lexer {
+	l := &lexer{
+		input: testFile,
+		items: make(chan item),
+	}
+	return l
 }
 
 // stateFn represents the state of the scanner
@@ -31,6 +40,25 @@ func (l *lexer) emit(t itemType) {
 	l.start = l.pos
 }
 
+// nextItem returns the next item from the input.
+func (l *lexer) nextItem() item {
+	item := <-l.items
+	l.lastPos = item.pos
+	return item
+}
+
+// peek returns but does not consume the next rune in the input.
+func (l *lexer) peek() rune {
+	r := l.next()
+	l.backup()
+	return r
+}
+
+// backup steps back one rune. Can only be called once per call of next.
+func (l *lexer) backup() {
+	l.pos -= l.width
+}
+
 func (l *lexer) accept(valid string) bool {
 	if strings.IndexRune(valid, l.next()) >= 0 {
 		return true
@@ -48,7 +76,4 @@ func (l *lexer) next() rune {
 	l.width = w
 	l.pos += l.width
 	return r
-}
-
-func (l *lexer) backup() {
 }

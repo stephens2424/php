@@ -15,14 +15,16 @@ const eof = -1
 func lexHTML(l *lexer) stateFn {
 	for {
 		if strings.HasPrefix(l.input[l.pos:], shortPHPBegin) {
-			l.emit(itemHTML)
+			if l.pos > l.start {
+				l.emit(itemHTML)
+			}
 			return lexPHPBegin
 		}
 		if l.next() == eof {
 			break
 		}
 	}
-	if l.start > l.pos {
+	if l.pos > l.start {
 		l.emit(itemHTML)
 	}
 	l.emit(itemEOF)
@@ -34,7 +36,7 @@ func lexPHPBegin(l *lexer) stateFn {
 		l.pos += len(longPHPBegin)
 	}
 	if strings.HasPrefix(l.input[l.pos:], shortPHPBegin) {
-		l.pos += len(longPHPBegin)
+		l.pos += len(shortPHPBegin)
 	}
 	l.emit(itemPHPBegin)
 	return lexPHP
