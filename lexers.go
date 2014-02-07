@@ -2,6 +2,7 @@ package php
 
 import (
 	"strings"
+	"unicode"
 )
 
 const shortPHPBegin = "<?"
@@ -66,9 +67,74 @@ func lexPHP(l *lexer) stateFn {
 	}
 	l.backup()
 
+	if l.peek() == '\'' {
+		return lexSingleQuotedStringLiteral
+	}
+
+	if l.peek() == '"' {
+		return lexDoubleQuotedStringLiteral
+	}
+
+	if r := l.peek(); r == '-' || unicode.IsDigit(r) {
+		return lexNumberLiteral
+	}
+
+	if l.accept(operators) {
+		l.emit(itemOperator)
+		return lexPHP
+	}
+
 	l.accept(alphabet + underscore)
 	l.acceptRun(alphabet + underscore + digits)
 	l.emit(itemNonVariableIdentifier)
+	return lexPHP
+}
+
+func lexNumberLiteral(l *lexer) stateFn {
+	// is negative?
+	l.accept("-")
+	l.acceptRun(digits)
+
+	// is decimal?
+	if l.accept(".") {
+		l.acceptRun(digits)
+	}
+
+	l.emit(itemNumberLiteral)
+	return lexPHP
+}
+
+func lexSingleQuotedStringLiteral(l *lexer) stateFn {
+	l.next()
+	isEscaped := false
+	for {
+		r := l.next()
+		if r == '\\' {
+			isEscaped = true
+			continue
+		}
+		if !isEscaped && r == '\'' {
+			break
+		}
+	}
+	l.emit(itemStringLiteral)
+	return lexPHP
+}
+
+func lexDoubleQuotedStringLiteral(l *lexer) stateFn {
+	l.next()
+	isEscaped := false
+	for {
+		r := l.next()
+		if r == '\\' {
+			isEscaped = true
+			continue
+		}
+		if !isEscaped && r == '"' {
+			break
+		}
+	}
+	l.emit(itemStringLiteral)
 	return lexPHP
 }
 
@@ -85,6 +151,7 @@ func lexCondition(l *lexer) stateFn {
 	return lexPHP
 }
 
+const operators = "!*()%<>-=+/"
 const alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 const digits = "0123456789"
 const underscore = "_"

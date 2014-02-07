@@ -4,6 +4,9 @@ import "testing"
 
 var testFile = `<?php
 
+$str = "I'm a string!";
+$num = -230.098;
+
 session_start();
 
 function foo(barType $bar, $foobar) {
@@ -37,6 +40,17 @@ func TestPHPLexer(t *testing.T) {
 
 	var i item
 	i = assertNext(t, l, itemPHPBegin)
+
+	i = assertNext(t, l, itemIdentifier)
+	i = assertNext(t, l, itemOperator)
+	i = assertNext(t, l, itemStringLiteral)
+	i = assertNext(t, l, itemStatementEnd)
+
+	i = assertNext(t, l, itemIdentifier)
+	i = assertNext(t, l, itemOperator)
+	i = assertNext(t, l, itemNumberLiteral)
+	i = assertNext(t, l, itemStatementEnd)
+
 	i = assertNext(t, l, itemNonVariableIdentifier)
 	i = assertNext(t, l, itemOpenParen)
 	i = assertNext(t, l, itemCloseParen)

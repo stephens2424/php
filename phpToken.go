@@ -58,6 +58,9 @@ const (
 	itemCatch
 	itemFinally
 
+	itemStringLiteral
+	itemNumberLiteral
+
 	itemOpenParen
 	itemCloseParen
 
@@ -107,6 +110,9 @@ var itemTypeMap = map[itemType]string{
 
 	itemClass:     "Class",
 	itemInterface: "Interface",
+
+	itemStringLiteral: "sting-literal",
+	itemNumberLiteral: "number-literal",
 
 	itemNonVariableIdentifier: "non-variable-identifier",
 }
