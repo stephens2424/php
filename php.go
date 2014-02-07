@@ -1,6 +1,7 @@
 package php
 
 import (
+	"fmt"
 	"strings"
 	"unicode/utf8"
 )
@@ -16,7 +17,7 @@ type lexer struct {
 
 func newLexer(input string) *lexer {
 	l := &lexer{
-		input: testFile,
+		input: input,
 		items: make(chan item),
 	}
 	return l
@@ -36,7 +37,9 @@ func (l *lexer) run() {
 }
 
 func (l *lexer) emit(t itemType) {
-	l.items <- item{t, l.start, l.input[l.start:l.pos]}
+	i := item{t, l.start, l.input[l.start:l.pos]}
+	fmt.Println(i)
+	l.items <- i
 	l.start = l.pos
 }
 
@@ -67,6 +70,13 @@ func (l *lexer) accept(valid string) bool {
 	return false
 }
 
+// acceptRun consumes a run of runes from the valid set.
+func (l *lexer) acceptRun(valid string) {
+	for strings.IndexRune(valid, l.next()) >= 0 {
+	}
+	l.backup()
+}
+
 func (l *lexer) next() rune {
 	if int(l.pos) >= len(l.input) {
 		l.width = 0
@@ -76,4 +86,28 @@ func (l *lexer) next() rune {
 	l.width = w
 	l.pos += l.width
 	return r
+}
+
+// ignore skips over the pending input before this point.
+func (l *lexer) ignore() {
+	l.start = l.pos
+}
+
+func (l *lexer) skipSpace() {
+	r := l.next()
+	for isSpace(r) {
+		r = l.next()
+	}
+	l.backup()
+	l.ignore()
+}
+
+func (l *lexer) errorf(format string, args ...interface{}) stateFn {
+	l.items <- item{itemError, l.start, fmt.Sprintf(format, args...)}
+	return nil
+}
+
+// isSpace reports whether r is a space character.
+func isSpace(r rune) bool {
+	return r == ' ' || r == '\t' || r == '\n'
 }

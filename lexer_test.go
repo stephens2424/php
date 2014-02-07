@@ -6,72 +6,71 @@ var testFile = `<?php
 
 session_start();
 
+function foo(barType $bar, $foobar) {
+  fizzbuzz();
+}
+
 ?>
 <html>
 <? echo something(); ?>
 </html>`
 
+func assertNext(t *testing.T, l *lexer, typ itemType) item {
+	i := l.nextItem()
+	if i.typ != typ {
+		t.Fatal("Incorrect lexing. Expected:", typ, "Found:", i)
+	}
+	return i
+}
+
+func assertItem(t *testing.T, i item, expected string) {
+	if i.val != expected {
+		t.Fatal("Did not correctly parse item", i)
+	}
+}
+
 func TestPHPLexer(t *testing.T) {
 	l := newLexer(testFile)
 	go l.run()
 
-	item := l.nextItem()
-	if item.typ != itemPHPBegin {
-		t.Fatal("Did not correctly parse opening tag", item.typ)
-	}
+	var i item
+	i = assertNext(t, l, itemPHPBegin)
+	i = assertNext(t, l, itemFunctionName)
+	i = assertNext(t, l, itemArgumentListBegin)
+	i = assertNext(t, l, itemArgumentListEnd)
+	i = assertNext(t, l, itemStatementEnd)
 
-	item = l.nextItem()
-	if item.typ != itemPHP {
-		t.Fatal("Did not correctly parse php", item.typ)
-	}
-	if item.val != "\n\nsession_start();\n\n" {
-		t.Fatal("Did not correctly parse php", item)
-	}
+	i = assertNext(t, l, itemFunction)
+	i = assertNext(t, l, itemFunctionName)
+	i = assertNext(t, l, itemArgumentListBegin)
+	i = assertNext(t, l, itemTypeHint)
+	i = assertNext(t, l, itemArgumentName)
+	i = assertNext(t, l, itemArgumentSeparator)
+	i = assertNext(t, l, itemArgumentName)
+	i = assertNext(t, l, itemArgumentListEnd)
+	i = assertNext(t, l, itemBlockBegin)
 
-	item = l.nextItem()
-	if item.typ != itemPHPEnd {
-		t.Fatal("Did not correctly parse ending tag", item.typ)
-	}
+	i = assertNext(t, l, itemFunctionName)
+	i = assertNext(t, l, itemArgumentListBegin)
+	i = assertNext(t, l, itemArgumentListEnd)
+	i = assertNext(t, l, itemStatementEnd)
 
-	item = l.nextItem()
-	if item.typ != itemHTML {
-		t.Fatal("Did not correctly parse html", item.typ)
-	}
-	if item.val != "\n<html>\n" {
-		t.Fatal("Did not correctly parse html", item)
-	}
+	i = assertNext(t, l, itemBlockEnd)
 
-	item = l.nextItem()
-	if item.typ != itemPHPBegin {
-		t.Fatal("Did not correctly parse php begin", item.typ)
-	}
+	i = assertNext(t, l, itemPHPEnd)
+	i = assertNext(t, l, itemHTML)
+	assertItem(t, i, "\n<html>\n")
 
-	item = l.nextItem()
-	if item.typ != itemPHP {
-		t.Fatal("Did not correctly parse php", item.typ)
-	}
-	if item.val != " echo something(); " {
-		t.Fatal("Did not correctly parse php", item)
-	}
+	i = assertNext(t, l, itemPHPBegin)
+	i = assertNext(t, l, itemEcho)
+	i = assertNext(t, l, itemFunctionName)
+	i = assertNext(t, l, itemArgumentListBegin)
+	i = assertNext(t, l, itemArgumentListEnd)
+	i = assertNext(t, l, itemStatementEnd)
 
-	item = l.nextItem()
-	if item.typ != itemPHPEnd {
-		t.Fatal("Did not correctly parse php end", item)
-	}
-	if item.val != "?>" {
-		t.Fatal("Did not correctly parse php end", item)
-	}
+	i = assertNext(t, l, itemPHPEnd)
+	i = assertNext(t, l, itemHTML)
+	assertItem(t, i, "\n</html>")
 
-	item = l.nextItem()
-	if item.typ != itemHTML {
-		t.Fatal("Did not correctly parse html", item)
-	}
-	if item.val != "\n</html>" {
-		t.Fatal("Did not correctly parse html", item)
-	}
-
-	item = l.nextItem()
-	if item.typ != itemEOF {
-		t.Fatal("Did not correctly parse eof", item)
-	}
+	i = assertNext(t, l, itemEOF)
 }
