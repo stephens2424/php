@@ -7,7 +7,9 @@ var testFile = `<?php
 session_start();
 
 function foo(barType $bar, $foobar) {
-  fizzbuzz();
+  if (buzz()) {
+    fizzbuzz();
+  }
 }
 
 ?>
@@ -35,25 +37,34 @@ func TestPHPLexer(t *testing.T) {
 
 	var i item
 	i = assertNext(t, l, itemPHPBegin)
-	i = assertNext(t, l, itemFunctionName)
-	i = assertNext(t, l, itemArgumentListBegin)
-	i = assertNext(t, l, itemArgumentListEnd)
+	i = assertNext(t, l, itemNonVariableIdentifier)
+	i = assertNext(t, l, itemOpenParen)
+	i = assertNext(t, l, itemCloseParen)
 	i = assertNext(t, l, itemStatementEnd)
 
 	i = assertNext(t, l, itemFunction)
-	i = assertNext(t, l, itemFunctionName)
-	i = assertNext(t, l, itemArgumentListBegin)
-	i = assertNext(t, l, itemTypeHint)
-	i = assertNext(t, l, itemArgumentName)
+	i = assertNext(t, l, itemNonVariableIdentifier)
+	i = assertNext(t, l, itemOpenParen)
+	i = assertNext(t, l, itemNonVariableIdentifier)
+	i = assertNext(t, l, itemIdentifier)
 	i = assertNext(t, l, itemArgumentSeparator)
-	i = assertNext(t, l, itemArgumentName)
-	i = assertNext(t, l, itemArgumentListEnd)
+	i = assertNext(t, l, itemIdentifier)
+	i = assertNext(t, l, itemCloseParen)
 	i = assertNext(t, l, itemBlockBegin)
 
-	i = assertNext(t, l, itemFunctionName)
-	i = assertNext(t, l, itemArgumentListBegin)
-	i = assertNext(t, l, itemArgumentListEnd)
+	i = assertNext(t, l, itemIf)
+	i = assertNext(t, l, itemOpenParen)
+	i = assertNext(t, l, itemNonVariableIdentifier)
+	i = assertNext(t, l, itemOpenParen)
+	i = assertNext(t, l, itemCloseParen)
+	i = assertNext(t, l, itemCloseParen)
+
+	i = assertNext(t, l, itemBlockBegin)
+	i = assertNext(t, l, itemNonVariableIdentifier)
+	i = assertNext(t, l, itemOpenParen)
+	i = assertNext(t, l, itemCloseParen)
 	i = assertNext(t, l, itemStatementEnd)
+	i = assertNext(t, l, itemBlockEnd)
 
 	i = assertNext(t, l, itemBlockEnd)
 
@@ -63,9 +74,9 @@ func TestPHPLexer(t *testing.T) {
 
 	i = assertNext(t, l, itemPHPBegin)
 	i = assertNext(t, l, itemEcho)
-	i = assertNext(t, l, itemFunctionName)
-	i = assertNext(t, l, itemArgumentListBegin)
-	i = assertNext(t, l, itemArgumentListEnd)
+	i = assertNext(t, l, itemNonVariableIdentifier)
+	i = assertNext(t, l, itemOpenParen)
+	i = assertNext(t, l, itemCloseParen)
 	i = assertNext(t, l, itemStatementEnd)
 
 	i = assertNext(t, l, itemPHPEnd)

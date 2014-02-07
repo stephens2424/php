@@ -44,53 +44,45 @@ func lexPHPBegin(l *lexer) stateFn {
 
 func lexPHP(l *lexer) stateFn {
 	l.skipSpace()
+	for token, item := range tokenMap {
+		if strings.HasPrefix(l.input[l.pos:], token) {
+			l.pos += len(token)
+			l.emit(item)
+			return lexPHP
+		}
+	}
+
 	if strings.HasPrefix(l.input[l.pos:], "$") {
 		return lexIdentifier
 	}
-	if strings.HasPrefix(l.input[l.pos:], "function") {
-		return lexFunctionDeclaration
-	}
-	if strings.HasPrefix(l.input[l.pos:], "class") {
-		return l.errorf("classes are unsupported")
-	}
-	if strings.HasPrefix(l.input[l.pos:], "interface") {
-		return l.errorf("interfaces are unsupported")
-	}
-	if strings.HasPrefix(l.input[l.pos:], "{") {
-		return lexBlockBegin
-	}
-	if strings.HasPrefix(l.input[l.pos:], "}") {
-		return lexBlockEnd
-	}
-	if strings.HasPrefix(l.input[l.pos:], ";") {
-		l.next()
-		l.emit(itemStatementEnd)
-		return lexPHP
-	}
+
 	if strings.HasPrefix(l.input[l.pos:], "?>") {
 		return lexPHPEnd
 	}
-	if strings.HasPrefix(l.input[l.pos:], "echo") {
-		l.pos += len("echo")
-		l.emit(itemEcho)
-		return lexPHP
+
+	if l.next() == eof {
+		l.emit(itemEOF)
+		return nil
 	}
+	l.backup()
+
 	l.accept(alphabet + underscore)
 	l.acceptRun(alphabet + underscore + digits)
-	if l.peek() == '(' {
-		l.emit(itemFunctionName)
-		return lexFunctionArgs
-	}
-	for {
-		if l.next() == eof {
-			break
-		}
-	}
-	if l.start > l.pos {
-		l.emit(itemPHP)
-	}
-	l.emit(itemEOF)
-	return nil
+	l.emit(itemNonVariableIdentifier)
+	return lexPHP
+}
+
+func lexIf(l *lexer) stateFn {
+	return l.errorf("if is not supported")
+}
+
+func lexCondition(l *lexer) stateFn {
+	// this could be useful in the condition of a while, do-while, for terminator, if, and if-else block
+	// what state should it return?
+	// in all cases except do-while, after this is done, a block-begin is the correct state
+
+	// how can this take advantage of the lexPHP function?
+	return lexPHP
 }
 
 const alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -105,31 +97,17 @@ func lexIdentifier(l *lexer) stateFn {
 	return lexPHP
 }
 
-func lexFunctionDeclaration(l *lexer) stateFn {
-	l.pos += len("function")
-	l.emit(itemFunction)
-	return lexFunctionName
-}
-
-func lexFunctionName(l *lexer) stateFn {
-	l.skipSpace()
-	l.accept(underscore + alphabet)
-	l.acceptRun(underscore + alphabet + digits)
-	l.emit(itemFunctionName)
-	return lexFunctionArgs
-}
-
 func lexFunctionArgs(l *lexer) stateFn {
 	l.skipSpace()
 	switch r := l.next(); {
 	case r == '(':
-		l.emit(itemArgumentListBegin)
+		l.emit(itemOpenParen)
 		if l.peek() == ')' {
 			return lexFunctionArgs
 		}
 		return lexFunctionArg
 	case r == ')':
-		l.emit(itemArgumentListEnd)
+		l.emit(itemCloseParen)
 		return lexPHP
 	case r == ',':
 		l.emit(itemArgumentSeparator)
