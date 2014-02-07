@@ -15,6 +15,11 @@ function foo(barType $bar, $foobar) {
   }
 }
 
+class MyClass {
+  public myMethod() {
+  }
+}
+
 ?>
 <html>
 <? echo something(); ?>
@@ -80,6 +85,17 @@ func TestPHPLexer(t *testing.T) {
 	i = assertNext(t, l, itemStatementEnd)
 	i = assertNext(t, l, itemBlockEnd)
 
+	i = assertNext(t, l, itemBlockEnd)
+
+	i = assertNext(t, l, itemClass)
+	i = assertNext(t, l, itemNonVariableIdentifier)
+	i = assertNext(t, l, itemBlockBegin)
+	i = assertNext(t, l, itemPublic)
+	i = assertNext(t, l, itemNonVariableIdentifier)
+	i = assertNext(t, l, itemOpenParen)
+	i = assertNext(t, l, itemCloseParen)
+	i = assertNext(t, l, itemBlockBegin)
+	i = assertNext(t, l, itemBlockEnd)
 	i = assertNext(t, l, itemBlockEnd)
 
 	i = assertNext(t, l, itemPHPEnd)

@@ -65,6 +65,9 @@ const (
 	itemCloseParen
 
 	itemClass
+	itemPrivate
+	itemPublic
+	itemProtected
 	itemInterface
 )
 
@@ -109,6 +112,10 @@ var itemTypeMap = map[itemType]string{
 	itemFinally: "finally",
 
 	itemClass:     "Class",
+	itemPrivate:   "Private",
+	itemProtected: "Protected",
+	itemPublic:    "Public",
+
 	itemInterface: "Interface",
 
 	itemStringLiteral: "sting-literal",
@@ -138,6 +145,9 @@ var tokenMap = map[string]itemType{
 	"try":       itemTry,
 	"catch":     itemCatch,
 	"finally":   itemFinally,
+	"private":   itemPrivate,
+	"public":    itemPublic,
+	"protected": itemProtected,
 }
 
 func (i itemType) String() string {
