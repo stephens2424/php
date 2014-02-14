@@ -16,8 +16,8 @@ const (
 type KeyType Type
 
 const (
-	StringKey  KeyType = iota
-	IntegerKey KeyType = iota
+	StringKey  KeyType = KeyType(String)
+	IntegerKey KeyType = KeyType(Integer)
 )
 
 type ArrayType struct {
