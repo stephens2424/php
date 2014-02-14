@@ -29,26 +29,23 @@ func TestIf(t *testing.T) {
 	testStr := `<?php
     if (true)
       echo "hello world";
-    if (false)
+    else if (false)
       echo "no hello world";`
 	p := newParser(testStr)
 	a := p.parse()
 	ifStmtOne := ast.IfStmt{
-		Condition:  ast.UnknownTypeExpression{},
-		TrueBlock:  ast.EchoStmt(ast.Literal{ast.String}),
-		FalseBlock: ast.Block{},
+		Condition: ast.UnknownTypeExpression{},
+		TrueBlock: ast.EchoStmt(ast.Literal{ast.String}),
+		FalseBlock: &ast.IfStmt{
+			Condition:  ast.UnknownTypeExpression{},
+			TrueBlock:  ast.EchoStmt(ast.Literal{ast.String}),
+			FalseBlock: ast.Block{},
+		},
 	}
-	if len(a) != 2 {
+	if len(a) != 1 {
 		t.Fatalf("If did not correctly parse")
 	}
 	parsedIf, ok := a[0].(*ast.IfStmt)
-	if !ok {
-		t.Fatalf("If did not correctly parse")
-	}
-	if !reflect.DeepEqual(*parsedIf, ifStmtOne) {
-		t.Fatalf("If did not correctly parse")
-	}
-	parsedIf, ok = a[1].(*ast.IfStmt)
 	if !ok {
 		t.Fatalf("If did not correctly parse")
 	}
