@@ -1,10 +1,13 @@
 package ast
 
+type Node interface{}
+
 type Identifier struct {
 	Name string
 }
 
 type Statement interface{}
+type Expression interface{}
 
 type EchoStmt Expression
 
@@ -21,8 +24,6 @@ type FunctionCallExpression struct {
 	FunctionName string
 	Arguments    []Expression
 }
-
-type Expression interface{}
 
 type Block struct {
 	Statments []Statement
@@ -70,8 +71,8 @@ const (
 
 type IfStmt struct {
 	Condition  Expression
-	TrueBlock  Block
-	FalseBlock Block
+	TrueBlock  Statement
+	FalseBlock Statement
 }
 
 type ForStmt struct {
