@@ -28,8 +28,8 @@ type FunctionCallExpression struct {
 }
 
 type Block struct {
-	Statments []Statement
-	Scope     Scope
+	Statements []Statement
+	Scope      Scope
 }
 
 type FunctionStmt struct {

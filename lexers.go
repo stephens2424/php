@@ -151,7 +151,7 @@ func lexCondition(l *lexer) stateFn {
 	return lexPHP
 }
 
-const operators = "!*%<>-=+/"
+const operators = "!*%<>-=+/."
 const alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 const digits = "0123456789"
 const underscore = "_"

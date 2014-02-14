@@ -64,3 +64,24 @@ func TestAssignment(t *testing.T) {
 		t.Fatalf("Assignment did not correctly parse")
 	}
 }
+
+func TestFunction(t *testing.T) {
+	testStr := `<?php
+    function TestFn($arg) {
+      echo $arg;
+    }
+    TestFn("world");`
+	p := newParser(testStr)
+	a := p.parse()
+	if len(a) != 2 {
+		t.Fatalf("Function did not correctly parse")
+	}
+	_, ok := a[0].(*ast.FunctionStmt)
+	if !ok {
+		t.Fatalf("FunctionStmt did not correctly parse")
+	}
+	_, ok = a[1].(ast.FunctionCallExpression)
+	if !ok {
+		t.Fatalf("FunctionCall did not correctly parse")
+	}
+}
