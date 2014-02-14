@@ -34,10 +34,10 @@ func TestIf(t *testing.T) {
 	p := newParser(testStr)
 	a := p.parse()
 	ifStmtOne := ast.IfStmt{
-		Condition: ast.UnknownTypeExpression{},
+		Condition: ast.Literal{ast.Boolean},
 		TrueBlock: ast.EchoStmt(ast.Literal{ast.String}),
 		FalseBlock: &ast.IfStmt{
-			Condition:  ast.UnknownTypeExpression{},
+			Condition:  ast.Literal{ast.Boolean},
 			TrueBlock:  ast.EchoStmt(ast.Literal{ast.String}),
 			FalseBlock: ast.Block{},
 		},
@@ -51,5 +51,16 @@ func TestIf(t *testing.T) {
 	}
 	if !reflect.DeepEqual(*parsedIf, ifStmtOne) {
 		t.Fatalf("If did not correctly parse")
+	}
+}
+
+func TestAssignment(t *testing.T) {
+	testStr := `<?php
+    $test = "hello world";
+    echo $test;`
+	p := newParser(testStr)
+	a := p.parse()
+	if len(a) != 2 {
+		t.Fatalf("Assignment did not correctly parse")
 	}
 }

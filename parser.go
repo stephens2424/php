@@ -113,16 +113,21 @@ func (p *parser) parseIf() *ast.IfStmt {
 	return n
 }
 
-func (p *parser) parseExpression() ast.Expression {
-	ret := ast.UnknownTypeExpression{}
+func (p *parser) parseExpression() (expr ast.Expression) {
+	expr = ast.UnknownTypeExpression{}
 TypeLoop:
 	for ; ; p.next() {
 		switch p.current.typ {
 		case itemStringLiteral:
+			expr = ast.Literal{ast.String}
 		case itemNumberLiteral:
+			expr = ast.Literal{ast.Float}
 		case itemTrueLiteral:
+			expr = ast.Literal{ast.Boolean}
 		case itemFalseLiteral:
+			expr = ast.Literal{ast.Boolean}
 		case itemOperator:
+		case itemIdentifier:
 		case itemOpenParen:
 			p.parenLevel += 1
 		case itemCloseParen:
@@ -137,15 +142,24 @@ TypeLoop:
 		}
 	}
 	p.backup()
-	return ret
+	return expr
 }
 
 func (p *parser) parseStmt() ast.Statement {
 	switch p.current.typ {
-	case itemEcho:
-		p.expect(itemStringLiteral)
+	case itemIdentifier:
+		n := ast.AssignmentStmt{}
+		n.Assignee = ast.Identifier{p.current.val}
+		p.expect(itemOperator)
+		p.next()
+		n.Value = p.parseExpression()
 		p.expect(itemStatementEnd)
-		return ast.EchoStmt(ast.Literal{ast.String})
+		return n
+	case itemEcho:
+		p.next()
+		expr := p.parseExpression()
+		p.expect(itemStatementEnd)
+		return ast.EchoStmt(expr)
 	case itemIf:
 		return p.parseIf()
 	default:
