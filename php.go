@@ -38,7 +38,6 @@ func (l *lexer) run() {
 
 func (l *lexer) emit(t itemType) {
 	i := item{t, l.start, l.input[l.start:l.pos]}
-	fmt.Println(i)
 	l.items <- i
 	l.start = l.pos
 }
