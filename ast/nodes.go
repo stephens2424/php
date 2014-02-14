@@ -9,6 +9,8 @@ type Identifier struct {
 type Statement interface{}
 type Expression interface{}
 
+type UnknownTypeExpression struct{}
+
 type EchoStmt Expression
 
 type AssignmentStmt struct {

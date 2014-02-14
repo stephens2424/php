@@ -41,7 +41,6 @@ func assertItem(t *testing.T, i item, expected string) {
 
 func TestPHPLexer(t *testing.T) {
 	l := newLexer(testFile)
-	go l.run()
 
 	var i item
 	i = assertNext(t, l, itemPHPBegin)

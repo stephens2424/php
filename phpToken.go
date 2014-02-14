@@ -27,9 +27,6 @@ const (
 	itemEOF
 	itemError
 	itemSpace
-
-	itemNonVariableIdentifier
-
 	itemOperator //catchall for operators
 	itemFunction
 	itemFunctionName
@@ -40,10 +37,10 @@ const (
 
 	itemFunctionCallBegin
 	itemFunctionCallEnd
-	itemStatementEnd
 	itemArgumentType
 	itemArgumentName
 	itemArgumentSeparator
+	itemStatementEnd
 	itemEcho
 
 	itemIf
@@ -53,22 +50,25 @@ const (
 	itemForeach
 	itemWhile
 	itemDo
+	itemOpenParen
+	itemCloseParen
 
 	itemTry
 	itemCatch
 	itemFinally
-
-	itemStringLiteral
-	itemNumberLiteral
-
-	itemOpenParen
-	itemCloseParen
 
 	itemClass
 	itemPrivate
 	itemPublic
 	itemProtected
 	itemInterface
+
+	itemStringLiteral
+	itemNumberLiteral
+	itemTrueLiteral
+	itemFalseLiteral
+
+	itemNonVariableIdentifier
 )
 
 // itemTypeMap maps itemType to strings that may be used for debugging and error messages
@@ -104,8 +104,8 @@ var itemTypeMap = map[itemType]string{
 	itemForeach:    "foreach",
 	itemWhile:      "while",
 	itemDo:         "do",
-	itemOpenParen:  "(",
-	itemCloseParen: ")",
+	itemOpenParen:  "open-paren",
+	itemCloseParen: "close-paren",
 
 	itemTry:     "try",
 	itemCatch:   "catch",
@@ -115,11 +115,12 @@ var itemTypeMap = map[itemType]string{
 	itemPrivate:   "Private",
 	itemProtected: "Protected",
 	itemPublic:    "Public",
-
 	itemInterface: "Interface",
 
 	itemStringLiteral: "sting-literal",
 	itemNumberLiteral: "number-literal",
+	itemTrueLiteral:   "true-literal",
+	itemFalseLiteral:  "false-literal",
 
 	itemNonVariableIdentifier: "non-variable-identifier",
 }
@@ -148,6 +149,8 @@ var tokenMap = map[string]itemType{
 	"private":   itemPrivate,
 	"public":    itemPublic,
 	"protected": itemProtected,
+	"true":      itemTrueLiteral,
+	"false":     itemFalseLiteral,
 }
 
 func (i itemType) String() string {
@@ -166,7 +169,7 @@ func (i item) String() string {
 		return i.val
 	}
 	if len(i.val) > 10 {
-		return fmt.Sprintf("%.10q...", i.val)
+		return fmt.Sprintf("%v:%.10q...", i.typ, i.val)
 	}
-	return fmt.Sprintf("%q", i.val)
+	return fmt.Sprintf("%v:%q", i.typ, i.val)
 }

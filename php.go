@@ -20,6 +20,7 @@ func newLexer(input string) *lexer {
 		input: input,
 		items: make(chan item),
 	}
+	go l.run()
 	return l
 }
 

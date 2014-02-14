@@ -8,50 +8,72 @@ import (
 type parser struct {
 	lexer *lexer
 
-	current item
-	errors  []error
+	previous []item
+	idx      int
+	current  item
+	errors   []error
+
+	parenLevel int
 }
 
 func newParser(input string) *parser {
 	p := &parser{
+		idx:   -1,
 		lexer: newLexer(input),
 	}
 	return p
 }
 
-func (p *parser) parse() ([]ast.Node, error) {
+func (p *parser) parse() []ast.Node {
+	defer func() {
+		if r := recover(); r != nil {
+			fmt.Println(p.errors)
+			fmt.Println(r)
+		}
+	}()
 	// expecting either itemHTML or itemPHPBegin
-	for i := range p.lexer.items {
-		if i.typ == itemHTML {
-			continue
+	nodes := make([]ast.Node, 0, 1)
+TokenLoop:
+	for {
+		p.next()
+		switch p.current.typ {
+		case itemEOF:
+			break TokenLoop
+		default:
+			n := p.parseNode()
+			if n != nil {
+				nodes = append(nodes, n)
+			}
 		}
-		if i.typ != itemPHPBegin {
-			return nil, fmt.Errorf("Found %s, expected html or php begin", i)
-		}
-		if i.typ == itemEOF {
-			break
-		}
-		p.parsePHP()
 	}
-	return nil, nil
+	return nodes
 }
 
-func (p *parser) parsePHP() ([]ast.Node, error) {
-	nodes := make([]ast.Node, 0, 1)
-	for i := range p.lexer.items {
-		if i.typ == itemPHPEnd {
-			break
-		}
-		if i.typ == itemIf {
-			subtree := p.parseIf()
-			nodes = append(nodes, subtree)
-		}
+func (p *parser) parseNode() ast.Node {
+	switch p.current.typ {
+	case itemHTML:
+		return ast.EchoStmt(ast.Literal{ast.String})
+	case itemPHPBegin:
+		return nil
+	case itemPHPEnd:
+		return nil
 	}
-	return nodes, nil
+	return p.parseStmt()
 }
 
 func (p *parser) next() {
-	p.current = p.lexer.nextItem()
+	p.idx += 1
+	if len(p.previous) <= p.idx {
+		p.current = p.lexer.nextItem()
+		p.previous = append(p.previous, p.current)
+	} else {
+		p.current = p.previous[p.idx]
+	}
+}
+
+func (p *parser) backup() {
+	p.idx -= 1
+	p.current = p.previous[p.idx]
 }
 
 func (p *parser) expect(i itemType) {
@@ -62,31 +84,72 @@ func (p *parser) expect(i itemType) {
 }
 
 func (p *parser) expected(i itemType) {
+	p.errors = append(p.errors, fmt.Errorf("Found %s, expected %s", p.current, i))
+	if len(p.errors) > 0 {
+		panic("too many errors")
+	}
 }
 
 func (p *parser) errorf(str string, args ...interface{}) {
 	p.errors = append(p.errors, fmt.Errorf(str, args...))
 }
 
-func (p *parser) parseIf() ast.IfStmt {
+func (p *parser) parseIf() *ast.IfStmt {
 	p.expect(itemOpenParen)
-	n := ast.IfStmt{}
+	n := &ast.IfStmt{}
+	p.next()
 	n.Condition = p.parseExpression()
 	p.expect(itemCloseParen)
+	p.next()
 	n.TrueBlock = p.parseStmt()
-	n.FalseBlock = ast.Block{}
 	p.next()
 	if p.current.typ == itemElse {
 		p.next()
 		n.FalseBlock = p.parseStmt()
+	} else {
+		n.FalseBlock = ast.Block{}
+		p.backup()
 	}
 	return n
 }
 
 func (p *parser) parseExpression() ast.Expression {
-	return nil
+	ret := ast.UnknownTypeExpression{}
+TypeLoop:
+	for ; ; p.next() {
+		switch p.current.typ {
+		case itemStringLiteral:
+		case itemNumberLiteral:
+		case itemTrueLiteral:
+		case itemFalseLiteral:
+		case itemOperator:
+		case itemOpenParen:
+			p.parenLevel += 1
+		case itemCloseParen:
+			if p.parenLevel == 0 {
+				break TypeLoop
+			}
+			p.parenLevel -= 1
+		case itemNonVariableIdentifier:
+			return p.parse()
+		default:
+			break TypeLoop
+		}
+	}
+	p.backup()
+	return ret
 }
 
 func (p *parser) parseStmt() ast.Statement {
-	return nil
+	switch p.current.typ {
+	case itemEcho:
+		p.expect(itemStringLiteral)
+		p.expect(itemStatementEnd)
+		return ast.EchoStmt(ast.Literal{ast.String})
+	case itemIf:
+		return p.parseIf()
+	default:
+		p.errors = append(p.errors, fmt.Errorf("Found %s, expected html or php begin", p.current))
+		return nil
+	}
 }
