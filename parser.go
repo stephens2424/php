@@ -126,7 +126,6 @@ TypeLoop:
 			expr = ast.Literal{ast.Boolean}
 		case itemFalseLiteral:
 			expr = ast.Literal{ast.Boolean}
-		case itemOperator:
 		case itemIdentifier:
 		case itemOpenParen:
 			p.parenLevel += 1
@@ -176,7 +175,7 @@ func (p *parser) parseStmt() ast.Statement {
 	case itemIdentifier:
 		n := ast.AssignmentStmt{}
 		n.Assignee = ast.Identifier{p.current.val}
-		p.expect(itemOperator)
+		p.expect(itemAssignmentOperator)
 		p.next()
 		n.Value = p.parseExpression()
 		p.expect(itemStatementEnd)

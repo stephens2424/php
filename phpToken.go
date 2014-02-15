@@ -27,7 +27,6 @@ const (
 	itemEOF
 	itemError
 	itemSpace
-	itemOperator //catchall for operators
 	itemFunction
 	itemFunctionName
 	itemTypeHint
@@ -69,6 +68,24 @@ const (
 	itemFalseLiteral
 
 	itemNonVariableIdentifier
+
+	itemAssignmentOperator
+	itemNegationOperator
+	itemEqualOperator
+	itemNotEqualOperator
+	itemTypesafeEqualOperator
+	itemTypesafeNotEqualOperator
+	itemNegativeOperator
+	itemAdditionOperator
+	itemSubtractionOperator
+	itemMultiplicationOperator
+	itemDivisionOperator
+	itemGreaterThanOperator
+	itemGreaterThanOrEqualToOperator
+	itemLessThanOperator
+	itemLessThanOrEqualToOperator
+	itemModulusOperator
+	itemConcatenationOperator
 )
 
 // itemTypeMap maps itemType to strings that may be used for debugging and error messages
@@ -81,7 +98,6 @@ var itemTypeMap = map[itemType]string{
 	itemEOF:          "EOF",
 	itemError:        "Error",
 	itemSpace:        "Space",
-	itemOperator:     "Operator",
 	itemFunction:     "Function",
 	itemFunctionName: "Function Name",
 	itemTypeHint:     "Function Type Hint",
@@ -123,6 +139,22 @@ var itemTypeMap = map[itemType]string{
 	itemFalseLiteral:  "false-literal",
 
 	itemNonVariableIdentifier: "non-variable-identifier",
+
+	itemAssignmentOperator:           "=",
+	itemEqualOperator:                "==",
+	itemNotEqualOperator:             "!=",
+	itemTypesafeEqualOperator:        "===",
+	itemTypesafeNotEqualOperator:     "!==",
+	itemAdditionOperator:             "+",
+	itemSubtractionOperator:          "-",
+	itemMultiplicationOperator:       "*",
+	itemDivisionOperator:             "/",
+	itemGreaterThanOperator:          ">",
+	itemGreaterThanOrEqualToOperator: ">=",
+	itemLessThanOperator:             "<",
+	itemLessThanOrEqualToOperator:    "<=",
+	itemModulusOperator:              "%",
+	itemConcatenationOperator:        ".",
 }
 
 // tokenMap maps source code string tokens to item types when strings can
@@ -151,6 +183,22 @@ var tokenMap = map[string]itemType{
 	"protected": itemProtected,
 	"true":      itemTrueLiteral,
 	"false":     itemFalseLiteral,
+
+	"=":   itemAssignmentOperator,
+	"-":   itemNegationOperator,
+	"==":  itemEqualOperator,
+	"!=":  itemNotEqualOperator,
+	"===": itemTypesafeEqualOperator,
+	"!==": itemTypesafeNotEqualOperator,
+	"+":   itemAdditionOperator,
+	"*":   itemMultiplicationOperator,
+	"/":   itemDivisionOperator,
+	">":   itemGreaterThanOperator,
+	">=":  itemGreaterThanOrEqualToOperator,
+	"<":   itemLessThanOperator,
+	"<=":  itemLessThanOrEqualToOperator,
+	"%":   itemModulusOperator,
+	".":   itemConcatenationOperator,
 }
 
 func (i itemType) String() string {

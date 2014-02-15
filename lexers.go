@@ -45,6 +45,11 @@ func lexPHPBegin(l *lexer) stateFn {
 
 func lexPHP(l *lexer) stateFn {
 	l.skipSpace()
+
+	if r := l.peek(); r == '-' || unicode.IsDigit(r) {
+		return lexNumberLiteral
+	}
+
 	for token, item := range tokenMap {
 		if strings.HasPrefix(l.input[l.pos:], token) {
 			l.pos += len(token)
@@ -73,15 +78,6 @@ func lexPHP(l *lexer) stateFn {
 
 	if l.peek() == '"' {
 		return lexDoubleQuotedStringLiteral
-	}
-
-	if r := l.peek(); r == '-' || unicode.IsDigit(r) {
-		return lexNumberLiteral
-	}
-
-	if l.accept(operators) {
-		l.emit(itemOperator)
-		return lexPHP
 	}
 
 	l.accept(alphabet + underscore)
@@ -217,13 +213,6 @@ func lexBlockBegin(l *lexer) stateFn {
 func lexBlockEnd(l *lexer) stateFn {
 	l.pos += 1
 	l.emit(itemBlockEnd)
-	return lexPHP
-}
-
-// lexOperator lexes any operator
-func lexOperator(l *lexer) stateFn {
-	l.acceptRun("!*()%<>-=+/")
-	l.emit(itemOperator)
 	return lexPHP
 }
 
