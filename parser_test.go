@@ -85,3 +85,39 @@ func TestFunction(t *testing.T) {
 		t.Fatalf("FunctionCall did not correctly parse")
 	}
 }
+
+func TestClass(t *testing.T) {
+	testStr := `<?php
+    class TestClass {
+      public function method1($arg) {
+        echo $arg;
+      }
+      private function method2(TestClass $arg) {
+        echo $arg;
+      }
+    }`
+	p := newParser(testStr)
+	a := p.parse()
+	if len(a) != 1 {
+		t.Fatalf("Class did not correctly parse")
+	}
+	parsedClass, ok := a[0].(ast.Class)
+	if !ok {
+		t.Fatalf("Class did not correctly parse")
+	}
+	if parsedClass.Name != "TestClass" {
+		t.Fatalf("Class Name did not correctly parse. Got:%s", parsedClass.Name)
+	}
+	if len(parsedClass.Methods) != 2 {
+		t.Fatalf("Class methods did not correctly parse")
+	}
+	if parsedClass.Methods[0].Name != "method1" {
+		t.Fatalf("Class method did not correctly parse. Got:%s", parsedClass.Methods[0].Name)
+	}
+	if parsedClass.Methods[1].Name != "method2" {
+		t.Fatalf("Class method did not correctly parse. Got:%s", parsedClass.Methods[0].Name)
+	}
+	if parsedClass.Methods[1].Arguments[0].TypeHint != "TestClass" {
+		t.Fatalf("Class method did not correctly parse. Got:%s", parsedClass.Methods[0].Name)
+	}
+}

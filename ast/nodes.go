@@ -65,7 +65,12 @@ type FunctionStmt struct {
 
 type FunctionDefinition struct {
 	Name      string
-	Arguments []Identifier
+	Arguments []FunctionArgument
+}
+
+type FunctionArgument struct {
+	TypeHint   string
+	Identifier Identifier
 }
 
 type Class struct {
@@ -85,7 +90,7 @@ type Interface struct {
 }
 
 type Method struct {
-	FunctionStmt
+	*FunctionStmt
 	Visibility Visibility
 }
 

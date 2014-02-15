@@ -61,6 +61,8 @@ const (
 	itemPublic
 	itemProtected
 	itemInterface
+	itemImplements
+	itemExtends
 
 	itemStringLiteral
 	itemNumberLiteral
@@ -117,11 +119,13 @@ var itemTypeMap = map[itemType]string{
 	itemCatch:   "catch",
 	itemFinally: "finally",
 
-	itemClass:     "Class",
-	itemPrivate:   "Private",
-	itemProtected: "Protected",
-	itemPublic:    "Public",
-	itemInterface: "Interface",
+	itemClass:      "Class",
+	itemPrivate:    "Private",
+	itemProtected:  "Protected",
+	itemPublic:     "Public",
+	itemInterface:  "Interface",
+	itemImplements: "implements",
+	itemExtends:    "extends",
 
 	itemStringLiteral:  "sting-literal",
 	itemNumberLiteral:  "number-literal",
@@ -142,29 +146,31 @@ var itemTypeMap = map[itemType]string{
 // tokenMap maps source code string tokens to item types when strings can
 // be represented directly. Not all item types will be represented here.
 var tokenMap = map[string]itemType{
-	"class":     itemClass,
-	"interface": itemInterface,
-	"if":        itemIf,
-	"else":      itemElse,
-	"while":     itemWhile,
-	"for":       itemFor,
-	"foreach":   itemForeach,
-	"function":  itemFunction,
-	"{":         itemBlockBegin,
-	"}":         itemBlockEnd,
-	";":         itemStatementEnd,
-	"(":         itemOpenParen,
-	")":         itemCloseParen,
-	",":         itemArgumentSeparator,
-	"echo":      itemEcho,
-	"try":       itemTry,
-	"catch":     itemCatch,
-	"finally":   itemFinally,
-	"private":   itemPrivate,
-	"public":    itemPublic,
-	"protected": itemProtected,
-	"true":      itemBooleanLiteral,
-	"false":     itemBooleanLiteral,
+	"class":      itemClass,
+	"interface":  itemInterface,
+	"implements": itemImplements,
+	"extends":    itemExtends,
+	"if":         itemIf,
+	"else":       itemElse,
+	"while":      itemWhile,
+	"for":        itemFor,
+	"foreach":    itemForeach,
+	"function":   itemFunction,
+	"{":          itemBlockBegin,
+	"}":          itemBlockEnd,
+	";":          itemStatementEnd,
+	"(":          itemOpenParen,
+	")":          itemCloseParen,
+	",":          itemArgumentSeparator,
+	"echo":       itemEcho,
+	"try":        itemTry,
+	"catch":      itemCatch,
+	"finally":    itemFinally,
+	"private":    itemPrivate,
+	"public":     itemPublic,
+	"protected":  itemProtected,
+	"true":       itemBooleanLiteral,
+	"false":      itemBooleanLiteral,
 
 	"===": itemComparisonOperator,
 	"==":  itemComparisonOperator,

@@ -14,6 +14,7 @@ type parser struct {
 	errors   []error
 
 	parenLevel int
+	debug      bool
 }
 
 func newParser(input string) *parser {
@@ -26,9 +27,11 @@ func newParser(input string) *parser {
 
 func (p *parser) parse() []ast.Node {
 	defer func() {
-		if r := recover(); r != nil {
-			fmt.Println(p.errors)
-			fmt.Println(r)
+		if !p.debug {
+			if r := recover(); r != nil {
+				fmt.Println(p.errors)
+				fmt.Println(r)
+			}
 		}
 	}()
 	// expecting either itemHTML or itemPHPBegin
@@ -250,6 +253,8 @@ func (p *parser) parseStmt() ast.Statement {
 		stmt := p.parseExpression()
 		p.expect(itemStatementEnd)
 		return stmt
+	case itemClass:
+		return p.parseClass()
 	default:
 		p.errorf("Found %s, expected html or php begin", p.current)
 		return nil
@@ -260,6 +265,7 @@ func (p *parser) parseFunctionStmt() *ast.FunctionStmt {
 	stmt := &ast.FunctionStmt{}
 	p.expect(itemNonVariableIdentifier)
 	stmt.Name = p.current.val
+	stmt.Arguments = make([]ast.FunctionArgument, 0)
 	p.expect(itemOpenParen)
 	first := true
 	for {
@@ -273,7 +279,16 @@ func (p *parser) parseFunctionStmt() *ast.FunctionStmt {
 		} else {
 			first = false
 		}
+		p.next()
+		arg := ast.FunctionArgument{}
+		if p.current.typ == itemNonVariableIdentifier {
+			arg.TypeHint = p.current.val
+		} else {
+			p.backup()
+		}
 		p.expect(itemIdentifier)
+		arg.Identifier = ast.NewIdentifier(p.current.val)
+		stmt.Arguments = append(stmt.Arguments, arg)
 	}
 	stmt.Body = p.parseBlock()
 	return stmt
@@ -291,4 +306,47 @@ func (p *parser) parseBlock() ast.Block {
 		p.backup()
 	}
 	return block
+}
+
+func (p *parser) parseClass() ast.Class {
+	p.expect(itemNonVariableIdentifier)
+	name := p.current.val
+	p.next()
+	if p.current.typ == itemExtends {
+		p.expect(itemNonVariableIdentifier)
+	} else {
+		p.backup()
+	}
+	p.expect(itemBlockBegin)
+	return ast.Class{
+		Name:    name,
+		Methods: p.parseMethods(),
+	}
+}
+
+func (p *parser) parseMethods() (methods []ast.Method) {
+	methods = make([]ast.Method, 0)
+	p.next()
+	for p.current.typ != itemBlockEnd {
+		m := ast.Method{}
+		switch p.current.typ {
+		case itemPrivate:
+			m.Visibility = ast.Private
+			p.expect(itemFunction)
+		case itemProtected:
+			m.Visibility = ast.Protected
+			p.expect(itemFunction)
+		case itemPublic:
+			m.Visibility = ast.Public
+			p.expect(itemFunction)
+		case itemFunction:
+			m.Visibility = ast.Public
+		default:
+			p.expected(itemFunction)
+		}
+		m.FunctionStmt = p.parseFunctionStmt()
+		methods = append(methods, m)
+		p.next()
+	}
+	return methods
 }
