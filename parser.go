@@ -17,12 +17,20 @@ type parser struct {
 	debug      bool
 }
 
+func NewParser(input string) *parser {
+	return newParser(input)
+}
+
 func newParser(input string) *parser {
 	p := &parser{
 		idx:   -1,
 		lexer: newLexer(input),
 	}
 	return p
+}
+
+func (p *parser) Parse() []ast.Node {
+	return p.parse()
 }
 
 func (p *parser) parse() []ast.Node {
@@ -55,7 +63,7 @@ TokenLoop:
 func (p *parser) parseNode() ast.Node {
 	switch p.current.typ {
 	case itemHTML:
-		return ast.EchoStmt(ast.Literal{ast.String})
+		return ast.Echo(ast.Literal{ast.String})
 	case itemPHPBegin:
 		return nil
 	case itemPHPEnd:
@@ -156,26 +164,31 @@ func (p *parser) parseExpression() (expr ast.Expression) {
 
 	// look for an operator
 	p.next()
-	switch p.current.typ {
+	switch op := p.current; p.current.typ {
 	case itemUnaryOperator:
-		return newUnaryOperation(p.current, expr)
+		return newUnaryOperation(op, expr)
 	case itemAdditionOperator:
-		return newBinaryOperation(p.current, expr, p.parseExpression())
+		return newBinaryOperation(op, expr, p.parseNextExpression())
 	case itemSubtractionOperator:
-		return newBinaryOperation(p.current, expr, p.parseExpression())
+		return newBinaryOperation(op, expr, p.parseNextExpression())
 	case itemMultOperator:
-		return newBinaryOperation(p.current, expr, p.parseExpression())
+		return newBinaryOperation(op, expr, p.parseNextExpression())
 	case itemComparisonOperator:
-		return newBinaryOperation(p.current, expr, p.parseExpression())
+		return newBinaryOperation(op, expr, p.parseNextExpression())
 	case itemConcatenationOperator:
 		return ast.OperatorExpression{
 			Operand1: expr,
-			Operand2: p.parseExpression(),
+			Operand2: p.parseNextExpression(),
 			Type:     ast.String,
 		}
 	}
 	p.backup()
 	return expr
+}
+
+func (p *parser) parseNextExpression() ast.Expression {
+	p.next()
+	return p.parseExpression()
 }
 
 func newUnaryOperation(operator item, expr ast.Expression) ast.OperatorExpression {
@@ -201,6 +214,7 @@ func newBinaryOperation(operator item, expr1, expr2 ast.Expression) ast.Operator
 		Type:     t,
 		Operand1: expr1,
 		Operand2: expr2,
+		Operator: operator.val,
 	}
 }
 
@@ -231,6 +245,7 @@ func (p *parser) parseFunctionCall() ast.FunctionCallExpression {
 func (p *parser) parseStmt() ast.Statement {
 	switch p.current.typ {
 	case itemBlockBegin:
+		p.backup()
 		return p.parseBlock()
 	case itemIdentifier:
 		n := ast.AssignmentStmt{}
@@ -246,7 +261,7 @@ func (p *parser) parseStmt() ast.Statement {
 		p.next()
 		expr := p.parseExpression()
 		p.expect(itemStatementEnd)
-		return ast.EchoStmt(expr)
+		return ast.Echo(expr)
 	case itemIf:
 		return p.parseIf()
 	case itemNonVariableIdentifier:
@@ -255,6 +270,11 @@ func (p *parser) parseStmt() ast.Statement {
 		return stmt
 	case itemClass:
 		return p.parseClass()
+	case itemReturn:
+		p.next()
+		stmt := ast.ReturnStmt{p.parseExpression()}
+		p.expect(itemStatementEnd)
+		return stmt
 	default:
 		p.errorf("Found %s, expected html or php begin", p.current)
 		return nil

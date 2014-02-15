@@ -10,7 +10,7 @@ func TestPHPParserHW(t *testing.T) {
 	testStr := `hello world`
 	p := newParser(testStr)
 	a := p.parse()
-	if len(a) != 1 || a[0] != ast.EchoStmt(ast.Literal{ast.String}) {
+	if len(a) != 1 || a[0] != ast.Echo(ast.Literal{ast.String}) {
 		t.Fatalf("Hello world did not correctly parse")
 	}
 }
@@ -20,7 +20,7 @@ func TestPHPParserHWPHP(t *testing.T) {
     echo "hello world";`
 	p := newParser(testStr)
 	a := p.parse()
-	if len(a) != 1 || a[0] != ast.EchoStmt(ast.Literal{ast.String}) {
+	if len(a) != 1 || a[0] != ast.Echo(ast.Literal{ast.String}) {
 		t.Fatalf("Hello world did not correctly parse")
 	}
 }
@@ -35,10 +35,10 @@ func TestIf(t *testing.T) {
 	a := p.parse()
 	ifStmtOne := ast.IfStmt{
 		Condition: ast.Literal{ast.Boolean},
-		TrueBlock: ast.EchoStmt(ast.Literal{ast.String}),
+		TrueBlock: ast.Echo(ast.Literal{ast.String}),
 		FalseBlock: &ast.IfStmt{
 			Condition:  ast.Literal{ast.Boolean},
-			TrueBlock:  ast.EchoStmt(ast.Literal{ast.String}),
+			TrueBlock:  ast.Echo(ast.Literal{ast.String}),
 			FalseBlock: ast.Block{},
 		},
 	}
@@ -94,6 +94,7 @@ func TestClass(t *testing.T) {
       }
       private function method2(TestClass $arg) {
         echo $arg;
+        return $arg;
       }
     }`
 	p := newParser(testStr)

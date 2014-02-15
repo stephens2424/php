@@ -1,5 +1,9 @@
 package ast
 
+import (
+	"fmt"
+)
+
 type Node interface{}
 
 type Identifier struct {
@@ -15,7 +19,9 @@ func NewIdentifier(name string) Identifier {
 	return Identifier{name, AnyType}
 }
 
-type Statement interface{}
+type Statement interface {
+	Node
+}
 type Expression interface {
 	EvaluatesTo() Type
 }
@@ -27,13 +33,34 @@ type OperatorExpression struct {
 	Operand2 Expression
 	Operand3 Expression
 	Type     Type
+	Operator string
+}
+
+func (o OperatorExpression) String() string {
+	if o.Operand2 == nil {
+		return fmt.Sprintf("(%s%v~%v)", o.Operand1, o.Operator, o.Type)
+	}
+	if o.Operand3 == nil {
+		return fmt.Sprintf("(%s %v %s~%v)", o.Operand1, o.Operator, o.Operand2, o.Type)
+	}
+	return fmt.Sprintf("(%s ? %s : %s~%v)", o.Operand1, o.Operand2, o.Operand3, o.Type)
 }
 
 func (o OperatorExpression) EvaluatesTo() Type {
 	return o.Type
 }
 
-type EchoStmt Expression
+func Echo(expr Expression) EchoStmt {
+	return EchoStmt{Expression: expr}
+}
+
+type EchoStmt struct {
+	Expression Expression
+}
+
+type ReturnStmt struct {
+	Expression
+}
 
 type AssignmentStmt struct {
 	Assignee Identifier

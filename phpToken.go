@@ -34,6 +34,7 @@ const (
 	itemBlockBegin
 	itemBlockEnd
 
+	itemReturn
 	itemFunctionCallBegin
 	itemFunctionCallEnd
 	itemArgumentType
@@ -97,6 +98,7 @@ var itemTypeMap = map[itemType]string{
 	itemBlockBegin:   "Block Begin",
 	itemBlockEnd:     "Block End",
 
+	itemReturn:            "Return",
 	itemFunctionCallBegin: "Function Call Begin",
 	itemFunctionCallEnd:   "Function Call End",
 	itemArgumentType:      "Function Argument Type",
@@ -156,6 +158,7 @@ var tokenMap = map[string]itemType{
 	"for":        itemFor,
 	"foreach":    itemForeach,
 	"function":   itemFunction,
+	"return":     itemReturn,
 	"{":          itemBlockBegin,
 	"}":          itemBlockEnd,
 	";":          itemStatementEnd,
