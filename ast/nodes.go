@@ -4,12 +4,34 @@ type Node interface{}
 
 type Identifier struct {
 	Name string
+	Type Type
+}
+
+func (i Identifier) EvaluatesTo() Type {
+	return i.Type
+}
+
+func NewIdentifier(name string) Identifier {
+	return Identifier{name, AnyType}
 }
 
 type Statement interface{}
-type Expression interface{}
+type Expression interface {
+	EvaluatesTo() Type
+}
 
-type UnknownTypeExpression struct{}
+const AnyType = String | Integer | Float | Boolean | Null | Resource | Array | Object
+
+type OperatorExpression struct {
+	Operand1 Expression
+	Operand2 Expression
+	Operand3 Expression
+	Type     Type
+}
+
+func (o OperatorExpression) EvaluatesTo() Type {
+	return o.Type
+}
 
 type EchoStmt Expression
 
@@ -25,6 +47,10 @@ type FunctionCallStmt struct {
 type FunctionCallExpression struct {
 	FunctionName string
 	Arguments    []Expression
+}
+
+func (f FunctionCallExpression) EvaluatesTo() Type {
+	return String | Integer | Float | Boolean | Null | Resource | Array | Object
 }
 
 type Block struct {
@@ -107,6 +133,10 @@ type CatchStmt struct {
 
 type Literal struct {
 	Type Type
+}
+
+func (l Literal) EvaluatesTo() Type {
+	return l.Type
 }
 
 type ForeachStmt struct {

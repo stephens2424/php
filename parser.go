@@ -113,35 +113,92 @@ func (p *parser) parseIf() *ast.IfStmt {
 	return n
 }
 
+/*
+
+Expression = Identifier |
+             Literal |
+             FunctionCall |
+             {Unary Operator} Expression |
+             OpenParen Expression CloseParen |
+             Expression {Unary Operator} |
+             Expression {Binary Operator} Expression |
+             Expression {Tertiary Operator 1} Expression {Tertiary Operator 2} Expression
+
+*/
 func (p *parser) parseExpression() (expr ast.Expression) {
-	expr = ast.UnknownTypeExpression{}
-TypeLoop:
-	for ; ; p.next() {
-		switch p.current.typ {
-		case itemStringLiteral:
-			expr = ast.Literal{ast.String}
-		case itemNumberLiteral:
-			expr = ast.Literal{ast.Float}
-		case itemTrueLiteral:
-			expr = ast.Literal{ast.Boolean}
-		case itemFalseLiteral:
-			expr = ast.Literal{ast.Boolean}
-		case itemIdentifier:
-		case itemOpenParen:
-			p.parenLevel += 1
-		case itemCloseParen:
-			if p.parenLevel == 0 {
-				break TypeLoop
-			}
-			p.parenLevel -= 1
-		case itemNonVariableIdentifier:
-			return p.parseFunctionCall()
-		default:
-			break TypeLoop
+	// check for a unary operation that begins with the operator
+	if p.current.typ == itemUnaryOperator {
+		return newUnaryOperation(p.current, p.parseExpression())
+	}
+	if p.current.typ == itemNegationOperator {
+		return newUnaryOperation(p.current, p.parseExpression())
+	}
+
+	// get the left hand side of the expression (could be the end of it)
+	switch p.current.typ {
+	case itemStringLiteral:
+		expr = ast.Literal{ast.String}
+	case itemNumberLiteral:
+		expr = ast.Literal{ast.Float} //need to do integers...
+	case itemBooleanLiteral:
+		expr = ast.Literal{ast.Boolean}
+	case itemIdentifier:
+		expr = ast.NewIdentifier(p.current.val)
+	case itemOpenParen:
+		expr = p.parseExpression()
+		p.expect(itemCloseParen)
+	case itemNonVariableIdentifier:
+		expr = p.parseFunctionCall()
+	}
+
+	// look for an operator
+	p.next()
+	switch p.current.typ {
+	case itemUnaryOperator:
+		return newUnaryOperation(p.current, expr)
+	case itemAdditionOperator:
+		return newBinaryOperation(p.current, expr, p.parseExpression())
+	case itemSubtractionOperator:
+		return newBinaryOperation(p.current, expr, p.parseExpression())
+	case itemMultOperator:
+		return newBinaryOperation(p.current, expr, p.parseExpression())
+	case itemComparisonOperator:
+		return newBinaryOperation(p.current, expr, p.parseExpression())
+	case itemConcatenationOperator:
+		return ast.OperatorExpression{
+			Operand1: expr,
+			Operand2: p.parseExpression(),
+			Type:     ast.String,
 		}
 	}
 	p.backup()
 	return expr
+}
+
+func newUnaryOperation(operator item, expr ast.Expression) ast.OperatorExpression {
+	t := ast.Numeric
+	if operator.val == "!" {
+		t = ast.Boolean
+	}
+	return ast.OperatorExpression{
+		Type:     t,
+		Operand1: expr,
+	}
+}
+
+func newBinaryOperation(operator item, expr1, expr2 ast.Expression) ast.OperatorExpression {
+	t := ast.Numeric
+	switch operator.typ {
+	case itemComparisonOperator:
+		t = ast.Boolean
+	case itemConcatenationOperator:
+		t = ast.String
+	}
+	return ast.OperatorExpression{
+		Type:     t,
+		Operand1: expr1,
+		Operand2: expr2,
+	}
 }
 
 func (p *parser) parseFunctionCall() ast.FunctionCallExpression {
@@ -174,7 +231,7 @@ func (p *parser) parseStmt() ast.Statement {
 		return p.parseBlock()
 	case itemIdentifier:
 		n := ast.AssignmentStmt{}
-		n.Assignee = ast.Identifier{p.current.val}
+		n.Assignee = ast.NewIdentifier(p.current.val)
 		p.expect(itemAssignmentOperator)
 		p.next()
 		n.Value = p.parseExpression()

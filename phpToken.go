@@ -64,28 +64,18 @@ const (
 
 	itemStringLiteral
 	itemNumberLiteral
-	itemTrueLiteral
-	itemFalseLiteral
+	itemBooleanLiteral
 
 	itemNonVariableIdentifier
 
 	itemAssignmentOperator
 	itemNegationOperator
-	itemEqualOperator
-	itemNotEqualOperator
-	itemTypesafeEqualOperator
-	itemTypesafeNotEqualOperator
-	itemNegativeOperator
 	itemAdditionOperator
 	itemSubtractionOperator
-	itemMultiplicationOperator
-	itemDivisionOperator
-	itemGreaterThanOperator
-	itemGreaterThanOrEqualToOperator
-	itemLessThanOperator
-	itemLessThanOrEqualToOperator
-	itemModulusOperator
+	itemMultOperator
 	itemConcatenationOperator
+	itemUnaryOperator
+	itemComparisonOperator
 )
 
 // itemTypeMap maps itemType to strings that may be used for debugging and error messages
@@ -133,28 +123,20 @@ var itemTypeMap = map[itemType]string{
 	itemPublic:    "Public",
 	itemInterface: "Interface",
 
-	itemStringLiteral: "sting-literal",
-	itemNumberLiteral: "number-literal",
-	itemTrueLiteral:   "true-literal",
-	itemFalseLiteral:  "false-literal",
+	itemStringLiteral:  "sting-literal",
+	itemNumberLiteral:  "number-literal",
+	itemBooleanLiteral: "bool-literal",
 
 	itemNonVariableIdentifier: "non-variable-identifier",
 
-	itemAssignmentOperator:           "=",
-	itemEqualOperator:                "==",
-	itemNotEqualOperator:             "!=",
-	itemTypesafeEqualOperator:        "===",
-	itemTypesafeNotEqualOperator:     "!==",
-	itemAdditionOperator:             "+",
-	itemSubtractionOperator:          "-",
-	itemMultiplicationOperator:       "*",
-	itemDivisionOperator:             "/",
-	itemGreaterThanOperator:          ">",
-	itemGreaterThanOrEqualToOperator: ">=",
-	itemLessThanOperator:             "<",
-	itemLessThanOrEqualToOperator:    "<=",
-	itemModulusOperator:              "%",
-	itemConcatenationOperator:        ".",
+	itemAssignmentOperator:    "=",
+	itemNegationOperator:      "!",
+	itemAdditionOperator:      "+",
+	itemSubtractionOperator:   "-",
+	itemMultOperator:          "*/%",
+	itemConcatenationOperator: ".",
+	itemUnaryOperator:         "++|--",
+	itemComparisonOperator:    "==<>",
 }
 
 // tokenMap maps source code string tokens to item types when strings can
@@ -181,23 +163,26 @@ var tokenMap = map[string]itemType{
 	"private":   itemPrivate,
 	"public":    itemPublic,
 	"protected": itemProtected,
-	"true":      itemTrueLiteral,
-	"false":     itemFalseLiteral,
+	"true":      itemBooleanLiteral,
+	"false":     itemBooleanLiteral,
 
+	"===": itemComparisonOperator,
+	"==":  itemComparisonOperator,
 	"=":   itemAssignmentOperator,
-	"-":   itemNegationOperator,
-	"==":  itemEqualOperator,
-	"!=":  itemNotEqualOperator,
-	"===": itemTypesafeEqualOperator,
-	"!==": itemTypesafeNotEqualOperator,
+	"!==": itemComparisonOperator,
+	"!=":  itemComparisonOperator,
+	"!":   itemNegationOperator,
+	"++":  itemUnaryOperator,
+	"--":  itemUnaryOperator,
 	"+":   itemAdditionOperator,
-	"*":   itemMultiplicationOperator,
-	"/":   itemDivisionOperator,
-	">":   itemGreaterThanOperator,
-	">=":  itemGreaterThanOrEqualToOperator,
-	"<":   itemLessThanOperator,
-	"<=":  itemLessThanOrEqualToOperator,
-	"%":   itemModulusOperator,
+	"-":   itemSubtractionOperator,
+	"*":   itemMultOperator,
+	"/":   itemMultOperator,
+	">=":  itemComparisonOperator,
+	">":   itemComparisonOperator,
+	"<=":  itemComparisonOperator,
+	"<":   itemComparisonOperator,
+	"%":   itemMultOperator,
 	".":   itemConcatenationOperator,
 }
 

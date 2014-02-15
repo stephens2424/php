@@ -11,6 +11,8 @@ const (
 	Resource
 	Array
 	Object
+
+	Numeric Type = Float | Integer
 )
 
 type KeyType Type
