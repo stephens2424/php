@@ -124,68 +124,6 @@ func (p *parser) parseIf() *ast.IfStmt {
 	return n
 }
 
-/*
-
-Expression = Identifier |
-             Literal |
-             FunctionCall |
-             {Unary Operator} Expression |
-             OpenParen Expression CloseParen |
-             Expression {Unary Operator} |
-             Expression {Binary Operator} Expression |
-             Expression {Tertiary Operator 1} Expression {Tertiary Operator 2} Expression
-
-*/
-func (p *parser) parseExpression() (expr ast.Expression) {
-	// check for a unary operation that begins with the operator
-	if p.current.typ == itemUnaryOperator {
-		return newUnaryOperation(p.current, p.parseExpression())
-	}
-	if p.current.typ == itemNegationOperator {
-		return newUnaryOperation(p.current, p.parseExpression())
-	}
-
-	// get the left hand side of the expression (could be the end of it)
-	switch p.current.typ {
-	case itemStringLiteral:
-		expr = ast.Literal{ast.String}
-	case itemNumberLiteral:
-		expr = ast.Literal{ast.Float} //need to do integers...
-	case itemBooleanLiteral:
-		expr = ast.Literal{ast.Boolean}
-	case itemIdentifier:
-		expr = ast.NewIdentifier(p.current.val)
-	case itemOpenParen:
-		expr = p.parseExpression()
-		p.expect(itemCloseParen)
-	case itemNonVariableIdentifier:
-		expr = p.parseFunctionCall()
-	}
-
-	// look for an operator
-	p.next()
-	switch op := p.current; p.current.typ {
-	case itemUnaryOperator:
-		return newUnaryOperation(op, expr)
-	case itemAdditionOperator:
-		return newBinaryOperation(op, expr, p.parseNextExpression())
-	case itemSubtractionOperator:
-		return newBinaryOperation(op, expr, p.parseNextExpression())
-	case itemMultOperator:
-		return newBinaryOperation(op, expr, p.parseNextExpression())
-	case itemComparisonOperator:
-		return newBinaryOperation(op, expr, p.parseNextExpression())
-	case itemConcatenationOperator:
-		return ast.OperatorExpression{
-			Operand1: expr,
-			Operand2: p.parseNextExpression(),
-			Type:     ast.String,
-		}
-	}
-	p.backup()
-	return expr
-}
-
 func (p *parser) parseNextExpression() ast.Expression {
 	p.next()
 	return p.parseExpression()
@@ -227,8 +165,8 @@ func (p *parser) parseFunctionCall() ast.FunctionCallExpression {
 	expr.Arguments = make([]ast.Expression, 0)
 	p.expect(itemOpenParen)
 	first := true
+	p.next()
 	for {
-		p.next()
 		if p.current.typ == itemCloseParen {
 			break
 		}
@@ -238,6 +176,7 @@ func (p *parser) parseFunctionCall() ast.FunctionCallExpression {
 			first = false
 		}
 		expr.Arguments = append(expr.Arguments, p.parseExpression())
+		p.next()
 	}
 	return expr
 }
@@ -265,7 +204,7 @@ func (p *parser) parseStmt() ast.Statement {
 	case itemIf:
 		return p.parseIf()
 	case itemNonVariableIdentifier:
-		stmt := p.parseExpression()
+		stmt := p.parseFunctionCall()
 		p.expect(itemStatementEnd)
 		return stmt
 	case itemClass:

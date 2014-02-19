@@ -122,3 +122,99 @@ func TestClass(t *testing.T) {
 		t.Fatalf("Class method did not correctly parse. Got:%s", parsedClass.Methods[0].Name)
 	}
 }
+
+func TestExpressionParsing(t *testing.T) {
+	p := newParser(`<? if (1 + 2 > 3)
+    echo "good"; `)
+	a := p.parse()
+	ifStmt := ast.IfStmt{
+		Condition: ast.OperatorExpression{
+			Operand1: ast.OperatorExpression{
+				Operand1: ast.Literal{ast.Float},
+				Operand2: ast.Literal{ast.Float},
+				Type:     ast.Numeric,
+				Operator: "+",
+			},
+			Operand2: ast.Literal{ast.Float},
+			Type:     ast.Boolean,
+			Operator: ">",
+		},
+		TrueBlock:  ast.Echo(ast.Literal{ast.String}),
+		FalseBlock: ast.Block{},
+	}
+	if len(a) != 1 {
+		t.Fatalf("If did not correctly parse")
+	}
+	parsedIf, ok := a[0].(*ast.IfStmt)
+	if !ok {
+		t.Fatalf("If did not correctly parse")
+	}
+	if !reflect.DeepEqual(*parsedIf, ifStmt) {
+		t.Fatalf("If did not correctly parse")
+	}
+
+	p = newParser(`<? if (4 + 5 * 6)
+    echo "bad";
+  `)
+	a = p.parse()
+	ifStmt = ast.IfStmt{
+		Condition: ast.OperatorExpression{
+			Operand2: ast.OperatorExpression{
+				Operand1: ast.Literal{ast.Float},
+				Operand2: ast.Literal{ast.Float},
+				Type:     ast.Numeric,
+				Operator: "*",
+			},
+			Operand1: ast.Literal{ast.Float},
+			Type:     ast.Numeric,
+			Operator: "+",
+		},
+		TrueBlock:  ast.Echo(ast.Literal{ast.String}),
+		FalseBlock: ast.Block{},
+	}
+	if len(a) != 1 {
+		t.Fatalf("If did not correctly parse")
+	}
+	parsedIf, ok = a[0].(*ast.IfStmt)
+	if !ok {
+		t.Fatalf("If did not correctly parse")
+	}
+	if !reflect.DeepEqual(*parsedIf, ifStmt) {
+		t.Fatalf("If did not correctly parse")
+	}
+
+	p = newParser(`<? if (1 > 2 * 3 + 4)
+    echo "good";
+  `)
+	a = p.parse()
+	ifStmt = ast.IfStmt{
+		Condition: ast.OperatorExpression{
+			Operand1: ast.Literal{ast.Float},
+			Operand2: ast.OperatorExpression{
+				Operand1: ast.OperatorExpression{
+					Operand1: ast.Literal{ast.Float},
+					Operand2: ast.Literal{ast.Float},
+					Type:     ast.Numeric,
+					Operator: "*",
+				},
+				Operand2: ast.Literal{ast.Float},
+				Operator: "+",
+				Type:     ast.Numeric,
+			},
+			Type:     ast.Boolean,
+			Operator: ">",
+		},
+		TrueBlock:  ast.Echo(ast.Literal{ast.String}),
+		FalseBlock: ast.Block{},
+	}
+	if len(a) != 1 {
+		t.Fatalf("If did not correctly parse")
+	}
+	parsedIf, ok = a[0].(*ast.IfStmt)
+	if !ok {
+		t.Fatalf("If did not correctly parse")
+	}
+	if !reflect.DeepEqual(*parsedIf, ifStmt) {
+		t.Fatalf("If did not correctly parse")
+	}
+}

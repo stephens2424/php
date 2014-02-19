@@ -64,6 +64,7 @@ const (
 	itemInterface
 	itemImplements
 	itemExtends
+	itemNewOperator
 
 	itemStringLiteral
 	itemNumberLiteral
@@ -121,13 +122,14 @@ var itemTypeMap = map[itemType]string{
 	itemCatch:   "catch",
 	itemFinally: "finally",
 
-	itemClass:      "Class",
-	itemPrivate:    "Private",
-	itemProtected:  "Protected",
-	itemPublic:     "Public",
-	itemInterface:  "Interface",
-	itemImplements: "implements",
-	itemExtends:    "extends",
+	itemClass:       "Class",
+	itemPrivate:     "Private",
+	itemProtected:   "Protected",
+	itemPublic:      "Public",
+	itemInterface:   "Interface",
+	itemImplements:  "implements",
+	itemExtends:     "extends",
+	itemNewOperator: "new",
 
 	itemStringLiteral:  "sting-literal",
 	itemNumberLiteral:  "number-literal",
@@ -152,6 +154,7 @@ var tokenMap = map[string]itemType{
 	"interface":  itemInterface,
 	"implements": itemImplements,
 	"extends":    itemExtends,
+	"new":        itemNewOperator,
 	"if":         itemIf,
 	"else":       itemElse,
 	"while":      itemWhile,

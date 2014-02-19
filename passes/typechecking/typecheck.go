@@ -16,8 +16,7 @@ func (w *Walker) Walk(node ast.Node) {
 			w.Walk(stmt)
 		}
 	case *ast.IfStmt:
-		fmt.Println(n.Condition)
-		fmt.Println(n.Condition.EvaluatesTo())
+		fmt.Println("parsed condition:", n.Condition)
 		if !n.Condition.EvaluatesTo().Contains(ast.Boolean) {
 			w.Errorf("If condition does not evaluate to boolean")
 		}
