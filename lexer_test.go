@@ -25,7 +25,7 @@ class MyClass {
 <? echo something(); ?>
 </html>`
 
-func assertNext(t *testing.T, l *lexer, typ itemType) item {
+func assertNext(t *testing.T, l *lexer, typ itemType) Item {
 	i := l.nextItem()
 	if i.typ != typ {
 		t.Fatal("Incorrect lexing. Expected:", typ, "Found:", i)
@@ -33,7 +33,7 @@ func assertNext(t *testing.T, l *lexer, typ itemType) item {
 	return i
 }
 
-func assertItem(t *testing.T, i item, expected string) {
+func assertItem(t *testing.T, i Item, expected string) {
 	if i.val != expected {
 		t.Fatal("Did not correctly parse item", i)
 	}
@@ -42,7 +42,7 @@ func assertItem(t *testing.T, i item, expected string) {
 func TestPHPLexer(t *testing.T) {
 	l := newLexer(testFile)
 
-	var i item
+	var i Item
 	i = assertNext(t, l, itemPHPBegin)
 
 	i = assertNext(t, l, itemIdentifier)

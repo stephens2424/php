@@ -6,7 +6,7 @@ import (
 	"strconv"
 )
 
-type item struct {
+type Item struct {
 	typ itemType
 	pos Location
 	val string
@@ -306,7 +306,7 @@ func (i itemType) String() string {
 	return itemTypeName
 }
 
-func (i item) String() string {
+func (i Item) String() string {
 	switch i.typ {
 	case itemEOF:
 		return "EOF"

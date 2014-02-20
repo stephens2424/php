@@ -116,7 +116,7 @@ func (p *parser) parseOperation(lhs ast.Expression) (expr ast.Expression) {
 	return p.parseOperation(expr)
 }
 
-func (p *parser) parseBinaryOperation(lhs ast.Expression, operator item) ast.Expression {
+func (p *parser) parseBinaryOperation(lhs ast.Expression, operator Item) ast.Expression {
 	p.next()
 	rhs := p.expressionize()
 	for {
@@ -133,11 +133,11 @@ func (p *parser) parseBinaryOperation(lhs ast.Expression, operator item) ast.Exp
 	return newBinaryOperation(operator, lhs, rhs)
 }
 
-func (p *parser) parseUnaryExpressionRight(operand ast.Expression, operator item) ast.Expression {
+func (p *parser) parseUnaryExpressionRight(operand ast.Expression, operator Item) ast.Expression {
 	return newUnaryOperation(operator, operand)
 }
 
-func (p *parser) parseUnaryExpressionLeft(operand ast.Expression, operator item) ast.Expression {
+func (p *parser) parseUnaryExpressionLeft(operand ast.Expression, operator Item) ast.Expression {
 	return newUnaryOperation(operator, operand)
 }
 

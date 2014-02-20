@@ -8,9 +8,9 @@ import (
 type parser struct {
 	lexer *lexer
 
-	previous []item
+	previous []Item
 	idx      int
-	current  item
+	current  Item
 	errors   []error
 
 	parenLevel int
@@ -129,7 +129,7 @@ func (p *parser) parseNextExpression() ast.Expression {
 	return p.parseExpression()
 }
 
-func newUnaryOperation(operator item, expr ast.Expression) ast.OperatorExpression {
+func newUnaryOperation(operator Item, expr ast.Expression) ast.OperatorExpression {
 	t := ast.Numeric
 	if operator.val == "!" {
 		t = ast.Boolean
@@ -140,7 +140,7 @@ func newUnaryOperation(operator item, expr ast.Expression) ast.OperatorExpressio
 	}
 }
 
-func newBinaryOperation(operator item, expr1, expr2 ast.Expression) ast.OperatorExpression {
+func newBinaryOperation(operator Item, expr1, expr2 ast.Expression) ast.OperatorExpression {
 	t := ast.Numeric
 	switch operator.typ {
 	case itemComparisonOperator, itemAndOperator, itemOrOperator, itemWrittenAndOperator, itemWrittenOrOperator, itemWrittenXorOperator:

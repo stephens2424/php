@@ -12,13 +12,13 @@ type lexer struct {
 	start   int
 	width   int
 	input   string
-	items   chan item // channel of scanned items.
+	items   chan Item // channel of scanned items.
 }
 
 func newLexer(input string) *lexer {
 	l := &lexer{
 		input: input,
-		items: make(chan item),
+		items: make(chan Item),
 	}
 	go l.run()
 	return l
@@ -38,16 +38,16 @@ func (l *lexer) run() {
 }
 
 func (l *lexer) emit(t itemType) {
-	i := item{t, Location{Pos: l.start}, l.input[l.start:l.pos]}
+	i := Item{t, Location{Pos: l.start}, l.input[l.start:l.pos]}
 	l.items <- i
 	l.start = l.pos
 }
 
 // nextItem returns the next item from the input.
-func (l *lexer) nextItem() item {
-	item := <-l.items
-	l.lastPos = item.pos.Pos
-	return item
+func (l *lexer) nextItem() Item {
+	Item := <-l.items
+	l.lastPos = Item.pos.Pos
+	return Item
 }
 
 // peek returns but does not consume the next rune in the input.
@@ -103,7 +103,7 @@ func (l *lexer) skipSpace() {
 }
 
 func (l *lexer) errorf(format string, args ...interface{}) stateFn {
-	l.items <- item{itemError, Location{Pos: l.start}, fmt.Sprintf(format, args...)}
+	l.items <- Item{itemError, Location{Pos: l.start}, fmt.Sprintf(format, args...)}
 	return nil
 }
 
