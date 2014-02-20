@@ -84,8 +84,6 @@ const (
 
 	itemAndOperator
 	itemOrOperator
-	itemTertiaryOperator1
-	itemTertiaryOperator2
 	itemWrittenAndOperator
 	itemWrittenXorOperator
 	itemWrittenOrOperator
@@ -93,8 +91,16 @@ const (
 	itemObjectOperator
 	itemScopeResolutionOperator
 
-	itemBitwiseOperator
 	itemCastOperator
+
+	itemArrayAccessOperator
+	itemBitwiseShiftOperator
+	itemEqualityOperator
+	itemAmpersandOperator
+	itemBitwiseXorOperator
+	itemBitwiseOrOperator
+	itemTernaryOperator1
+	itemTernaryOperator2
 )
 
 // itemTypeMap maps itemType to strings that may be used for debugging and error messages
@@ -164,14 +170,20 @@ var itemTypeMap = map[itemType]string{
 	itemScopeResolutionOperator: "::",
 	itemInstanceofOperator:      "instanceof",
 
-	itemBitwiseOperator:    "<<>>",
 	itemOrOperator:         "||",
-	itemTertiaryOperator1:  "?",
-	itemTertiaryOperator2:  ":",
 	itemWrittenAndOperator: "and",
 	itemWrittenXorOperator: "xor",
 	itemWrittenOrOperator:  "or",
 	itemCastOperator:       "(type)",
+
+	itemArrayAccessOperator:  "[]",
+	itemBitwiseShiftOperator: "<<>>",
+	itemEqualityOperator:     "!===",
+	itemAmpersandOperator:    "&",
+	itemBitwiseXorOperator:   "^",
+	itemBitwiseOrOperator:    "|",
+	itemTernaryOperator1:     "?",
+	itemTernaryOperator2:     ":",
 }
 
 // tokenMap maps source code string tokens to item types when strings can
@@ -256,16 +268,19 @@ var tokenMap = map[string]itemType{
 
 	"&&":  itemAndOperator,
 	"||":  itemOrOperator,
-	"&":   itemBitwiseOperator,
-	"^":   itemBitwiseOperator,
-	"|":   itemBitwiseOperator,
-	"<<":  itemBitwiseOperator,
-	">>":  itemBitwiseOperator,
-	"?":   itemTertiaryOperator1,
-	":":   itemTertiaryOperator2,
+	"&":   itemAmpersandOperator,
+	"^":   itemBitwiseXorOperator,
+	"|":   itemBitwiseOrOperator,
+	"<<":  itemBitwiseShiftOperator,
+	">>":  itemBitwiseShiftOperator,
+	"?":   itemTernaryOperator1,
+	":":   itemTernaryOperator2,
 	"and": itemWrittenAndOperator,
 	"xor": itemWrittenXorOperator,
 	"or":  itemWrittenOrOperator,
+
+	"[": itemArrayAccessOperator,
+	"]": itemArrayAccessOperator,
 }
 
 func (i itemType) String() string {

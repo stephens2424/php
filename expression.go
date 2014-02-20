@@ -42,14 +42,31 @@ left  , many uses
 */
 
 var operatorPrecedence = map[itemType]int{
-	itemUnaryOperator:         8,
-	itemNegationOperator:      7,
-	itemMultOperator:          6,
-	itemAdditionOperator:      5,
-	itemSubtractionOperator:   4,
-	itemConcatenationOperator: 3,
-	itemComparisonOperator:    2,
-	itemAssignmentOperator:    1,
+	itemArrayAccessOperator:   19,
+	itemUnaryOperator:         18,
+	itemCastOperator:          18,
+	itemInstanceofOperator:    17,
+	itemNegationOperator:      16,
+	itemMultOperator:          15,
+	itemAdditionOperator:      14,
+	itemSubtractionOperator:   14,
+	itemConcatenationOperator: 14,
+
+	itemBitwiseShiftOperator: 13,
+	itemComparisonOperator:   12,
+	itemEqualityOperator:     11,
+
+	itemAmpersandOperator:  10,
+	itemBitwiseXorOperator: 9,
+	itemBitwiseOrOperator:  8,
+	itemAndOperator:        7,
+	itemOrOperator:         6,
+	itemTernaryOperator1:   5,
+	itemTernaryOperator2:   5,
+	itemAssignmentOperator: 4,
+	itemWrittenAndOperator: 3,
+	itemWrittenXorOperator: 2,
+	itemWrittenOrOperator:  1,
 }
 
 func (p *parser) parseExpression() (expr ast.Expression) {

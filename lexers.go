@@ -46,8 +46,16 @@ func lexPHPBegin(l *lexer) stateFn {
 func lexPHP(l *lexer) stateFn {
 	l.skipSpace()
 
-	if r := l.peek(); r == '-' || unicode.IsDigit(r) {
+	if r := l.peek(); unicode.IsDigit(r) {
 		return lexNumberLiteral
+	} else if r == '-' {
+		l.next()
+		if unicode.IsDigit(l.peek()) {
+			l.backup()
+			return lexNumberLiteral
+		}
+		l.emit(itemSubtractionOperator)
+		return lexPHP
 	}
 
 	if strings.HasPrefix(l.input[l.pos:], "?>") {

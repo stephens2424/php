@@ -217,4 +217,12 @@ func TestExpressionParsing(t *testing.T) {
 	if !reflect.DeepEqual(*parsedIf, ifStmt) {
 		t.Fatalf("If did not correctly parse")
 	}
+
+	p = newParser(`<? if (1 > 2 * 3 + 4 - 2)
+    echo "good";
+  `)
+	a = p.parse()
+	if len(a) != 1 {
+		t.Fatalf("If did not correctly parse")
+	}
 }
