@@ -38,7 +38,7 @@ func (l *lexer) run() {
 }
 
 func (l *lexer) emit(t itemType) {
-	i := item{t, l.start, l.input[l.start:l.pos]}
+	i := item{t, Location{Pos: l.start}, l.input[l.start:l.pos]}
 	l.items <- i
 	l.start = l.pos
 }
@@ -46,7 +46,7 @@ func (l *lexer) emit(t itemType) {
 // nextItem returns the next item from the input.
 func (l *lexer) nextItem() item {
 	item := <-l.items
-	l.lastPos = item.pos
+	l.lastPos = item.pos.Pos
 	return item
 }
 
@@ -103,7 +103,7 @@ func (l *lexer) skipSpace() {
 }
 
 func (l *lexer) errorf(format string, args ...interface{}) stateFn {
-	l.items <- item{itemError, l.start, fmt.Sprintf(format, args...)}
+	l.items <- item{itemError, Location{Pos: l.start}, fmt.Sprintf(format, args...)}
 	return nil
 }
 

@@ -8,13 +8,14 @@ import (
 
 type item struct {
 	typ itemType
-	pos int
+	pos Location
 	val string
 }
 
-type location struct {
-	Line, Col int64
-	File      string
+type Location struct {
+	Pos  int
+	Line int
+	File string
 }
 
 type itemType int
