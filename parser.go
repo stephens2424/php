@@ -87,14 +87,14 @@ func (p *parser) backup() {
 	p.current = p.previous[p.idx]
 }
 
-func (p *parser) expect(i itemType) {
+func (p *parser) expect(i ItemType) {
 	p.next()
 	if p.current.typ != i {
 		p.expected(i)
 	}
 }
 
-func (p *parser) expected(i itemType) {
+func (p *parser) expected(i ItemType) {
 	p.errorf("Found %s, expected %s", p.current, i)
 }
 

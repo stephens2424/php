@@ -41,7 +41,7 @@ left  , many uses
 
 */
 
-var operatorPrecedence = map[itemType]int{
+var operatorPrecedence = map[ItemType]int{
 	itemArrayAccessOperator:   19,
 	itemUnaryOperator:         18,
 	itemCastOperator:          18,

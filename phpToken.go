@@ -7,7 +7,7 @@ import (
 )
 
 type Item struct {
-	typ itemType
+	typ ItemType
 	pos Location
 	val string
 }
@@ -18,10 +18,10 @@ type Location struct {
 	File string
 }
 
-type itemType int
+type ItemType int
 
 const (
-	itemHTML itemType = iota
+	itemHTML ItemType = iota
 	itemPHP
 	itemPHPBegin
 	itemPHPEnd
@@ -106,7 +106,7 @@ const (
 )
 
 // itemTypeMap maps itemType to strings that may be used for debugging and error messages
-var itemTypeMap = map[itemType]string{
+var itemTypeMap = map[ItemType]string{
 	itemHTML:         "HTML",
 	itemPHP:          "PHP",
 	itemPHPBegin:     "PHP Begin",
@@ -203,7 +203,7 @@ func init() {
 
 // tokenMap maps source code string tokens to item types when strings can
 // be represented directly. Not all item types will be represented here.
-var tokenMap = map[string]itemType{
+var tokenMap = map[string]ItemType{
 	"class":      itemClass,
 	"interface":  itemInterface,
 	"implements": itemImplements,
@@ -298,7 +298,7 @@ var tokenMap = map[string]itemType{
 	"]": itemArrayAccessOperator,
 }
 
-func (i itemType) String() string {
+func (i ItemType) String() string {
 	itemTypeName, ok := itemTypeMap[i]
 	if !ok {
 		return strconv.Itoa(int(i))

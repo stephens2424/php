@@ -37,7 +37,7 @@ func (l *lexer) run() {
 	close(l.items) // No more tokens will be delivered.
 }
 
-func (l *lexer) emit(t itemType) {
+func (l *lexer) emit(t ItemType) {
 	i := Item{t, Location{Pos: l.start}, l.input[l.start:l.pos]}
 	l.items <- i
 	l.start = l.pos

@@ -25,7 +25,7 @@ class MyClass {
 <? echo something(); ?>
 </html>`
 
-func assertNext(t *testing.T, l *lexer, typ itemType) Item {
+func assertNext(t *testing.T, l *lexer, typ ItemType) Item {
 	i := l.nextItem()
 	if i.typ != typ {
 		t.Fatal("Incorrect lexing. Expected:", typ, "Found:", i)
