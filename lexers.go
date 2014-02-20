@@ -50,6 +50,10 @@ func lexPHP(l *lexer) stateFn {
 		return lexNumberLiteral
 	}
 
+	if strings.HasPrefix(l.input[l.pos:], "?>") {
+		return lexPHPEnd
+	}
+
 	for token, item := range tokenMap {
 		if strings.HasPrefix(l.input[l.pos:], token) {
 			l.pos += len(token)
@@ -60,10 +64,6 @@ func lexPHP(l *lexer) stateFn {
 
 	if strings.HasPrefix(l.input[l.pos:], "$") {
 		return lexIdentifier
-	}
-
-	if strings.HasPrefix(l.input[l.pos:], "?>") {
-		return lexPHPEnd
 	}
 
 	if l.next() == eof {

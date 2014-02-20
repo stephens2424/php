@@ -80,6 +80,21 @@ const (
 	itemConcatenationOperator
 	itemUnaryOperator
 	itemComparisonOperator
+	itemInstanceofOperator
+
+	itemAndOperator
+	itemOrOperator
+	itemTertiaryOperator1
+	itemTertiaryOperator2
+	itemWrittenAndOperator
+	itemWrittenXorOperator
+	itemWrittenOrOperator
+
+	itemObjectOperator
+	itemScopeResolutionOperator
+
+	itemBitwiseOperator
+	itemCastOperator
 )
 
 // itemTypeMap maps itemType to strings that may be used for debugging and error messages
@@ -137,14 +152,26 @@ var itemTypeMap = map[itemType]string{
 
 	itemNonVariableIdentifier: "non-variable-identifier",
 
-	itemAssignmentOperator:    "=",
-	itemNegationOperator:      "!",
-	itemAdditionOperator:      "+",
-	itemSubtractionOperator:   "-",
-	itemMultOperator:          "*/%",
-	itemConcatenationOperator: ".",
-	itemUnaryOperator:         "++|--",
-	itemComparisonOperator:    "==<>",
+	itemAssignmentOperator:      "=",
+	itemNegationOperator:        "!",
+	itemAdditionOperator:        "+",
+	itemSubtractionOperator:     "-",
+	itemMultOperator:            "*/%",
+	itemConcatenationOperator:   ".",
+	itemUnaryOperator:           "++|--",
+	itemComparisonOperator:      "==<>",
+	itemObjectOperator:          "->",
+	itemScopeResolutionOperator: "::",
+	itemInstanceofOperator:      "instanceof",
+
+	itemBitwiseOperator:    "<<>>",
+	itemOrOperator:         "||",
+	itemTertiaryOperator1:  "?",
+	itemTertiaryOperator2:  ":",
+	itemWrittenAndOperator: "and",
+	itemWrittenXorOperator: "xor",
+	itemWrittenOrOperator:  "or",
+	itemCastOperator:       "(type)",
 }
 
 // tokenMap maps source code string tokens to item types when strings can
@@ -177,12 +204,42 @@ var tokenMap = map[string]itemType{
 	"protected":  itemProtected,
 	"true":       itemBooleanLiteral,
 	"false":      itemBooleanLiteral,
+	"instanceof": itemInstanceofOperator,
+
+	"(int)":     itemCastOperator,
+	"(integer)": itemCastOperator,
+	"(bool)":    itemCastOperator,
+	"(boolean)": itemCastOperator,
+	"(float)":   itemCastOperator,
+	"(double)":  itemCastOperator,
+	"(real)":    itemCastOperator,
+	"(string)":  itemCastOperator,
+	"(array)":   itemCastOperator,
+	"(object)":  itemCastOperator,
+	"(unset)":   itemCastOperator,
+
+	"->": itemObjectOperator,
+	"::": itemScopeResolutionOperator,
+
+	"+=":  itemAssignmentOperator,
+	"-=":  itemAssignmentOperator,
+	"*=":  itemAssignmentOperator,
+	"/=":  itemAssignmentOperator,
+	".=":  itemAssignmentOperator,
+	"%=":  itemAssignmentOperator,
+	"&=":  itemAssignmentOperator,
+	"|=":  itemAssignmentOperator,
+	"^=":  itemAssignmentOperator,
+	"<<=": itemAssignmentOperator,
+	">>=": itemAssignmentOperator,
+	"=>":  itemAssignmentOperator,
 
 	"===": itemComparisonOperator,
 	"==":  itemComparisonOperator,
 	"=":   itemAssignmentOperator,
 	"!==": itemComparisonOperator,
 	"!=":  itemComparisonOperator,
+	"<>":  itemComparisonOperator,
 	"!":   itemNegationOperator,
 	"++":  itemUnaryOperator,
 	"--":  itemUnaryOperator,
@@ -196,6 +253,19 @@ var tokenMap = map[string]itemType{
 	"<":   itemComparisonOperator,
 	"%":   itemMultOperator,
 	".":   itemConcatenationOperator,
+
+	"&&":  itemAndOperator,
+	"||":  itemOrOperator,
+	"&":   itemBitwiseOperator,
+	"^":   itemBitwiseOperator,
+	"|":   itemBitwiseOperator,
+	"<<":  itemBitwiseOperator,
+	">>":  itemBitwiseOperator,
+	"?":   itemTertiaryOperator1,
+	":":   itemTertiaryOperator2,
+	"and": itemWrittenAndOperator,
+	"xor": itemWrittenXorOperator,
+	"or":  itemWrittenOrOperator,
 }
 
 func (i itemType) String() string {
