@@ -143,10 +143,12 @@ func newUnaryOperation(operator item, expr ast.Expression) ast.OperatorExpressio
 func newBinaryOperation(operator item, expr1, expr2 ast.Expression) ast.OperatorExpression {
 	t := ast.Numeric
 	switch operator.typ {
-	case itemComparisonOperator:
+	case itemComparisonOperator, itemAndOperator, itemOrOperator, itemWrittenAndOperator, itemWrittenOrOperator, itemWrittenXorOperator:
 		t = ast.Boolean
 	case itemConcatenationOperator:
 		t = ast.String
+	case itemAmpersandOperator, itemBitwiseXorOperator, itemBitwiseOrOperator, itemBitwiseShiftOperator:
+		t = ast.AnyType
 	}
 	return ast.OperatorExpression{
 		Type:     t,

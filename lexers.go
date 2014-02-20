@@ -62,7 +62,8 @@ func lexPHP(l *lexer) stateFn {
 		return lexPHPEnd
 	}
 
-	for token, item := range tokenMap {
+	for _, token := range tokenList {
+		item := tokenMap[token]
 		if strings.HasPrefix(l.input[l.pos:], token) {
 			l.pos += len(token)
 			l.emit(item)
@@ -155,7 +156,6 @@ func lexCondition(l *lexer) stateFn {
 	return lexPHP
 }
 
-const operators = "!*%<>-=+/."
 const alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 const digits = "0123456789"
 const underscore = "_"

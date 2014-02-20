@@ -2,6 +2,7 @@ package php
 
 import (
 	"fmt"
+	"sort"
 	"strconv"
 )
 
@@ -170,10 +171,11 @@ var itemTypeMap = map[itemType]string{
 	itemScopeResolutionOperator: "::",
 	itemInstanceofOperator:      "instanceof",
 
+	itemAndOperator:        "&&",
 	itemOrOperator:         "||",
-	itemWrittenAndOperator: "and",
-	itemWrittenXorOperator: "xor",
-	itemWrittenOrOperator:  "or",
+	itemWrittenAndOperator: "logical-and",
+	itemWrittenXorOperator: "logical-xor",
+	itemWrittenOrOperator:  "logical-or",
 	itemCastOperator:       "(type)",
 
 	itemArrayAccessOperator:  "[]",
@@ -184,6 +186,18 @@ var itemTypeMap = map[itemType]string{
 	itemBitwiseOrOperator:    "|",
 	itemTernaryOperator1:     "?",
 	itemTernaryOperator2:     ":",
+}
+
+var tokenList []string
+
+func init() {
+	tokenList = make([]string, len(tokenMap))
+	i := 0
+	for token := range tokenMap {
+		tokenList[i] = token
+		i += 1
+	}
+	sort.Sort(sort.Reverse(sort.StringSlice(tokenList)))
 }
 
 // tokenMap maps source code string tokens to item types when strings can

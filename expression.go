@@ -104,7 +104,7 @@ func (p *parser) parseOperation(lhs ast.Expression) (expr ast.Expression) {
 	switch p.current.typ {
 	case itemUnaryOperator:
 		expr = p.parseUnaryExpressionLeft(lhs, p.current)
-	case itemAdditionOperator, itemSubtractionOperator, itemConcatenationOperator, itemComparisonOperator, itemMultOperator:
+	case itemAdditionOperator, itemSubtractionOperator, itemConcatenationOperator, itemComparisonOperator, itemMultOperator, itemAndOperator, itemOrOperator, itemAmpersandOperator, itemBitwiseXorOperator, itemBitwiseOrOperator, itemBitwiseShiftOperator, itemWrittenAndOperator, itemWrittenXorOperator, itemWrittenOrOperator:
 		expr = p.parseBinaryOperation(lhs, p.current)
 	case itemCloseParen:
 		p.parenLevel -= 1

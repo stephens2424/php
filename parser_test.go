@@ -218,9 +218,10 @@ func TestExpressionParsing(t *testing.T) {
 		t.Fatalf("If did not correctly parse")
 	}
 
-	p = newParser(`<? if (1 > 2 * 3 + 4 - 2)
+	p = newParser(`<? if (1 > 2 * 3 + 4 - 2 & 3 && 4 ^ 8  or 14)
     echo "good";
   `)
+	p.debug = true
 	a = p.parse()
 	if len(a) != 1 {
 		t.Fatalf("If did not correctly parse")
