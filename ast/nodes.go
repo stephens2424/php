@@ -4,30 +4,43 @@ import (
 	"fmt"
 )
 
-type Node interface{}
+// Node encapsulates every AST node.
+type Node interface {
 
+// An Identifier is specifically a variable in code.
 type Identifier struct {
 	Name string
 	Type Type
 }
 
+// EvaluatesTo returns the known type of the variable.
 func (i Identifier) EvaluatesTo() Type {
 	return i.Type
 }
 
+// NewIdentifier intializes an identifier node with its type set to AnyType.
 func NewIdentifier(name string) Identifier {
 	return Identifier{name, AnyType}
 }
 
+// A statement is an executable piece of code. It may be as simple as
+// a function call or a variable assignment. It also includes things like
+// "if".
 type Statement interface {
 	Node
 }
+
+// An Expression is a snippet of code that evaluates to a single value when run
+// and does not represent a program instruction.
 type Expression interface {
 	EvaluatesTo() Type
 }
 
+// AnyType is a bitmask of all the valid types.
 const AnyType = String | Integer | Float | Boolean | Null | Resource | Array | Object
 
+// OperatorExpression is an expression that applies an operator to one, two, or three
+// operands. The operator determines how many operands it should contain.
 type OperatorExpression struct {
 	Operand1 Expression
 	Operand2 Expression
@@ -50,18 +63,23 @@ func (o OperatorExpression) EvaluatesTo() Type {
 	return o.Type
 }
 
+// Echo returns a new echo statement.
 func Echo(expr Expression) EchoStmt {
 	return EchoStmt{Expression: expr}
 }
 
+// Echo represents an echo statement. It may be either a literal statement
+// or it may be from data outside PHP-mode, such as "here" in: <? not here ?> here <? not here ?>
 type EchoStmt struct {
 	Expression Expression
 }
 
+// ReturnStmt represents a function return.
 type ReturnStmt struct {
 	Expression
 }
 
+// AssignmentStmt represents an assignment.
 type AssignmentStmt struct {
 	Assignee Identifier
 	Value    Expression
