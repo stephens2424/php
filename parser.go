@@ -63,7 +63,7 @@ TokenLoop:
 func (p *parser) parseNode() ast.Node {
 	switch p.current.typ {
 	case itemHTML:
-		return ast.Echo(ast.Literal{ast.String})
+		return ast.Echo(ast.Literal{Type: ast.String})
 	case itemPHPBegin:
 		return nil
 	case itemPHPEnd:
@@ -213,7 +213,7 @@ func (p *parser) parseStmt() ast.Statement {
 		return p.parseClass()
 	case itemReturn:
 		p.next()
-		stmt := ast.ReturnStmt{p.parseExpression()}
+		stmt := ast.ReturnStmt{Expression: p.parseExpression()}
 		p.expect(itemStatementEnd)
 		return stmt
 	default:

@@ -6,9 +6,22 @@ import (
 
 // Node encapsulates every AST node.
 type Node interface {
+	Position() Position
+}
+
+type Position int
+
+type baseNode struct {
+	pos int
+}
+
+func (b baseNode) Position() Position {
+	return Position(b.pos)
+}
 
 // An Identifier is specifically a variable in code.
 type Identifier struct {
+	baseNode
 	Name string
 	Type Type
 }
@@ -20,7 +33,7 @@ func (i Identifier) EvaluatesTo() Type {
 
 // NewIdentifier intializes an identifier node with its type set to AnyType.
 func NewIdentifier(name string) Identifier {
-	return Identifier{name, AnyType}
+	return Identifier{Name: name, Type: AnyType}
 }
 
 // A statement is an executable piece of code. It may be as simple as
@@ -33,6 +46,7 @@ type Statement interface {
 // An Expression is a snippet of code that evaluates to a single value when run
 // and does not represent a program instruction.
 type Expression interface {
+	Node
 	EvaluatesTo() Type
 }
 
@@ -42,6 +56,7 @@ const AnyType = String | Integer | Float | Boolean | Null | Resource | Array | O
 // OperatorExpression is an expression that applies an operator to one, two, or three
 // operands. The operator determines how many operands it should contain.
 type OperatorExpression struct {
+	baseNode
 	Operand1 Expression
 	Operand2 Expression
 	Operand3 Expression
@@ -71,6 +86,7 @@ func Echo(expr Expression) EchoStmt {
 // Echo represents an echo statement. It may be either a literal statement
 // or it may be from data outside PHP-mode, such as "here" in: <? not here ?> here <? not here ?>
 type EchoStmt struct {
+	baseNode
 	Expression Expression
 }
 
@@ -81,8 +97,10 @@ type ReturnStmt struct {
 
 // AssignmentStmt represents an assignment.
 type AssignmentStmt struct {
+	baseNode
 	Assignee Identifier
 	Value    Expression
+	Operator string
 }
 
 type FunctionCallStmt struct {
@@ -90,6 +108,7 @@ type FunctionCallStmt struct {
 }
 
 type FunctionCallExpression struct {
+	baseNode
 	FunctionName string
 	Arguments    []Expression
 }
@@ -99,26 +118,31 @@ func (f FunctionCallExpression) EvaluatesTo() Type {
 }
 
 type Block struct {
+	baseNode
 	Statements []Statement
 	Scope      Scope
 }
 
 type FunctionStmt struct {
+	baseNode
 	FunctionDefinition
 	Body Block
 }
 
 type FunctionDefinition struct {
+	baseNode
 	Name      string
 	Arguments []FunctionArgument
 }
 
 type FunctionArgument struct {
+	baseNode
 	TypeHint   string
 	Identifier Identifier
 }
 
 type Class struct {
+	baseNode
 	Name       string
 	Extends    *Class
 	Implements []*Interface
@@ -126,15 +150,18 @@ type Class struct {
 }
 
 type Constant struct {
+	baseNode
 	Identifier
 	Value interface{}
 }
 
 type Interface struct {
+	baseNode
 	Methods []FunctionDefinition
 }
 
 type Method struct {
+	baseNode
 	*FunctionStmt
 	Visibility Visibility
 }
@@ -148,12 +175,14 @@ const (
 )
 
 type IfStmt struct {
+	baseNode
 	Condition  Expression
 	TrueBlock  Statement
 	FalseBlock Statement
 }
 
 type ForStmt struct {
+	baseNode
 	Initialization Expression
 	Termination    Expression
 	Iteration      Expression
@@ -161,27 +190,32 @@ type ForStmt struct {
 }
 
 type WhileStmt struct {
+	baseNode
 	Termination Expression
 	LoopBlock   Block
 }
 
 type DoWhileStmt struct {
+	baseNode
 	Termination Expression
 	LoopBlock   Block
 }
 
 type TryStmt struct {
+	baseNode
 	TryBlock     *Block
 	FinallyBlock *Block
 	CatchStmts   []*CatchStmt
 }
 
 type CatchStmt struct {
+	baseNode
 	CatchBlock Block
 	CatchType  Type
 }
 
 type Literal struct {
+	baseNode
 	Type Type
 }
 
@@ -190,6 +224,7 @@ func (l Literal) EvaluatesTo() Type {
 }
 
 type ForeachStmt struct {
+	baseNode
 	Source    Expression
 	Key       *Identifier
 	Value     Identifier

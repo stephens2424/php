@@ -146,11 +146,11 @@ func (p *parser) expressionize() ast.Expression {
 	case itemIdentifier:
 		return ast.NewIdentifier(p.current.val)
 	case itemStringLiteral:
-		return ast.Literal{ast.String}
+		return ast.Literal{Type: ast.String}
 	case itemBooleanLiteral:
-		return ast.Literal{ast.Boolean}
+		return ast.Literal{Type: ast.Boolean}
 	case itemNumberLiteral:
-		return ast.Literal{ast.Float}
+		return ast.Literal{Type: ast.Float}
 	case itemNonVariableIdentifier:
 		return p.parseFunctionCall()
 	case itemOpenParen:

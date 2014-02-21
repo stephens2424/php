@@ -10,7 +10,7 @@ func TestPHPParserHW(t *testing.T) {
 	testStr := `hello world`
 	p := newParser(testStr)
 	a := p.parse()
-	if len(a) != 1 || a[0] != ast.Echo(ast.Literal{ast.String}) {
+	if len(a) != 1 || a[0] != ast.Echo(ast.Literal{Type: ast.String}) {
 		t.Fatalf("Hello world did not correctly parse")
 	}
 }
@@ -20,7 +20,7 @@ func TestPHPParserHWPHP(t *testing.T) {
     echo "hello world";`
 	p := newParser(testStr)
 	a := p.parse()
-	if len(a) != 1 || a[0] != ast.Echo(ast.Literal{ast.String}) {
+	if len(a) != 1 || !reflect.DeepEqual(a[0], ast.Echo(ast.Literal{Type: ast.String})) {
 		t.Fatalf("Hello world did not correctly parse")
 	}
 }
@@ -34,11 +34,11 @@ func TestIf(t *testing.T) {
 	p := newParser(testStr)
 	a := p.parse()
 	ifStmtOne := ast.IfStmt{
-		Condition: ast.Literal{ast.Boolean},
-		TrueBlock: ast.Echo(ast.Literal{ast.String}),
+		Condition: ast.Literal{Type: ast.Boolean},
+		TrueBlock: ast.Echo(ast.Literal{Type: ast.String}),
 		FalseBlock: &ast.IfStmt{
-			Condition:  ast.Literal{ast.Boolean},
-			TrueBlock:  ast.Echo(ast.Literal{ast.String}),
+			Condition:  ast.Literal{Type: ast.Boolean},
+			TrueBlock:  ast.Echo(ast.Literal{Type: ast.String}),
 			FalseBlock: ast.Block{},
 		},
 	}
@@ -130,16 +130,16 @@ func TestExpressionParsing(t *testing.T) {
 	ifStmt := ast.IfStmt{
 		Condition: ast.OperatorExpression{
 			Operand1: ast.OperatorExpression{
-				Operand1: ast.Literal{ast.Float},
-				Operand2: ast.Literal{ast.Float},
+				Operand1: ast.Literal{Type: ast.Float},
+				Operand2: ast.Literal{Type: ast.Float},
 				Type:     ast.Numeric,
 				Operator: "+",
 			},
-			Operand2: ast.Literal{ast.Float},
+			Operand2: ast.Literal{Type: ast.Float},
 			Type:     ast.Boolean,
 			Operator: ">",
 		},
-		TrueBlock:  ast.Echo(ast.Literal{ast.String}),
+		TrueBlock:  ast.Echo(ast.Literal{Type: ast.String}),
 		FalseBlock: ast.Block{},
 	}
 	if len(a) != 1 {
@@ -160,16 +160,16 @@ func TestExpressionParsing(t *testing.T) {
 	ifStmt = ast.IfStmt{
 		Condition: ast.OperatorExpression{
 			Operand2: ast.OperatorExpression{
-				Operand1: ast.Literal{ast.Float},
-				Operand2: ast.Literal{ast.Float},
+				Operand1: ast.Literal{Type: ast.Float},
+				Operand2: ast.Literal{Type: ast.Float},
 				Type:     ast.Numeric,
 				Operator: "*",
 			},
-			Operand1: ast.Literal{ast.Float},
+			Operand1: ast.Literal{Type: ast.Float},
 			Type:     ast.Numeric,
 			Operator: "+",
 		},
-		TrueBlock:  ast.Echo(ast.Literal{ast.String}),
+		TrueBlock:  ast.Echo(ast.Literal{Type: ast.String}),
 		FalseBlock: ast.Block{},
 	}
 	if len(a) != 1 {
@@ -189,22 +189,22 @@ func TestExpressionParsing(t *testing.T) {
 	a = p.parse()
 	ifStmt = ast.IfStmt{
 		Condition: ast.OperatorExpression{
-			Operand1: ast.Literal{ast.Float},
+			Operand1: ast.Literal{Type: ast.Float},
 			Operand2: ast.OperatorExpression{
 				Operand1: ast.OperatorExpression{
-					Operand1: ast.Literal{ast.Float},
-					Operand2: ast.Literal{ast.Float},
+					Operand1: ast.Literal{Type: ast.Float},
+					Operand2: ast.Literal{Type: ast.Float},
 					Type:     ast.Numeric,
 					Operator: "*",
 				},
-				Operand2: ast.Literal{ast.Float},
+				Operand2: ast.Literal{Type: ast.Float},
 				Operator: "+",
 				Type:     ast.Numeric,
 			},
 			Type:     ast.Boolean,
 			Operator: ">",
 		},
-		TrueBlock:  ast.Echo(ast.Literal{ast.String}),
+		TrueBlock:  ast.Echo(ast.Literal{Type: ast.String}),
 		FalseBlock: ast.Block{},
 	}
 	if len(a) != 1 {
