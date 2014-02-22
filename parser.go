@@ -36,9 +36,13 @@ func (p *parser) Parse() []ast.Node {
 
 func (p *parser) parse() []ast.Node {
 	defer func() {
-		if !p.debug {
-			if r := recover(); r != nil {
-				fmt.Println(p.errors)
+		if len(p.errors) > 0 {
+			fmt.Println(p.errors)
+		}
+		if r := recover(); r != nil {
+			if p.debug {
+				panic(r)
+			} else {
 				fmt.Println(r)
 			}
 		}

@@ -224,7 +224,7 @@ func (l Literal) EvaluatesTo() Type {
 }
 
 type ForeachStmt struct {
-	baseNode
+	BaseNode
 	Source    Expression
 	Key       *Identifier
 	Value     Identifier
