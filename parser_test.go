@@ -344,4 +344,3 @@ func TestProperty(t *testing.T) {
 		t.Fatalf("Property did not correctly parse")
 	}
 }
-}

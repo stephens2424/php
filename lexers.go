@@ -94,8 +94,8 @@ func lexPHP(l *lexer) stateFn {
 		return lexDoubleQuotedStringLiteral
 	}
 
-	l.accept(alphabet + underscore)
-	l.acceptRun(alphabet + underscore + digits)
+	l.accept(alphabet + underscore + "\\")
+	l.acceptRun(alphabet + underscore + digits + "\\")
 	l.emit(itemNonVariableIdentifier)
 	return lexPHP
 }
