@@ -293,35 +293,41 @@ func (p *parser) parseClass() ast.Class {
 		p.backup()
 	}
 	p.expect(itemBlockBegin)
-	return ast.Class{
-		Name:    name,
-		Methods: p.parseMethods(),
-	}
+	return p.parseClassFields(ast.Class{Name: name})
 }
 
-func (p *parser) parseMethods() (methods []ast.Method) {
-	methods = make([]ast.Method, 0)
+func (p *parser) parseClassFields(c ast.Class) ast.Class {
+	c.Methods = make([]ast.Method, 0)
+	c.Properties = make([]ast.Property, 0)
 	p.next()
+	var vis ast.Visibility
 	for p.current.typ != itemBlockEnd {
-		m := ast.Method{}
 		switch p.current.typ {
 		case itemPrivate:
-			m.Visibility = ast.Private
-			p.expect(itemFunction)
+			vis = ast.Private
 		case itemProtected:
-			m.Visibility = ast.Protected
-			p.expect(itemFunction)
+			vis = ast.Protected
 		case itemPublic:
-			m.Visibility = ast.Public
-			p.expect(itemFunction)
-		case itemFunction:
-			m.Visibility = ast.Public
+			vis = ast.Public
 		default:
-			p.expected(itemFunction)
+			vis = ast.Public
+			p.backup()
 		}
-		m.FunctionStmt = p.parseFunctionStmt()
-		methods = append(methods, m)
+		p.next()
+		switch p.current.typ {
+		case itemFunction:
+			c.Methods = append(c.Methods, ast.Method{
+				Visibility:   vis,
+				FunctionStmt: p.parseFunctionStmt(),
+			})
+		case itemIdentifier:
+			c.Properties = append(c.Properties, ast.Property{
+				Visibility: vis,
+				Name:       p.current.val,
+			})
+		default:
+		}
 		p.next()
 	}
-	return methods
+	return c
 }

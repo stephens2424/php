@@ -95,6 +95,7 @@ func TestFunction(t *testing.T) {
 func TestClass(t *testing.T) {
 	testStr := `<?php
     class TestClass {
+      public $myProp;
       public function method1($arg) {
         echo $arg;
       }
@@ -126,6 +127,9 @@ func TestClass(t *testing.T) {
 	}
 	if parsedClass.Methods[1].Arguments[0].TypeHint != "TestClass" {
 		t.Fatalf("Class method did not correctly parse. Got:%s", parsedClass.Methods[0].Name)
+	}
+	if len(parsedClass.Properties) != 1 {
+		t.Fatal("Class properties did not correctly parse.")
 	}
 }
 
@@ -299,5 +303,16 @@ func TestMethodCall(t *testing.T) {
 	a := p.parse()
 	if len(a) == 0 {
 		t.Fatalf("Method call did not correctly parse")
+	}
+}
+
+func TestProperty(t *testing.T) {
+	testStr := `<?
+  $res = $var->do;`
+	p := newParser(testStr)
+	p.debug = true
+	a := p.parse()
+	if len(a) == 0 {
+		t.Fatalf("Property did not correctly parse")
 	}
 }
