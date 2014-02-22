@@ -167,6 +167,16 @@ type Property struct {
 	Visibility Visibility
 }
 
+type PropertyExpression struct {
+	BaseNode
+	Receiver Identifier
+	Name     string
+}
+
+func (p PropertyExpression) EvaluatesTo() Type {
+	return AnyType
+}
+
 type Method struct {
 	BaseNode
 	*FunctionStmt
@@ -176,11 +186,6 @@ type Method struct {
 type MethodCallExpression struct {
 	Receiver Identifier
 	*FunctionCallExpression
-}
-
-type PropertyExpression struct {
-	Receiver Identifier
-	Name     string
 }
 
 type Visibility int

@@ -161,6 +161,10 @@ func (p *parser) expressionize() ast.Expression {
 				}
 				return expr
 			}
+			return &ast.PropertyExpression{
+				Receiver: ident,
+				Name:     p.current.val,
+			}
 		}
 		return ident
 	case itemStringLiteral:

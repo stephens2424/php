@@ -304,15 +304,44 @@ func TestMethodCall(t *testing.T) {
 	if len(a) == 0 {
 		t.Fatalf("Method call did not correctly parse")
 	}
+	tree := ast.AssignmentStmt{
+		Assignee: ast.NewIdentifier("$res"),
+		Operator: "=",
+		Value: &ast.MethodCallExpression{
+			Receiver: ast.NewIdentifier("$var"),
+			FunctionCallExpression: &ast.FunctionCallExpression{
+				FunctionName: "do",
+				Arguments:    make([]ast.Expression, 0),
+			},
+		},
+	}
+	if !reflect.DeepEqual(a[0], tree) {
+		fmt.Printf("Found:    %+v\n", a[0])
+		fmt.Printf("Expected: %+v\n", tree)
+		t.Fatalf("Method call did not correctly parse")
+	}
 }
 
 func TestProperty(t *testing.T) {
 	testStr := `<?
   $res = $var->do;`
 	p := newParser(testStr)
-	p.debug = true
 	a := p.parse()
 	if len(a) == 0 {
 		t.Fatalf("Property did not correctly parse")
 	}
+	tree := ast.AssignmentStmt{
+		Assignee: ast.NewIdentifier("$res"),
+		Operator: "=",
+		Value: &ast.PropertyExpression{
+			Receiver: ast.NewIdentifier("$var"),
+			Name:     "do",
+		},
+	}
+	if !reflect.DeepEqual(a[0], tree) {
+		fmt.Printf("Found:    %+v\n", a[0])
+		fmt.Printf("Expected: %+v\n", tree)
+		t.Fatalf("Property did not correctly parse")
+	}
+}
 }
