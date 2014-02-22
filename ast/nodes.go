@@ -230,3 +230,18 @@ type ForeachStmt struct {
 	Value     Identifier
 	LoopBlock Block
 }
+
+type ArrayExpression struct {
+	BaseNode
+	ArrayType
+	Pairs []ArrayPair
+}
+
+type ArrayPair struct {
+	Key   Expression
+	Value Expression
+}
+
+func (a ArrayExpression) EvaluatesTo() Type {
+	return Array
+}

@@ -74,6 +74,8 @@ func (p *parser) parseExpression() (expr ast.Expression) {
 	case itemUnaryOperator:
 		op := p.current
 		expr = p.parseUnaryExpressionRight(p.parseNextExpression(), op)
+	case itemArray:
+		return p.parseArrayDeclaration()
 	case itemIdentifier, itemNonVariableIdentifier, itemStringLiteral, itemNumberLiteral, itemBooleanLiteral:
 		expr = p.parseOperation(p.expressionize())
 	case itemOpenParen:
@@ -81,7 +83,7 @@ func (p *parser) parseExpression() (expr ast.Expression) {
 		p.next()
 		expr = p.parseExpression()
 	default:
-		p.errorf("Expected expression")
+		p.errorf("Expected expression. Found %s", p.current)
 		return nil
 	}
 	// if the last item was a close paren, that close wasn't part of the expression
@@ -156,4 +158,36 @@ func (p *parser) expressionize() ast.Expression {
 	}
 	// error?
 	return nil
+}
+
+func (p *parser) parseArrayDeclaration() ast.Expression {
+	pairs := make([]ast.ArrayPair, 0)
+	p.expect(itemOpenParen)
+	var key, val ast.Expression
+ArrayLoop:
+	for {
+		p.next()
+		switch p.current.typ {
+		case itemArrayKeyOperator:
+			if val == nil {
+				p.errorf("expected array key before =>.")
+				return nil
+			}
+			key = val
+			p.next()
+			val = p.parseExpression()
+		case itemCloseParen:
+			if val != nil {
+				pairs = append(pairs, ast.ArrayPair{key, val})
+			}
+			break ArrayLoop
+		case itemArgumentSeparator:
+			pairs = append(pairs, ast.ArrayPair{key, val})
+			key = nil
+			val = nil
+		default:
+			val = p.parseExpression()
+		}
+	}
+	return &ast.ArrayExpression{Pairs: pairs}
 }

@@ -1,6 +1,7 @@
 package php
 
 import (
+	"fmt"
 	"reflect"
 	"testing"
 
@@ -226,5 +227,62 @@ func TestExpressionParsing(t *testing.T) {
 	a = p.parse()
 	if len(a) != 1 {
 		t.Fatalf("If did not correctly parse")
+	}
+}
+
+func TestArray(t *testing.T) {
+	testStr := `<?
+  $var = array("one", "two", "three");`
+	p := newParser(testStr)
+	p.debug = true
+	a := p.parse()
+	if len(a) == 0 {
+		t.Fatalf("Array did not correctly parse")
+	}
+	tree := ast.AssignmentStmt{
+		Assignee: ast.NewIdentifier("$var"),
+		Operator: "=",
+		Value: &ast.ArrayExpression{
+			ast.BaseNode{},
+			ast.ArrayType{},
+			[]ast.ArrayPair{
+				{nil, ast.Literal{Type: ast.String}},
+				{nil, ast.Literal{Type: ast.String}},
+				{nil, ast.Literal{Type: ast.String}},
+			},
+		},
+	}
+	if !reflect.DeepEqual(a[0], tree) {
+		fmt.Printf("Found:    %+v\n", a[0])
+		fmt.Printf("Expected: %+v\n", tree)
+		t.Fatalf("Array did not correctly parse")
+	}
+}
+
+func TestArrayKeys(t *testing.T) {
+	testStr := `<?
+  $var = array(1 => "one", 2 => "two", 3 => "three");`
+	p := newParser(testStr)
+	a := p.parse()
+	if len(a) == 0 {
+		t.Fatalf("Array did not correctly parse")
+	}
+	tree := ast.AssignmentStmt{
+		Assignee: ast.NewIdentifier("$var"),
+		Operator: "=",
+		Value: &ast.ArrayExpression{
+			ast.BaseNode{},
+			ast.ArrayType{},
+			[]ast.ArrayPair{
+				{ast.Literal{Type: ast.Float}, ast.Literal{Type: ast.String}},
+				{ast.Literal{Type: ast.Float}, ast.Literal{Type: ast.String}},
+				{ast.Literal{Type: ast.Float}, ast.Literal{Type: ast.String}},
+			},
+		},
+	}
+	if !reflect.DeepEqual(a[0], tree) {
+		fmt.Printf("Found:    %+v\n", a[0])
+		fmt.Printf("Expected: %+v\n", tree)
+		t.Fatalf("Array did not correctly parse")
 	}
 }

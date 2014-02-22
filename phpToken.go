@@ -95,6 +95,8 @@ const (
 
 	itemCastOperator
 
+	itemArray
+	itemArrayKeyOperator
 	itemArrayAccessOperator
 	itemBitwiseShiftOperator
 	itemEqualityOperator
@@ -179,6 +181,8 @@ var itemTypeMap = map[ItemType]string{
 	itemWrittenOrOperator:  "logical-or",
 	itemCastOperator:       "(type)",
 
+	itemArray:                "array",
+	itemArrayKeyOperator:     "=>",
 	itemArrayAccessOperator:  "[]",
 	itemBitwiseShiftOperator: "<<>>",
 	itemEqualityOperator:     "!===",
@@ -232,6 +236,7 @@ var tokenMap = map[string]ItemType{
 	"true":       itemBooleanLiteral,
 	"false":      itemBooleanLiteral,
 	"instanceof": itemInstanceofOperator,
+	"array":      itemArray,
 
 	"(int)":     itemCastOperator,
 	"(integer)": itemCastOperator,
@@ -259,7 +264,7 @@ var tokenMap = map[string]ItemType{
 	"^=":  itemAssignmentOperator,
 	"<<=": itemAssignmentOperator,
 	">>=": itemAssignmentOperator,
-	"=>":  itemAssignmentOperator,
+	"=>":  itemArrayKeyOperator,
 
 	"===": itemComparisonOperator,
 	"==":  itemComparisonOperator,
