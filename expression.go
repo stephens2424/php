@@ -77,7 +77,7 @@ func (p *parser) parseExpression() (expr ast.Expression) {
 	case itemArray:
 		return p.parseArrayDeclaration()
 	case itemIdentifier, itemNonVariableIdentifier, itemStringLiteral, itemNumberLiteral, itemBooleanLiteral:
-		expr = p.parseOperation(p.expressionize())
+		expr = p.parseOperation(originalParenLev, p.expressionize())
 	case itemOpenParen:
 		p.parenLevel += 1
 		p.next()
@@ -86,39 +86,35 @@ func (p *parser) parseExpression() (expr ast.Expression) {
 		p.errorf("Expected expression. Found %s", p.current)
 		return nil
 	}
-	// if the last item was a close paren, that close wasn't part of the expression
-	// reset the parenLevel to not include it and backup the parser
-	_, isFC := expr.(*ast.FunctionCallExpression)
-	_, isMC := expr.(*ast.MethodCallExpression)
-	if p.current.typ == itemCloseParen && !isFC && !isMC {
-		p.backup()
-		p.parenLevel += 1
-	}
 	if p.parenLevel != originalParenLev {
-		p.errorf("unbalanced parens: %d", p.parenLevel)
+		p.errorf("unbalanced parens: %d prev: %d", p.parenLevel, originalParenLev)
 		return nil
 	}
 	return
 }
 
-func (p *parser) parseOperation(lhs ast.Expression) (expr ast.Expression) {
+func (p *parser) parseOperation(originalParenLevel int, lhs ast.Expression) (expr ast.Expression) {
 	p.next()
 	switch p.current.typ {
 	case itemUnaryOperator:
 		expr = p.parseUnaryExpressionLeft(lhs, p.current)
 	case itemAdditionOperator, itemSubtractionOperator, itemConcatenationOperator, itemComparisonOperator, itemMultOperator, itemAndOperator, itemOrOperator, itemAmpersandOperator, itemBitwiseXorOperator, itemBitwiseOrOperator, itemBitwiseShiftOperator, itemWrittenAndOperator, itemWrittenXorOperator, itemWrittenOrOperator:
-		expr = p.parseBinaryOperation(lhs, p.current)
+		expr = p.parseBinaryOperation(lhs, p.current, originalParenLevel)
 	case itemCloseParen:
+		if p.parenLevel <= originalParenLevel {
+			p.backup()
+			return lhs
+		}
 		p.parenLevel -= 1
-		return p.parseOperation(lhs)
+		return p.parseOperation(originalParenLevel, lhs)
 	default:
 		p.backup()
 		return lhs
 	}
-	return p.parseOperation(expr)
+	return p.parseOperation(originalParenLevel, expr)
 }
 
-func (p *parser) parseBinaryOperation(lhs ast.Expression, operator Item) ast.Expression {
+func (p *parser) parseBinaryOperation(lhs ast.Expression, operator Item, originalParenLevel int) ast.Expression {
 	p.next()
 	rhs := p.expressionize()
 	for {
@@ -127,7 +123,7 @@ func (p *parser) parseBinaryOperation(lhs ast.Expression, operator Item) ast.Exp
 		p.backup()
 		nextOperatorPrecedence, ok := operatorPrecedence[nextOperator.typ]
 		if ok && nextOperatorPrecedence > operatorPrecedence[operator.typ] {
-			rhs = p.parseOperation(rhs)
+			rhs = p.parseOperation(originalParenLevel, rhs)
 		} else {
 			break
 		}
