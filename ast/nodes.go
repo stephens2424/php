@@ -11,17 +11,17 @@ type Node interface {
 
 type Position int
 
-type baseNode struct {
+type BaseNode struct {
 	pos int
 }
 
-func (b baseNode) Position() Position {
+func (b BaseNode) Position() Position {
 	return Position(b.pos)
 }
 
 // An Identifier is specifically a variable in code.
 type Identifier struct {
-	baseNode
+	BaseNode
 	Name string
 	Type Type
 }
@@ -56,7 +56,7 @@ const AnyType = String | Integer | Float | Boolean | Null | Resource | Array | O
 // OperatorExpression is an expression that applies an operator to one, two, or three
 // operands. The operator determines how many operands it should contain.
 type OperatorExpression struct {
-	baseNode
+	BaseNode
 	Operand1 Expression
 	Operand2 Expression
 	Operand3 Expression
@@ -86,7 +86,7 @@ func Echo(expr Expression) EchoStmt {
 // Echo represents an echo statement. It may be either a literal statement
 // or it may be from data outside PHP-mode, such as "here" in: <? not here ?> here <? not here ?>
 type EchoStmt struct {
-	baseNode
+	BaseNode
 	Expression Expression
 }
 
@@ -97,7 +97,7 @@ type ReturnStmt struct {
 
 // AssignmentStmt represents an assignment.
 type AssignmentStmt struct {
-	baseNode
+	BaseNode
 	Assignee Identifier
 	Value    Expression
 	Operator string
@@ -108,7 +108,7 @@ type FunctionCallStmt struct {
 }
 
 type FunctionCallExpression struct {
-	baseNode
+	BaseNode
 	FunctionName string
 	Arguments    []Expression
 }
@@ -118,31 +118,31 @@ func (f FunctionCallExpression) EvaluatesTo() Type {
 }
 
 type Block struct {
-	baseNode
+	BaseNode
 	Statements []Statement
 	Scope      Scope
 }
 
 type FunctionStmt struct {
-	baseNode
+	BaseNode
 	FunctionDefinition
 	Body Block
 }
 
 type FunctionDefinition struct {
-	baseNode
+	BaseNode
 	Name      string
 	Arguments []FunctionArgument
 }
 
 type FunctionArgument struct {
-	baseNode
+	BaseNode
 	TypeHint   string
 	Identifier Identifier
 }
 
 type Class struct {
-	baseNode
+	BaseNode
 	Name       string
 	Extends    *Class
 	Implements []*Interface
@@ -150,18 +150,18 @@ type Class struct {
 }
 
 type Constant struct {
-	baseNode
+	BaseNode
 	Identifier
 	Value interface{}
 }
 
 type Interface struct {
-	baseNode
+	BaseNode
 	Methods []FunctionDefinition
 }
 
 type Method struct {
-	baseNode
+	BaseNode
 	*FunctionStmt
 	Visibility Visibility
 }
@@ -175,14 +175,14 @@ const (
 )
 
 type IfStmt struct {
-	baseNode
+	BaseNode
 	Condition  Expression
 	TrueBlock  Statement
 	FalseBlock Statement
 }
 
 type ForStmt struct {
-	baseNode
+	BaseNode
 	Initialization Expression
 	Termination    Expression
 	Iteration      Expression
@@ -190,32 +190,32 @@ type ForStmt struct {
 }
 
 type WhileStmt struct {
-	baseNode
+	BaseNode
 	Termination Expression
 	LoopBlock   Block
 }
 
 type DoWhileStmt struct {
-	baseNode
+	BaseNode
 	Termination Expression
 	LoopBlock   Block
 }
 
 type TryStmt struct {
-	baseNode
+	BaseNode
 	TryBlock     *Block
 	FinallyBlock *Block
 	CatchStmts   []*CatchStmt
 }
 
 type CatchStmt struct {
-	baseNode
+	BaseNode
 	CatchBlock Block
 	CatchType  Type
 }
 
 type Literal struct {
-	baseNode
+	BaseNode
 	Type Type
 }
 

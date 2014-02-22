@@ -1,8 +1,6 @@
 package php
 
-import (
-	"stephensearles.com/php/ast"
-)
+import "stephensearles.com/php/ast"
 
 /*
 
