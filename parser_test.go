@@ -72,7 +72,7 @@ func TestFunction(t *testing.T) {
     function TestFn($arg) {
       echo $arg;
     }
-    $var = TestFn("world");`
+    $var = TestFn("world", 0);`
 	p := newParser(testStr)
 	a := p.parse()
 	if len(a) != 2 {

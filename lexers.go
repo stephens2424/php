@@ -68,10 +68,15 @@ func lexPHP(l *lexer) stateFn {
 	}
 
 	for _, token := range tokenList {
-		Item := tokenMap[token]
+		item := tokenMap[token]
 		if strings.HasPrefix(l.input[l.pos:], token) {
 			l.pos += len(token)
-			l.emit(Item)
+			if isKeyword(item) && l.accept(alphabet+underscore+digits) {
+				l.backup()
+				l.pos -= len(token)
+				break
+			}
+			l.emit(item)
 			return lexPHP
 		}
 	}

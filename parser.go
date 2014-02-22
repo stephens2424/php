@@ -186,7 +186,9 @@ func (p *parser) parseFunctionCall() *ast.FunctionCallExpression {
 			break
 		}
 		if !first {
+			p.backup()
 			p.expect(itemArgumentSeparator)
+			p.next()
 		} else {
 			first = false
 		}

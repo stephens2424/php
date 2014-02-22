@@ -111,3 +111,38 @@ func (l *lexer) errorf(format string, args ...interface{}) stateFn {
 func isSpace(r rune) bool {
 	return r == ' ' || r == '\t' || r == '\n'
 }
+
+func isKeyword(i ItemType) bool {
+	is, ok := keywordMap[i]
+	return is && ok
+}
+
+var keywordMap = map[ItemType]bool{
+	itemFunction: true,
+
+	itemReturn: true,
+	itemEcho:   true,
+
+	itemIf:      true,
+	itemElse:    true,
+	itemElseIf:  true,
+	itemFor:     true,
+	itemForeach: true,
+	itemWhile:   true,
+	itemDo:      true,
+
+	itemTry:     true,
+	itemCatch:   true,
+	itemFinally: true,
+
+	itemClass:       true,
+	itemPrivate:     true,
+	itemProtected:   true,
+	itemPublic:      true,
+	itemInterface:   true,
+	itemImplements:  true,
+	itemExtends:     true,
+	itemNewOperator: true,
+
+	itemInstanceofOperator: true,
+}
