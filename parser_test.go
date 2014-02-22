@@ -2,8 +2,9 @@ package php
 
 import (
 	"reflect"
-	"stephensearles.com/php/ast"
 	"testing"
+
+	"stephensearles.com/php/ast"
 )
 
 func TestPHPParserHW(t *testing.T) {

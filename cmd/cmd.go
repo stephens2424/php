@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+
 	"stephensearles.com/php"
 	"stephensearles.com/php/passes/typechecking"
 )
