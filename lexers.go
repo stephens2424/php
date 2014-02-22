@@ -54,6 +54,11 @@ func lexPHP(l *lexer) stateFn {
 			l.backup()
 			return lexNumberLiteral
 		}
+		if l.peek() == '>' {
+			l.next()
+			l.emit(itemObjectOperator)
+			return lexPHP
+		}
 		l.emit(itemSubtractionOperator)
 		return lexPHP
 	}

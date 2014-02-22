@@ -92,6 +92,13 @@ func (p *parser) backup() {
 	p.current = p.previous[p.idx]
 }
 
+func (p *parser) peek() (i Item) {
+	p.next()
+	i = p.current
+	p.backup()
+	return
+}
+
 func (p *parser) expect(i ItemType) {
 	p.next()
 	if p.current.typ != i {
@@ -112,6 +119,7 @@ func (p *parser) errorf(str string, args ...interface{}) {
 
 func (p *parser) parseIf() *ast.IfStmt {
 	p.expect(itemOpenParen)
+	p.parenLevel += 1
 	n := &ast.IfStmt{}
 	p.next()
 	n.Condition = p.parseExpression()
@@ -163,8 +171,8 @@ func newBinaryOperation(operator Item, expr1, expr2 ast.Expression) ast.Operator
 	}
 }
 
-func (p *parser) parseFunctionCall() ast.FunctionCallExpression {
-	expr := ast.FunctionCallExpression{}
+func (p *parser) parseFunctionCall() *ast.FunctionCallExpression {
+	expr := &ast.FunctionCallExpression{}
 	if p.current.typ != itemNonVariableIdentifier {
 		p.expected(itemNonVariableIdentifier)
 	}
@@ -197,6 +205,7 @@ func (p *parser) parseStmt() ast.Statement {
 		n := ast.AssignmentStmt{}
 		n.Assignee = ast.NewIdentifier(p.current.val)
 		p.expect(itemAssignmentOperator)
+		n.Operator = p.current.val
 		p.next()
 		n.Value = p.parseExpression()
 		p.expect(itemStatementEnd)

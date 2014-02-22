@@ -166,6 +166,11 @@ type Method struct {
 	Visibility Visibility
 }
 
+type MethodCallExpression struct {
+	Receiver Identifier
+	*FunctionCallExpression
+}
+
 type Visibility int
 
 const (

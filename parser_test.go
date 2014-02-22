@@ -72,7 +72,7 @@ func TestFunction(t *testing.T) {
     function TestFn($arg) {
       echo $arg;
     }
-    TestFn("world");`
+    $var = TestFn("world");`
 	p := newParser(testStr)
 	a := p.parse()
 	if len(a) != 2 {
@@ -82,7 +82,11 @@ func TestFunction(t *testing.T) {
 	if !ok {
 		t.Fatalf("FunctionStmt did not correctly parse")
 	}
-	_, ok = a[1].(ast.FunctionCallExpression)
+	assign, ok := a[1].(ast.AssignmentStmt)
+	if !ok {
+		t.Fatalf("FunctionCall did not correctly parse")
+	}
+	_, ok = assign.Value.(*ast.FunctionCallExpression)
 	if !ok {
 		t.Fatalf("FunctionCall did not correctly parse")
 	}
@@ -284,5 +288,16 @@ func TestArrayKeys(t *testing.T) {
 		fmt.Printf("Found:    %+v\n", a[0])
 		fmt.Printf("Expected: %+v\n", tree)
 		t.Fatalf("Array did not correctly parse")
+	}
+}
+
+func TestMethodCall(t *testing.T) {
+	testStr := `<?
+  $res = $var->do();`
+	p := newParser(testStr)
+	p.debug = true
+	a := p.parse()
+	if len(a) == 0 {
+		t.Fatalf("Method call did not correctly parse")
 	}
 }

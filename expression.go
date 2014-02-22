@@ -88,9 +88,11 @@ func (p *parser) parseExpression() (expr ast.Expression) {
 	}
 	// if the last item was a close paren, that close wasn't part of the expression
 	// reset the parenLevel to not include it and backup the parser
-	if p.current.typ == itemCloseParen {
-		p.parenLevel += 1
+	_, isFC := expr.(*ast.FunctionCallExpression)
+	_, isMC := expr.(*ast.MethodCallExpression)
+	if p.current.typ == itemCloseParen && !isFC && !isMC {
 		p.backup()
+		p.parenLevel += 1
 	}
 	if p.parenLevel != originalParenLev {
 		p.errorf("unbalanced parens: %d", p.parenLevel)
@@ -141,10 +143,26 @@ func (p *parser) parseUnaryExpressionLeft(operand ast.Expression, operator Item)
 	return newUnaryOperation(operator, operand)
 }
 
+// expressionize takes the current token and returns it as the simplest
+// expression for that token. That means an expression with no operators
+// except for the object operator.
 func (p *parser) expressionize() ast.Expression {
 	switch p.current.typ {
 	case itemIdentifier:
-		return ast.NewIdentifier(p.current.val)
+		ident := ast.NewIdentifier(p.current.val)
+		switch pk := p.peek(); pk.typ {
+		case itemObjectOperator:
+			p.expect(itemObjectOperator)
+			p.expect(itemNonVariableIdentifier)
+			if pk = p.peek(); pk.typ == itemOpenParen {
+				expr := &ast.MethodCallExpression{
+					Receiver:               ident,
+					FunctionCallExpression: p.parseFunctionCall(),
+				}
+				return expr
+			}
+		}
+		return ident
 	case itemStringLiteral:
 		return ast.Literal{Type: ast.String}
 	case itemBooleanLiteral:
