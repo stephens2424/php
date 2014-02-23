@@ -26,6 +26,10 @@ type Identifier struct {
 	Type Type
 }
 
+type GlobalIdentifier struct {
+	*Identifier
+}
+
 func (i Identifier) AssignableType() Type {
 	return i.Type
 }

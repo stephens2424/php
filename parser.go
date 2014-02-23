@@ -222,6 +222,11 @@ func (p *parser) parseStmt() ast.Statement {
 	case itemBlockBegin:
 		p.backup()
 		return p.parseBlock()
+	case itemGlobal:
+		p.next()
+		ident := ast.GlobalIdentifier{ast.NewIdentifier(p.current.val)}
+		p.expect(itemStatementEnd)
+		return ident
 	case itemIdentifier:
 		switch p.peek().typ {
 		case itemUnaryOperator:

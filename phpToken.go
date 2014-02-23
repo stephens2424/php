@@ -35,6 +35,7 @@ const (
 	itemIdentifier
 	itemBlockBegin
 	itemBlockEnd
+	itemGlobal
 
 	itemComment
 
@@ -134,6 +135,7 @@ var itemTypeMap = map[ItemType]string{
 	itemBlockBegin:   "Block Begin",
 	itemBlockEnd:     "Block End",
 
+	itemGlobal:            "global",
 	itemReturn:            "Return",
 	itemFunctionCallBegin: "Function Call Begin",
 	itemFunctionCallEnd:   "Function Call End",
@@ -259,6 +261,7 @@ var tokenMap = map[string]ItemType{
 	"true":           itemBooleanLiteral,
 	"false":          itemBooleanLiteral,
 	"instanceof":     itemInstanceofOperator,
+	"global":         itemGlobal,
 	"array":          itemArray,
 	"exit":           itemExit,
 	"include":        itemInclude,
