@@ -271,8 +271,11 @@ func (p *parser) parseStmt() ast.Statement {
 		return p.parseClass()
 	case itemReturn:
 		p.next()
-		stmt := ast.ReturnStmt{Expression: p.parseExpression()}
-		p.expect(itemStatementEnd)
+		stmt := ast.ReturnStmt{}
+		if p.current.typ != itemStatementEnd {
+			stmt.Expression = p.parseExpression()
+			p.expect(itemStatementEnd)
+		}
 		return stmt
 	case itemThrow:
 		stmt := ast.ThrowStmt{Expression: p.parseNextExpression()}
