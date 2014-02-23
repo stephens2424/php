@@ -318,7 +318,8 @@ type TryStmt struct {
 type CatchStmt struct {
 	BaseNode
 	CatchBlock Block
-	CatchType  Type
+	CatchType  string
+	CatchVar   *Identifier
 }
 
 type Literal struct {

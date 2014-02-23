@@ -308,6 +308,24 @@ func (p *parser) parseStmt() ast.Statement {
 		stmt := ast.IncludeStmt{Expression: p.parseNextExpression()}
 		p.expectStmtEnd()
 		return stmt
+	case itemTry:
+		stmt := &ast.TryStmt{}
+		blk := p.parseBlock()
+		stmt.TryBlock = &blk
+		p.expect(itemCatch)
+		for p.current.typ == itemCatch {
+			caught := &ast.CatchStmt{}
+			p.expect(itemOpenParen)
+			p.expect(itemNonVariableIdentifier)
+			caught.CatchType = p.current.val
+			p.expect(itemIdentifier)
+			caught.CatchVar = ast.NewIdentifier(p.current.val)
+			p.expect(itemCloseParen)
+			caught.CatchBlock = p.parseBlock()
+			stmt.CatchStmts = append(stmt.CatchStmts, caught)
+			p.next()
+		}
+		return stmt
 	case itemIgnoreErrorOperator:
 		// Ignore this operator
 		return p.parseStmt()
