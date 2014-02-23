@@ -232,7 +232,7 @@ func (p *parser) parseStmt() ast.Statement {
 			expr := ast.ExpressionStmt{p.parseExpression()}
 			p.expectStmtEnd()
 			return expr
-		default:
+		case itemAssignmentOperator, itemArrayLookupOperatorLeft:
 			n := ast.AssignmentStmt{}
 			n.Assignee = p.parseIdentifier().(ast.Assignable)
 			p.expect(itemAssignmentOperator)
@@ -241,6 +241,10 @@ func (p *parser) parseStmt() ast.Statement {
 			n.Value = p.parseExpression()
 			p.expectStmtEnd()
 			return n
+		default:
+			expr := ast.ExpressionStmt{p.parseExpression()}
+			p.expectStmtEnd()
+			return expr
 		}
 	case itemUnaryOperator:
 		expr := ast.ExpressionStmt{p.parseExpression()}
