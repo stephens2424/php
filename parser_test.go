@@ -248,15 +248,17 @@ func TestArray(t *testing.T) {
 		t.Fatalf("Array did not correctly parse")
 	}
 	tree := ast.AssignmentStmt{
-		Assignee: ast.NewIdentifier("$var"),
-		Operator: "=",
-		Value: &ast.ArrayExpression{
-			ast.BaseNode{},
-			ast.ArrayType{},
-			[]ast.ArrayPair{
-				{nil, ast.Literal{Type: ast.String}},
-				{nil, ast.Literal{Type: ast.String}},
-				{nil, ast.Literal{Type: ast.String}},
+		ast.AssignmentExpression{
+			Assignee: ast.NewIdentifier("$var"),
+			Operator: "=",
+			Value: &ast.ArrayExpression{
+				ast.BaseNode{},
+				ast.ArrayType{},
+				[]ast.ArrayPair{
+					{nil, ast.Literal{Type: ast.String}},
+					{nil, ast.Literal{Type: ast.String}},
+					{nil, ast.Literal{Type: ast.String}},
+				},
 			},
 		},
 	}
@@ -275,7 +277,7 @@ func TestArrayKeys(t *testing.T) {
 	if len(a) == 0 {
 		t.Fatalf("Array did not correctly parse")
 	}
-	tree := ast.AssignmentStmt{
+	tree := ast.AssignmentStmt{ast.AssignmentExpression{
 		Assignee: ast.NewIdentifier("$var"),
 		Operator: "=",
 		Value: &ast.ArrayExpression{
@@ -287,7 +289,7 @@ func TestArrayKeys(t *testing.T) {
 				{ast.Literal{Type: ast.Float}, ast.Literal{Type: ast.String}},
 			},
 		},
-	}
+	}}
 	if !reflect.DeepEqual(a[0], tree) {
 		fmt.Printf("Found:    %+v\n", a[0])
 		fmt.Printf("Expected: %+v\n", tree)
@@ -304,7 +306,7 @@ func TestMethodCall(t *testing.T) {
 	if len(a) == 0 {
 		t.Fatalf("Method call did not correctly parse")
 	}
-	tree := ast.AssignmentStmt{
+	tree := ast.AssignmentStmt{ast.AssignmentExpression{
 		Assignee: ast.NewIdentifier("$res"),
 		Operator: "=",
 		Value: &ast.MethodCallExpression{
@@ -314,7 +316,7 @@ func TestMethodCall(t *testing.T) {
 				Arguments:    make([]ast.Expression, 0),
 			},
 		},
-	}
+	}}
 	if !reflect.DeepEqual(a[0], tree) {
 		fmt.Printf("Found:    %+v\n", a[0])
 		fmt.Printf("Expected: %+v\n", tree)
@@ -330,14 +332,14 @@ func TestProperty(t *testing.T) {
 	if len(a) == 0 {
 		t.Fatalf("Property did not correctly parse")
 	}
-	tree := ast.AssignmentStmt{
+	tree := ast.AssignmentStmt{ast.AssignmentExpression{
 		Assignee: ast.NewIdentifier("$res"),
 		Operator: "=",
 		Value: &ast.PropertyExpression{
 			Receiver: ast.NewIdentifier("$var"),
 			Name:     "go",
 		},
-	}
+	}}
 	if !reflect.DeepEqual(a[0], tree) {
 		fmt.Printf("Found:    %+v\n", a[0])
 		fmt.Printf("Expected: %+v\n", tree)

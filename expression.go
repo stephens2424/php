@@ -80,7 +80,18 @@ func (p *parser) parseExpression() (expr ast.Expression) {
 		expr = p.parseUnaryExpressionRight(p.parseNextExpression(), op)
 	case itemArray:
 		return p.parseArrayDeclaration()
-	case itemIdentifier, itemNonVariableIdentifier, itemStringLiteral, itemNumberLiteral, itemBooleanLiteral:
+	case itemIdentifier:
+		if p.peek().typ == itemAssignmentOperator {
+			assignee := p.parseIdentifier().(ast.Assignable)
+			p.next()
+			return ast.AssignmentExpression{
+				Assignee: assignee,
+				Operator: p.current.val,
+				Value:    p.parseNextExpression(),
+			}
+		}
+		fallthrough
+	case itemNonVariableIdentifier, itemStringLiteral, itemNumberLiteral, itemBooleanLiteral:
 		expr = p.parseOperation(originalParenLev, p.expressionize())
 	case itemOpenParen:
 		p.parenLevel += 1

@@ -201,7 +201,11 @@ func (p *parser) parseFunctionCall() *ast.FunctionCallExpression {
 		} else {
 			first = false
 		}
-		expr.Arguments = append(expr.Arguments, p.parseExpression())
+		arg := p.parseExpression()
+		if arg == nil {
+			break
+		}
+		expr.Arguments = append(expr.Arguments, arg)
 		p.next()
 	}
 	return expr
@@ -230,6 +234,8 @@ func (p *parser) parseStmt() ast.Statement {
 		return ast.Echo(expr)
 	case itemIf:
 		return p.parseIf()
+	case itemWhile:
+		return p.parseWhile()
 	case itemDo:
 		return p.parseDo()
 	case itemNonVariableIdentifier:
@@ -257,6 +263,17 @@ func (p *parser) parseStmt() ast.Statement {
 	default:
 		p.errorf("Found %s, expected html or php begin", p.current)
 		return nil
+	}
+}
+
+func (p *parser) parseWhile() ast.Statement {
+	p.expect(itemOpenParen)
+	term := p.parseNextExpression()
+	p.expect(itemCloseParen)
+	block := p.parseBlock()
+	return &ast.WhileStmt{
+		Termination: term,
+		LoopBlock:   block,
 	}
 }
 

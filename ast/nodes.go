@@ -111,12 +111,20 @@ type NewExpression struct {
 	Expression
 }
 
-// AssignmentStmt represents an assignment.
-type AssignmentStmt struct {
+type AssignmentExpression struct {
 	BaseNode
 	Assignee Assignable
 	Value    Expression
 	Operator string
+}
+
+func (a AssignmentExpression) EvaluatesTo() Type {
+	return a.Value.EvaluatesTo()
+}
+
+// AssignmentStmt represents an assignment.
+type AssignmentStmt struct {
+	AssignmentExpression
 }
 
 type Assignable interface {
