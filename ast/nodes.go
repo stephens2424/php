@@ -26,6 +26,10 @@ type Identifier struct {
 	Type Type
 }
 
+func (i Identifier) AssignableType() Type {
+	return i.Type
+}
+
 // EvaluatesTo returns the known type of the variable.
 func (i Identifier) EvaluatesTo() Type {
 	return i.Type
@@ -106,9 +110,13 @@ type NewExpression struct {
 // AssignmentStmt represents an assignment.
 type AssignmentStmt struct {
 	BaseNode
-	Assignee Identifier
+	Assignee Assignable
 	Value    Expression
 	Operator string
+}
+
+type Assignable interface {
+	AssignableType() Type
 }
 
 type FunctionCallStmt struct {
@@ -178,12 +186,22 @@ type Property struct {
 	BaseNode
 	Name       string
 	Visibility Visibility
+	Type       Type
+}
+
+func (p Property) AssignableType() Type {
+	return p.Type
 }
 
 type PropertyExpression struct {
 	BaseNode
 	Receiver Identifier
 	Name     string
+	Type     Type
+}
+
+func (p PropertyExpression) AssignableType() Type {
+	return p.Type
 }
 
 func (p PropertyExpression) EvaluatesTo() Type {
@@ -281,12 +299,19 @@ func (a ArrayExpression) EvaluatesTo() Type {
 	return Array
 }
 
+func (a ArrayExpression) AssignableType() Type {
+	return AnyType
+}
+
 type ArrayLookupExpression struct {
 	BaseNode
-	Array Identifier
+	Array Expression
 	Index Expression
 }
 
 func (a ArrayLookupExpression) EvaluatesTo() Type {
+	return AnyType
+}
+func (a ArrayLookupExpression) AssignableType() Type {
 	return AnyType
 }

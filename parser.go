@@ -205,7 +205,7 @@ func (p *parser) parseStmt() ast.Statement {
 		return p.parseBlock()
 	case itemIdentifier:
 		n := ast.AssignmentStmt{}
-		n.Assignee = ast.NewIdentifier(p.current.val)
+		n.Assignee = p.parseIdentifier().(ast.Assignable)
 		p.expect(itemAssignmentOperator)
 		n.Operator = p.current.val
 		p.next()

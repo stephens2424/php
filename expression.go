@@ -149,33 +149,7 @@ func (p *parser) parseUnaryExpressionLeft(operand ast.Expression, operator Item)
 func (p *parser) expressionize() ast.Expression {
 	switch p.current.typ {
 	case itemIdentifier:
-		ident := ast.NewIdentifier(p.current.val)
-		switch pk := p.peek(); pk.typ {
-		case itemObjectOperator:
-			p.expect(itemObjectOperator)
-			p.expect(itemNonVariableIdentifier)
-			if pk = p.peek(); pk.typ == itemOpenParen {
-				expr := &ast.MethodCallExpression{
-					Receiver:               ident,
-					FunctionCallExpression: p.parseFunctionCall(),
-				}
-				return expr
-			}
-			return &ast.PropertyExpression{
-				Receiver: ident,
-				Name:     p.current.val,
-			}
-		case itemArrayLookupOperator:
-			p.expect(itemArrayLookupOperator)
-			p.next()
-			expr := &ast.ArrayLookupExpression{
-				Array: ident,
-				Index: p.parseExpression(),
-			}
-			p.expect(itemArrayLookupOperator)
-			return expr
-		}
-		return ident
+		return p.parseIdentifier()
 	case itemStringLiteral:
 		return ast.Literal{Type: ast.String}
 	case itemBooleanLiteral:
@@ -194,6 +168,43 @@ func (p *parser) expressionize() ast.Expression {
 	}
 	// error?
 	return nil
+}
+
+func (p *parser) parseIdentifier() ast.Expression {
+	ident := ast.NewIdentifier(p.current.val)
+	switch pk := p.peek(); pk.typ {
+	case itemObjectOperator:
+		p.expect(itemObjectOperator)
+		p.expect(itemNonVariableIdentifier)
+		if pk = p.peek(); pk.typ == itemOpenParen {
+			expr := &ast.MethodCallExpression{
+				Receiver:               ident,
+				FunctionCallExpression: p.parseFunctionCall(),
+			}
+			return expr
+		}
+		return &ast.PropertyExpression{
+			Receiver: ident,
+			Name:     p.current.val,
+		}
+	case itemArrayLookupOperator:
+		return p.parseArrayLookup(ident)
+	}
+	return ident
+}
+
+func (p *parser) parseArrayLookup(e ast.Expression) ast.Expression {
+	p.expect(itemArrayLookupOperator)
+	p.next()
+	expr := &ast.ArrayLookupExpression{
+		Array: e,
+		Index: p.parseExpression(),
+	}
+	p.expect(itemArrayLookupOperator)
+	if p.peek().typ == itemArrayLookupOperator {
+		return p.parseArrayLookup(expr)
+	}
+	return expr
 }
 
 func (p *parser) parseArrayDeclaration() ast.Expression {
