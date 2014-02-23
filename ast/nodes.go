@@ -82,6 +82,10 @@ func (o OperatorExpression) EvaluatesTo() Type {
 	return o.Type
 }
 
+type ExpressionStmt struct {
+	Expression
+}
+
 // Echo returns a new echo statement.
 func Echo(expr Expression) EchoStmt {
 	return EchoStmt{Expression: expr}

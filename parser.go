@@ -223,14 +223,25 @@ func (p *parser) parseStmt() ast.Statement {
 		p.backup()
 		return p.parseBlock()
 	case itemIdentifier:
-		n := ast.AssignmentStmt{}
-		n.Assignee = p.parseIdentifier().(ast.Assignable)
-		p.expect(itemAssignmentOperator)
-		n.Operator = p.current.val
-		p.next()
-		n.Value = p.parseExpression()
+		switch p.peek().typ {
+		case itemUnaryOperator:
+			expr := ast.ExpressionStmt{p.parseExpression()}
+			p.expect(itemStatementEnd)
+			return expr
+		default:
+			n := ast.AssignmentStmt{}
+			n.Assignee = p.parseIdentifier().(ast.Assignable)
+			p.expect(itemAssignmentOperator)
+			n.Operator = p.current.val
+			p.next()
+			n.Value = p.parseExpression()
+			p.expect(itemStatementEnd)
+			return n
+		}
+	case itemUnaryOperator:
+		expr := ast.ExpressionStmt{p.parseExpression()}
 		p.expect(itemStatementEnd)
-		return n
+		return expr
 	case itemFunction:
 		return p.parseFunctionStmt()
 	case itemEcho:
