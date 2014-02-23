@@ -48,6 +48,13 @@ func lexPHP(l *lexer) stateFn {
 
 	if r := l.peek(); unicode.IsDigit(r) {
 		return lexNumberLiteral
+	} else if r == '.' {
+		l.next()
+		if unicode.IsDigit(l.peek()) {
+			l.backup()
+			return lexNumberLiteral
+		}
+		l.backup()
 	} else if r == '-' {
 		l.next()
 		if unicode.IsDigit(l.peek()) {
