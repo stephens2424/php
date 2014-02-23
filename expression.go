@@ -76,7 +76,7 @@ func (p *parser) parseExpression() (expr ast.Expression) {
 		return &ast.NewExpression{
 			Expression: p.parseNextExpression(),
 		}
-	case itemUnaryOperator, itemNegationOperator:
+	case itemUnaryOperator, itemNegationOperator, itemAmpersandOperator:
 		op := p.current
 		expr = p.parseUnaryExpressionRight(p.parseNextExpression(), op)
 	case itemArray:
