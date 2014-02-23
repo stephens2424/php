@@ -255,6 +255,8 @@ func (p *parser) parseStmt() ast.Statement {
 		return p.parseWhile()
 	case itemDo:
 		return p.parseDo()
+	case itemFor:
+		return p.parseFor()
 	case itemNonVariableIdentifier:
 		stmt := p.parseFunctionCall()
 		p.expect(itemStatementEnd)
@@ -301,6 +303,19 @@ func (p *parser) parseWhile() ast.Statement {
 		Termination: term,
 		LoopBlock:   block,
 	}
+}
+
+func (p *parser) parseFor() ast.Statement {
+	stmt := &ast.ForStmt{}
+	p.expect(itemOpenParen)
+	stmt.Initialization = p.parseNextExpression()
+	p.expect(itemStatementEnd)
+	stmt.Termination = p.parseNextExpression()
+	p.expect(itemStatementEnd)
+	stmt.Iteration = p.parseNextExpression()
+	p.expect(itemCloseParen)
+	stmt.LoopBlock = p.parseBlock()
+	return stmt
 }
 
 func (p *parser) parseDo() ast.Statement {
