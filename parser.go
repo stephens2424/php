@@ -224,13 +224,13 @@ func (p *parser) parseStmt() ast.Statement {
 	case itemGlobal:
 		p.next()
 		ident := ast.GlobalIdentifier{ast.NewIdentifier(p.current.val)}
-		p.expect(itemStatementEnd)
+		p.expectStmtEnd()
 		return ident
 	case itemIdentifier:
 		switch p.peek().typ {
 		case itemUnaryOperator:
 			expr := ast.ExpressionStmt{p.parseExpression()}
-			p.expect(itemStatementEnd)
+			p.expectStmtEnd()
 			return expr
 		default:
 			n := ast.AssignmentStmt{}
@@ -239,19 +239,19 @@ func (p *parser) parseStmt() ast.Statement {
 			n.Operator = p.current.val
 			p.next()
 			n.Value = p.parseExpression()
-			p.expect(itemStatementEnd)
+			p.expectStmtEnd()
 			return n
 		}
 	case itemUnaryOperator:
 		expr := ast.ExpressionStmt{p.parseExpression()}
-		p.expect(itemStatementEnd)
+		p.expectStmtEnd()
 		return expr
 	case itemFunction:
 		return p.parseFunctionStmt()
 	case itemEcho:
 		p.next()
 		expr := p.parseExpression()
-		p.expect(itemStatementEnd)
+		p.expectStmtEnd()
 		return ast.Echo(expr)
 	case itemIf:
 		return p.parseIf()
@@ -274,7 +274,7 @@ func (p *parser) parseStmt() ast.Statement {
 		} else {
 			stmt = p.parseFunctionCall()
 		}
-		p.expect(itemStatementEnd)
+		p.expectStmtEnd()
 		return stmt
 	case itemClass:
 		return p.parseClass()
@@ -283,12 +283,12 @@ func (p *parser) parseStmt() ast.Statement {
 		stmt := ast.ReturnStmt{}
 		if p.current.typ != itemStatementEnd {
 			stmt.Expression = p.parseExpression()
-			p.expect(itemStatementEnd)
+			p.expectStmtEnd()
 		}
 		return stmt
 	case itemThrow:
 		stmt := ast.ThrowStmt{Expression: p.parseNextExpression()}
-		p.expect(itemStatementEnd)
+		p.expectStmtEnd()
 		return stmt
 	case itemExit:
 		stmt := ast.ExitStmt{}
@@ -297,11 +297,11 @@ func (p *parser) parseStmt() ast.Statement {
 			stmt.Expression = p.parseNextExpression()
 			p.expect(itemCloseParen)
 		}
-		p.expect(itemStatementEnd)
+		p.expectStmtEnd()
 		return stmt
 	case itemInclude:
 		stmt := ast.IncludeStmt{Expression: p.parseNextExpression()}
-		p.expect(itemStatementEnd)
+		p.expectStmtEnd()
 		return stmt
 	case itemIgnoreErrorOperator:
 		// Ignore this operator
@@ -309,6 +309,12 @@ func (p *parser) parseStmt() ast.Statement {
 	default:
 		p.errorf("Found %s, expected html or php begin", p.current)
 		return nil
+	}
+}
+
+func (p *parser) expectStmtEnd() {
+	if p.peek().typ != itemPHPEnd {
+		p.expect(itemStatementEnd)
 	}
 }
 
@@ -360,7 +366,7 @@ func (p *parser) parseDo() ast.Statement {
 	p.expect(itemOpenParen)
 	term := p.parseNextExpression()
 	p.expect(itemCloseParen)
-	p.expect(itemStatementEnd)
+	p.expectStmtEnd()
 	return &ast.DoWhileStmt{
 		Termination: term,
 		LoopBlock:   block,
