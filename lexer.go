@@ -161,4 +161,5 @@ var keywordMap = map[ItemType]bool{
 	itemNewOperator: true,
 
 	itemInstanceofOperator: true,
+	itemArray:              true,
 }
