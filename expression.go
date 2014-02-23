@@ -100,6 +100,7 @@ func (p *parser) parseExpression() (expr ast.Expression) {
 		expr = p.parseExpression()
 		p.expect(itemCloseParen)
 		p.parenLevel -= 1
+		expr = p.parseOperation(originalParenLev, expr)
 	default:
 		p.errorf("Expected expression. Found %s", p.current)
 		return nil
