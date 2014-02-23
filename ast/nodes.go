@@ -36,8 +36,8 @@ func (i Identifier) EvaluatesTo() Type {
 }
 
 // NewIdentifier intializes an identifier node with its type set to AnyType.
-func NewIdentifier(name string) Identifier {
-	return Identifier{Name: name, Type: AnyType}
+func NewIdentifier(name string) *Identifier {
+	return &Identifier{Name: name, Type: AnyType}
 }
 
 // A statement is an executable piece of code. It may be as simple as
@@ -174,7 +174,7 @@ type FunctionDefinition struct {
 type FunctionArgument struct {
 	BaseNode
 	TypeHint   string
-	Identifier Identifier
+	Identifier *Identifier
 }
 
 type Class struct {
@@ -188,13 +188,13 @@ type Class struct {
 
 type Constant struct {
 	BaseNode
-	Identifier
+	*Identifier
 	Value interface{}
 }
 
 type ConstantExpression struct {
 	BaseNode
-	Identifier
+	*Identifier
 }
 
 type Interface struct {
@@ -215,7 +215,7 @@ func (p Property) AssignableType() Type {
 
 type PropertyExpression struct {
 	BaseNode
-	Receiver Identifier
+	Receiver Expression
 	Name     string
 	Type     Type
 }
@@ -228,6 +228,16 @@ func (p PropertyExpression) EvaluatesTo() Type {
 	return AnyType
 }
 
+type ClassExpression struct {
+	BaseNode
+	Receiver   string
+	Expression Expression
+}
+
+func (c ClassExpression) EvaluatesTo() Type {
+	return AnyType
+}
+
 type Method struct {
 	BaseNode
 	*FunctionStmt
@@ -235,7 +245,7 @@ type Method struct {
 }
 
 type MethodCallExpression struct {
-	Receiver Identifier
+	Receiver Expression
 	*FunctionCallExpression
 }
 
@@ -300,7 +310,7 @@ type ForeachStmt struct {
 	BaseNode
 	Source    Expression
 	Key       *Identifier
-	Value     Identifier
+	Value     *Identifier
 	LoopBlock Block
 }
 

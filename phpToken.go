@@ -36,6 +36,8 @@ const (
 	itemBlockBegin
 	itemBlockEnd
 
+	itemComment
+
 	itemIgnoreErrorOperator
 
 	itemReturn
@@ -52,6 +54,7 @@ const (
 	itemElseIf
 	itemFor
 	itemForeach
+	itemAsOperator
 	itemWhile
 	itemDo
 	itemOpenParen
@@ -147,10 +150,13 @@ var itemTypeMap = map[ItemType]string{
 	itemElseIf:     "ElseIf",
 	itemFor:        "for",
 	itemForeach:    "foreach",
+	itemAsOperator: "as",
 	itemWhile:      "while",
 	itemDo:         "do",
 	itemOpenParen:  "open-paren",
 	itemCloseParen: "close-paren",
+
+	itemComment: "/* */",
 
 	itemTry:     "try",
 	itemCatch:   "catch",
@@ -273,6 +279,10 @@ var tokenMap = map[string]ItemType{
 	"(object)":  itemCastOperator,
 	"(unset)":   itemCastOperator,
 
+	"/*": itemComment,
+	"*/": itemComment,
+	"//": itemComment,
+
 	"->": itemObjectOperator,
 	"::": itemScopeResolutionOperator,
 
@@ -321,6 +331,7 @@ var tokenMap = map[string]ItemType{
 	"and": itemWrittenAndOperator,
 	"xor": itemWrittenXorOperator,
 	"or":  itemWrittenOrOperator,
+	"as":  itemAsOperator,
 
 	"[": itemArrayLookupOperatorLeft,
 	"]": itemArrayLookupOperatorRight,

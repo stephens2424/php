@@ -257,6 +257,8 @@ func (p *parser) parseStmt() ast.Statement {
 		return p.parseDo()
 	case itemFor:
 		return p.parseFor()
+	case itemForeach:
+		return p.parseForeach()
 	case itemNonVariableIdentifier:
 		stmt := p.parseFunctionCall()
 		p.expect(itemStatementEnd)
@@ -303,6 +305,24 @@ func (p *parser) parseWhile() ast.Statement {
 		Termination: term,
 		LoopBlock:   block,
 	}
+}
+
+func (p *parser) parseForeach() ast.Statement {
+	stmt := &ast.ForeachStmt{}
+	p.expect(itemOpenParen)
+	stmt.Source = p.parseNextExpression()
+	p.expect(itemAsOperator)
+	p.expect(itemIdentifier)
+	stmt.Value = ast.NewIdentifier(p.current.val)
+	if p.peek().typ == itemArrayKeyOperator {
+		stmt.Key = stmt.Value
+		p.expect(itemArrayKeyOperator)
+		p.expect(itemIdentifier)
+		stmt.Value = ast.NewIdentifier(p.current.val)
+	}
+	p.expect(itemCloseParen)
+	stmt.LoopBlock = p.parseBlock()
+	return stmt
 }
 
 func (p *parser) parseFor() ast.Statement {

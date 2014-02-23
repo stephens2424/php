@@ -172,7 +172,18 @@ func (p *parser) expressionize() ast.Expression {
 		return ast.Literal{Type: ast.Float}
 	case itemNonVariableIdentifier:
 		if p.peek().typ == itemOpenParen {
-			return p.parseFunctionCall()
+			expr := p.parseFunctionCall()
+			if p.peek().typ == itemObjectOperator {
+				return p.parseObjectLookup(expr)
+			}
+			return expr
+		}
+		if p.peek().typ == itemScopeResolutionOperator {
+			p.expect(itemScopeResolutionOperator)
+			return &ast.ClassExpression{
+				Receiver:   p.current.val,
+				Expression: p.parseNextExpression(),
+			}
 		}
 		return ast.ConstantExpression{
 			Identifier: ast.NewIdentifier(p.current.val),
@@ -188,23 +199,27 @@ func (p *parser) parseIdentifier() ast.Expression {
 	ident := ast.NewIdentifier(p.current.val)
 	switch pk := p.peek(); pk.typ {
 	case itemObjectOperator:
-		p.expect(itemObjectOperator)
-		p.expect(itemNonVariableIdentifier)
-		if pk = p.peek(); pk.typ == itemOpenParen {
-			expr := &ast.MethodCallExpression{
-				Receiver:               ident,
-				FunctionCallExpression: p.parseFunctionCall(),
-			}
-			return expr
-		}
-		return &ast.PropertyExpression{
-			Receiver: ident,
-			Name:     p.current.val,
-		}
+		return p.parseObjectLookup(ident)
 	case itemArrayLookupOperatorLeft:
 		return p.parseArrayLookup(ident)
 	}
 	return ident
+}
+
+func (p *parser) parseObjectLookup(r ast.Expression) ast.Expression {
+	p.expect(itemObjectOperator)
+	p.expect(itemNonVariableIdentifier)
+	if pk := p.peek(); pk.typ == itemOpenParen {
+		expr := &ast.MethodCallExpression{
+			Receiver:               r,
+			FunctionCallExpression: p.parseFunctionCall(),
+		}
+		return expr
+	}
+	return &ast.PropertyExpression{
+		Receiver: r,
+		Name:     p.current.val,
+	}
 }
 
 func (p *parser) parseArrayLookup(e ast.Expression) ast.Expression {

@@ -67,6 +67,14 @@ func lexPHP(l *lexer) stateFn {
 		return lexPHPEnd
 	}
 
+	if strings.HasPrefix(l.input[l.pos:], "//") {
+		return lexLineComment
+	}
+
+	if strings.HasPrefix(l.input[l.pos:], "/*") {
+		return lexBlockComment
+	}
+
 	for _, token := range tokenList {
 		item := tokenMap[token]
 		if strings.HasPrefix(l.input[l.pos:], token) {
@@ -233,4 +241,16 @@ func lexPHPEnd(l *lexer) stateFn {
 	l.pos += len(phpEnd)
 	l.emit(itemPHPEnd)
 	return lexHTML
+}
+
+func lexLineComment(l *lexer) stateFn {
+	l.pos += strings.Index(l.input[l.start:], "\n")
+	l.ignore()
+	return lexPHP
+}
+
+func lexBlockComment(l *lexer) stateFn {
+	l.pos += strings.Index(l.input[l.start:], "*/")
+	l.ignore()
+	return lexPHP
 }
