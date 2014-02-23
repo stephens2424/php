@@ -350,6 +350,7 @@ func (p *parser) parseWhile() ast.Statement {
 	p.expect(itemOpenParen)
 	term := p.parseNextExpression()
 	p.expect(itemCloseParen)
+	p.next()
 	block := p.parseStmt()
 	return &ast.WhileStmt{
 		Termination: term,
