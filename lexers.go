@@ -121,36 +121,30 @@ func lexNumberLiteral(l *lexer) stateFn {
 
 func lexSingleQuotedStringLiteral(l *lexer) stateFn {
 	l.next()
-	isEscaped := false
 	for {
-		r := l.next()
-		if r == '\\' {
-			isEscaped = true
+		switch l.next() {
+		case '\\':
+			l.next()
 			continue
-		}
-		if !isEscaped && r == '\'' {
-			break
+		case '\'':
+			l.emit(itemStringLiteral)
+			return lexPHP
 		}
 	}
-	l.emit(itemStringLiteral)
-	return lexPHP
 }
 
 func lexDoubleQuotedStringLiteral(l *lexer) stateFn {
 	l.next()
-	isEscaped := false
 	for {
-		r := l.next()
-		if r == '\\' {
-			isEscaped = true
+		switch l.next() {
+		case '\\':
+			l.next()
 			continue
-		}
-		if !isEscaped && r == '"' {
-			break
+		case '"':
+			l.emit(itemStringLiteral)
+			return lexPHP
 		}
 	}
-	l.emit(itemStringLiteral)
-	return lexPHP
 }
 
 func lexIf(l *lexer) stateFn {
