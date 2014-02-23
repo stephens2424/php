@@ -57,9 +57,14 @@ const (
 	itemForeach
 	itemAsOperator
 	itemWhile
+	itemContinue
+	itemBreak
 	itemDo
 	itemOpenParen
 	itemCloseParen
+	itemSwitch
+	itemCase
+	itemDefault
 
 	itemTry
 	itemCatch
@@ -152,11 +157,16 @@ var itemTypeMap = map[ItemType]string{
 	itemElseIf:     "ElseIf",
 	itemFor:        "for",
 	itemForeach:    "foreach",
+	itemSwitch:     "switch",
+	itemCase:       "case",
+	itemDefault:    "default",
 	itemAsOperator: "as",
 	itemWhile:      "while",
 	itemDo:         "do",
 	itemOpenParen:  "open-paren",
 	itemCloseParen: "close-paren",
+	itemContinue:   "continue",
+	itemBreak:      "break",
 
 	itemComment: "/* */",
 
@@ -242,6 +252,11 @@ var tokenMap = map[string]ItemType{
 	"do":             itemDo,
 	"for":            itemFor,
 	"foreach":        itemForeach,
+	"switch":         itemSwitch,
+	"case":           itemCase,
+	"break":          itemBreak,
+	"continue":       itemContinue,
+	"default":        itemDefault,
 	"function":       itemFunction,
 	"return":         itemReturn,
 	"{":              itemBlockBegin,

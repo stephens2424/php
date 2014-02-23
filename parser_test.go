@@ -234,7 +234,7 @@ func TestExpressionParsing(t *testing.T) {
 	p = newParser(`<? if (1 > 2 * 3 + 4 - 2 & 3 && 4 ^ 8 or 14 xor 10 and 13 >> 18 << 10)
     echo "good";
   `)
-	p.debug = true
+	p.Debug = true
 	a = p.parse()
 	if len(a) != 1 {
 		t.Fatalf("If did not correctly parse")
@@ -245,7 +245,7 @@ func TestArray(t *testing.T) {
 	testStr := `<?
   $var = array("one", "two", "three");`
 	p := newParser(testStr)
-	p.debug = true
+	p.Debug = true
 	a := p.parse()
 	if len(a) == 0 {
 		t.Fatalf("Array did not correctly parse")
@@ -304,7 +304,7 @@ func TestMethodCall(t *testing.T) {
 	testStr := `<?
   $res = $var->go();`
 	p := newParser(testStr)
-	p.debug = true
+	p.Debug = true
 	a := p.parse()
 	if len(a) == 0 {
 		t.Fatalf("Method call did not correctly parse")

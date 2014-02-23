@@ -106,6 +106,12 @@ type EchoStmt struct {
 type ReturnStmt struct {
 	Expression
 }
+type BreakStmt struct {
+	Expression
+}
+type ContinueStmt struct {
+	Expression
+}
 
 type ThrowStmt struct {
 	Expression
@@ -267,6 +273,19 @@ type IfStmt struct {
 	Condition  Expression
 	TrueBlock  Statement
 	FalseBlock Statement
+}
+
+type SwitchStmt struct {
+	BaseNode
+	Expression  Expression
+	Cases       []*SwitchCase
+	DefaultCase *Block
+}
+
+type SwitchCase struct {
+	BaseNode
+	Expression Expression
+	Block      Block
 }
 
 type ForStmt struct {

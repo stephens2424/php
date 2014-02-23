@@ -16,7 +16,7 @@ type parser struct {
 	parenLevel int
 	errorMap   map[int]bool
 
-	debug     bool
+	Debug     bool
 	MaxErrors int
 }
 
@@ -46,7 +46,7 @@ func (p *parser) parse() []ast.Node {
 			}
 		}
 		if r := recover(); r != nil {
-			if p.debug {
+			if p.Debug {
 				panic(r)
 			} else {
 				fmt.Println(r)
@@ -263,6 +263,8 @@ func (p *parser) parseStmt() ast.Statement {
 		return p.parseFor()
 	case itemForeach:
 		return p.parseForeach()
+	case itemSwitch:
+		return p.parseSwitch()
 	case itemNonVariableIdentifier:
 		var stmt ast.Statement
 		if p.peek().typ == itemScopeResolutionOperator {
@@ -281,6 +283,22 @@ func (p *parser) parseStmt() ast.Statement {
 	case itemReturn:
 		p.next()
 		stmt := ast.ReturnStmt{}
+		if p.current.typ != itemStatementEnd {
+			stmt.Expression = p.parseExpression()
+			p.expectStmtEnd()
+		}
+		return stmt
+	case itemBreak:
+		p.next()
+		stmt := ast.BreakStmt{}
+		if p.current.typ != itemStatementEnd {
+			stmt.Expression = p.parseExpression()
+			p.expectStmtEnd()
+		}
+		return stmt
+	case itemContinue:
+		p.next()
+		stmt := ast.ContinueStmt{}
 		if p.current.typ != itemStatementEnd {
 			stmt.Expression = p.parseExpression()
 			p.expectStmtEnd()
@@ -370,6 +388,34 @@ func (p *parser) parseDo() ast.Statement {
 	return &ast.DoWhileStmt{
 		Termination: term,
 		LoopBlock:   block,
+	}
+}
+
+func (p *parser) parseSwitch() ast.Statement {
+	stmt := ast.SwitchStmt{}
+	p.expect(itemOpenParen)
+	stmt.Expression = p.parseExpression()
+	p.backup()
+	p.expect(itemCloseParen)
+	p.expect(itemBlockBegin)
+	for {
+		switch p.current.typ {
+		case itemCase:
+			expr := p.parseNextExpression()
+			p.expect(itemTernaryOperator2)
+			block := p.parseBlock()
+			stmt.Cases = append(stmt.Cases, &ast.SwitchCase{
+				Expression: expr,
+				Block:      block,
+			})
+		case itemDefault:
+			p.expect(itemTernaryOperator2)
+			block := p.parseBlock()
+			stmt.DefaultCase = &block
+		case itemBlockEnd:
+			return stmt
+		}
+		p.next()
 	}
 }
 
