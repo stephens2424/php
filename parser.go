@@ -394,6 +394,11 @@ func (p *parser) parseFunctionStmt() *ast.FunctionStmt {
 		}
 		p.expect(itemIdentifier)
 		arg.Identifier = ast.NewIdentifier(p.current.val)
+		if p.peek().typ == itemAssignmentOperator {
+			p.expect(itemAssignmentOperator)
+			p.next()
+			arg.Default = p.parseLiteral()
+		}
 		stmt.Arguments = append(stmt.Arguments, arg)
 	}
 	stmt.Body = p.parseBlock()

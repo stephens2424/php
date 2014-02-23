@@ -178,6 +178,7 @@ type FunctionDefinition struct {
 type FunctionArgument struct {
 	BaseNode
 	TypeHint   string
+	Default    *Literal
 	Identifier *Identifier
 }
 
