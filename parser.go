@@ -264,7 +264,16 @@ func (p *parser) parseStmt() ast.Statement {
 	case itemForeach:
 		return p.parseForeach()
 	case itemNonVariableIdentifier:
-		stmt := p.parseFunctionCall()
+		var stmt ast.Statement
+		if p.peek().typ == itemScopeResolutionOperator {
+			p.next()
+			stmt = ast.ClassExpression{
+				Receiver:   p.current.val,
+				Expression: p.parseNextExpression(),
+			}
+		} else {
+			stmt = p.parseFunctionCall()
+		}
 		p.expect(itemStatementEnd)
 		return stmt
 	case itemClass:
