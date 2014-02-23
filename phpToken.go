@@ -36,6 +36,8 @@ const (
 	itemBlockBegin
 	itemBlockEnd
 
+	itemIgnoreErrorOperator
+
 	itemReturn
 	itemFunctionCallBegin
 	itemFunctionCallEnd
@@ -135,6 +137,8 @@ var itemTypeMap = map[ItemType]string{
 	itemArgumentSeparator: "Function Argument Separator",
 	itemStatementEnd:      "Statement End",
 	itemEcho:              "Echo",
+
+	itemIgnoreErrorOperator: "@",
 
 	itemIf:         "If",
 	itemElse:       "Else",
@@ -249,6 +253,7 @@ var tokenMap = map[string]ItemType{
 	"include_once": itemInclude,
 	"require":      itemInclude,
 	"require_once": itemInclude,
+	"@":            itemIgnoreErrorOperator,
 
 	"(int)":     itemCastOperator,
 	"(integer)": itemCastOperator,

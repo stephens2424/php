@@ -242,6 +242,9 @@ func (p *parser) parseStmt() ast.Statement {
 		stmt := ast.IncludeStmt{Expression: p.parseNextExpression()}
 		p.expect(itemStatementEnd)
 		return stmt
+	case itemIgnoreErrorOperator:
+		// Ignore this operator
+		return p.parseStmt()
 	default:
 		p.errorf("Found %s, expected html or php begin", p.current)
 		return nil
