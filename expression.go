@@ -98,6 +98,8 @@ func (p *parser) parseExpression() (expr ast.Expression) {
 		p.parenLevel += 1
 		p.next()
 		expr = p.parseExpression()
+		p.expect(itemCloseParen)
+		p.parenLevel -= 1
 	default:
 		p.errorf("Expected expression. Found %s", p.current)
 		return nil
