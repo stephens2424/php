@@ -294,13 +294,13 @@ type ForStmt struct {
 	Initialization Expression
 	Termination    Expression
 	Iteration      Expression
-	LoopBlock      Block
+	LoopBlock      Statement
 }
 
 type WhileStmt struct {
 	BaseNode
 	Termination Expression
-	LoopBlock   Block
+	LoopBlock   Statement
 }
 
 type DoWhileStmt struct {
