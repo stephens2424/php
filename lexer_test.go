@@ -54,6 +54,7 @@ func TestPHPLexer(t *testing.T) {
 
 	i = assertNext(t, l, itemIdentifier)
 	i = assertNext(t, l, itemAssignmentOperator)
+	i = assertNext(t, l, itemSubtractionOperator)
 	i = assertNext(t, l, itemNumberLiteral)
 	i = assertNext(t, l, itemStatementEnd)
 

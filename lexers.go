@@ -55,19 +55,6 @@ func lexPHP(l *lexer) stateFn {
 			return lexNumberLiteral
 		}
 		l.backup()
-	} else if r == '-' {
-		l.next()
-		if unicode.IsDigit(l.peek()) {
-			l.backup()
-			return lexNumberLiteral
-		}
-		if l.peek() == '>' {
-			l.next()
-			l.emit(itemObjectOperator)
-			return lexPHP
-		}
-		l.emit(itemSubtractionOperator)
-		return lexPHP
 	}
 
 	if strings.HasPrefix(l.input[l.pos:], "?>") {

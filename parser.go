@@ -507,11 +507,16 @@ func (p *parser) parseClassFields(c ast.Class) ast.Class {
 			vis = ast.Protected
 		case itemPublic:
 			vis = ast.Public
+		case itemBlockEnd:
+			return c
 		default:
 			vis = ast.Public
 			p.backup()
 		}
 		p.next()
+		if p.current.typ == itemStatic {
+			p.next()
+		}
 		switch p.current.typ {
 		case itemFunction:
 			c.Methods = append(c.Methods, ast.Method{
@@ -519,11 +524,18 @@ func (p *parser) parseClassFields(c ast.Class) ast.Class {
 				FunctionStmt: p.parseFunctionStmt(),
 			})
 		case itemIdentifier:
-			c.Properties = append(c.Properties, ast.Property{
+			prop := ast.Property{
 				Visibility: vis,
 				Name:       p.current.val,
-			})
+			}
+			if p.peek().typ == itemAssignmentOperator {
+				p.expect(itemAssignmentOperator)
+				prop.Initialization = p.parseNextExpression()
+			}
+			c.Properties = append(c.Properties, prop)
+			p.expect(itemStatementEnd)
 		default:
+			p.errorf("unexpected class member", p.current)
 		}
 		p.next()
 	}

@@ -215,9 +215,10 @@ type Interface struct {
 
 type Property struct {
 	BaseNode
-	Name       string
-	Visibility Visibility
-	Type       Type
+	Name           string
+	Visibility     Visibility
+	Type           Type
+	Initialization Expression
 }
 
 func (p Property) AssignableType() Type {
