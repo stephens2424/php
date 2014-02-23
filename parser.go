@@ -270,6 +270,15 @@ func (p *parser) parseStmt() ast.Statement {
 		stmt := ast.ThrowStmt{Expression: p.parseNextExpression()}
 		p.expect(itemStatementEnd)
 		return stmt
+	case itemExit:
+		stmt := ast.ExitStmt{}
+		if p.peek().typ == itemOpenParen {
+			p.expect(itemOpenParen)
+			stmt.Expression = p.parseNextExpression()
+			p.expect(itemCloseParen)
+		}
+		p.expect(itemStatementEnd)
+		return stmt
 	case itemInclude:
 		stmt := ast.IncludeStmt{Expression: p.parseNextExpression()}
 		p.expect(itemStatementEnd)

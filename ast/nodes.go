@@ -111,6 +111,10 @@ type IncludeStmt struct {
 	Expression
 }
 
+type ExitStmt struct {
+	Expression
+}
+
 type NewExpression struct {
 	Expression
 }

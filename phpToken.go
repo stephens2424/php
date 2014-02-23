@@ -110,6 +110,7 @@ const (
 	itemTernaryOperator2
 
 	itemInclude
+	itemExit
 )
 
 // itemTypeMap maps itemType to strings that may be used for debugging and error messages
@@ -201,6 +202,7 @@ var itemTypeMap = map[ItemType]string{
 	itemTernaryOperator2:     ":",
 
 	itemInclude: "include",
+	itemExit:    "exit",
 }
 
 var tokenList []string
@@ -254,6 +256,7 @@ var tokenMap = map[string]ItemType{
 	"require":      itemInclude,
 	"require_once": itemInclude,
 	"@":            itemIgnoreErrorOperator,
+	"exit":           itemExit,
 
 	"(int)":     itemCastOperator,
 	"(integer)": itemCastOperator,
