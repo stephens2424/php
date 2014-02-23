@@ -9,9 +9,11 @@ import (
 type lexer struct {
 	lastPos int
 	pos     int
+	line    int
 	start   int
 	width   int
 	input   string
+	file    string
 	items   chan Item // channel of scanned items.
 }
 
@@ -38,9 +40,14 @@ func (l *lexer) run() {
 }
 
 func (l *lexer) emit(t ItemType) {
-	i := Item{t, Location{Pos: l.start}, l.input[l.start:l.pos]}
+	i := Item{t, l.currentLocation(), l.input[l.start:l.pos]}
+	l.line += strings.Count(i.val, "\n")
 	l.items <- i
 	l.start = l.pos
+}
+
+func (l *lexer) currentLocation() Location {
+	return Location{Pos: l.start, Line: l.line, File: l.file}
 }
 
 // nextItem returns the next item from the input.
@@ -103,7 +110,9 @@ func (l *lexer) skipSpace() {
 }
 
 func (l *lexer) errorf(format string, args ...interface{}) stateFn {
-	l.items <- Item{itemError, Location{Pos: l.start}, fmt.Sprintf(format, args...)}
+	i := Item{itemError, l.currentLocation(), fmt.Sprintf(format, args...)}
+	l.line += strings.Count(i.val, "\n")
+	l.items <- i
 	return nil
 }
 
