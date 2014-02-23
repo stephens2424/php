@@ -297,7 +297,7 @@ func TestArrayKeys(t *testing.T) {
 
 func TestMethodCall(t *testing.T) {
 	testStr := `<?
-  $res = $var->do();`
+  $res = $var->go();`
 	p := newParser(testStr)
 	p.debug = true
 	a := p.parse()
@@ -310,7 +310,7 @@ func TestMethodCall(t *testing.T) {
 		Value: &ast.MethodCallExpression{
 			Receiver: ast.NewIdentifier("$var"),
 			FunctionCallExpression: &ast.FunctionCallExpression{
-				FunctionName: "do",
+				FunctionName: "go",
 				Arguments:    make([]ast.Expression, 0),
 			},
 		},
@@ -324,7 +324,7 @@ func TestMethodCall(t *testing.T) {
 
 func TestProperty(t *testing.T) {
 	testStr := `<?
-  $res = $var->do;`
+  $res = $var->go;`
 	p := newParser(testStr)
 	a := p.parse()
 	if len(a) == 0 {
@@ -335,7 +335,7 @@ func TestProperty(t *testing.T) {
 		Operator: "=",
 		Value: &ast.PropertyExpression{
 			Receiver: ast.NewIdentifier("$var"),
-			Name:     "do",
+			Name:     "go",
 		},
 	}
 	if !reflect.DeepEqual(a[0], tree) {

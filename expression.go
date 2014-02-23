@@ -40,7 +40,7 @@ left  , many uses
 */
 
 var operatorPrecedence = map[ItemType]int{
-	itemArrayAccessOperator:   19,
+	itemArrayLookupOperator:   19,
 	itemUnaryOperator:         18,
 	itemCastOperator:          18,
 	itemInstanceofOperator:    17,
@@ -71,7 +71,11 @@ func (p *parser) parseExpression() (expr ast.Expression) {
 	// consume expression
 	originalParenLev := p.parenLevel
 	switch p.current.typ {
-	case itemUnaryOperator:
+	case itemNewOperator:
+		return &ast.NewExpression{
+			Expression: p.parseNextExpression(),
+		}
+	case itemUnaryOperator, itemNegationOperator:
 		op := p.current
 		expr = p.parseUnaryExpressionRight(p.parseNextExpression(), op)
 	case itemArray:
@@ -161,6 +165,15 @@ func (p *parser) expressionize() ast.Expression {
 				Receiver: ident,
 				Name:     p.current.val,
 			}
+		case itemArrayLookupOperator:
+			p.expect(itemArrayLookupOperator)
+			p.next()
+			expr := &ast.ArrayLookupExpression{
+				Array: ident,
+				Index: p.parseExpression(),
+			}
+			p.expect(itemArrayLookupOperator)
+			return expr
 		}
 		return ident
 	case itemStringLiteral:
@@ -170,7 +183,12 @@ func (p *parser) expressionize() ast.Expression {
 	case itemNumberLiteral:
 		return ast.Literal{Type: ast.Float}
 	case itemNonVariableIdentifier:
-		return p.parseFunctionCall()
+		if p.peek().typ == itemOpenParen {
+			return p.parseFunctionCall()
+		}
+		return ast.ConstantExpression{
+			Identifier: ast.NewIdentifier(p.current.val),
+		}
 	case itemOpenParen:
 		return p.parseExpression()
 	}

@@ -95,6 +95,14 @@ type ReturnStmt struct {
 	Expression
 }
 
+type ThrowStmt struct {
+	Expression
+}
+
+type NewExpression struct {
+	Expression
+}
+
 // AssignmentStmt represents an assignment.
 type AssignmentStmt struct {
 	BaseNode
@@ -154,6 +162,11 @@ type Constant struct {
 	BaseNode
 	Identifier
 	Value interface{}
+}
+
+type ConstantExpression struct {
+	BaseNode
+	Identifier
 }
 
 type Interface struct {
@@ -220,7 +233,7 @@ type WhileStmt struct {
 type DoWhileStmt struct {
 	BaseNode
 	Termination Expression
-	LoopBlock   Block
+	LoopBlock   Statement
 }
 
 type TryStmt struct {
@@ -266,4 +279,14 @@ type ArrayPair struct {
 
 func (a ArrayExpression) EvaluatesTo() Type {
 	return Array
+}
+
+type ArrayLookupExpression struct {
+	BaseNode
+	Array Identifier
+	Index Expression
+}
+
+func (a ArrayLookupExpression) EvaluatesTo() Type {
+	return AnyType
 }

@@ -58,6 +58,7 @@ const (
 	itemTry
 	itemCatch
 	itemFinally
+	itemThrow
 
 	itemClass
 	itemPrivate
@@ -97,7 +98,7 @@ const (
 
 	itemArray
 	itemArrayKeyOperator
-	itemArrayAccessOperator
+	itemArrayLookupOperator
 	itemBitwiseShiftOperator
 	itemEqualityOperator
 	itemAmpersandOperator
@@ -146,6 +147,7 @@ var itemTypeMap = map[ItemType]string{
 	itemTry:     "try",
 	itemCatch:   "catch",
 	itemFinally: "finally",
+	itemThrow:   "throw",
 
 	itemClass:       "Class",
 	itemPrivate:     "Private",
@@ -183,7 +185,7 @@ var itemTypeMap = map[ItemType]string{
 
 	itemArray:                "array",
 	itemArrayKeyOperator:     "=>",
-	itemArrayAccessOperator:  "[]",
+	itemArrayLookupOperator:  "[]",
 	itemBitwiseShiftOperator: "<<>>",
 	itemEqualityOperator:     "!===",
 	itemAmpersandOperator:    "&",
@@ -216,6 +218,7 @@ var tokenMap = map[string]ItemType{
 	"if":         itemIf,
 	"else":       itemElse,
 	"while":      itemWhile,
+	"do":         itemDo,
 	"for":        itemFor,
 	"foreach":    itemForeach,
 	"function":   itemFunction,
@@ -227,6 +230,7 @@ var tokenMap = map[string]ItemType{
 	")":          itemCloseParen,
 	",":          itemArgumentSeparator,
 	"echo":       itemEcho,
+	"throw":      itemThrow,
 	"try":        itemTry,
 	"catch":      itemCatch,
 	"finally":    itemFinally,
@@ -299,8 +303,8 @@ var tokenMap = map[string]ItemType{
 	"xor": itemWrittenXorOperator,
 	"or":  itemWrittenOrOperator,
 
-	"[": itemArrayAccessOperator,
-	"]": itemArrayAccessOperator,
+	"[": itemArrayLookupOperator,
+	"]": itemArrayLookupOperator,
 }
 
 func (i ItemType) String() string {

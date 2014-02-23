@@ -221,6 +221,8 @@ func (p *parser) parseStmt() ast.Statement {
 		return ast.Echo(expr)
 	case itemIf:
 		return p.parseIf()
+	case itemDo:
+		return p.parseDo()
 	case itemNonVariableIdentifier:
 		stmt := p.parseFunctionCall()
 		p.expect(itemStatementEnd)
@@ -232,9 +234,26 @@ func (p *parser) parseStmt() ast.Statement {
 		stmt := ast.ReturnStmt{Expression: p.parseExpression()}
 		p.expect(itemStatementEnd)
 		return stmt
+	case itemThrow:
+		stmt := ast.ThrowStmt{Expression: p.parseNextExpression()}
+		p.expect(itemStatementEnd)
+		return stmt
 	default:
 		p.errorf("Found %s, expected html or php begin", p.current)
 		return nil
+	}
+}
+
+func (p *parser) parseDo() ast.Statement {
+	block := p.parseBlock()
+	p.expect(itemWhile)
+	p.expect(itemOpenParen)
+	term := p.parseNextExpression()
+	p.expect(itemCloseParen)
+	p.expect(itemStatementEnd)
+	return &ast.DoWhileStmt{
+		Termination: term,
+		LoopBlock:   block,
 	}
 }
 
