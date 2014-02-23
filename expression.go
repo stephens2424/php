@@ -206,6 +206,10 @@ func (p *parser) parseIdentifier() ast.Expression {
 
 func (p *parser) parseArrayLookup(e ast.Expression) ast.Expression {
 	p.expect(itemArrayLookupOperator)
+	if p.peek().typ == itemArrayLookupOperator {
+		p.expect(itemArrayLookupOperator)
+		return ast.ArrayAppendExpression{Array: e}
+	}
 	p.next()
 	expr := &ast.ArrayLookupExpression{
 		Array: e,

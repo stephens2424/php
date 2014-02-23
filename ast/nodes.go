@@ -324,6 +324,20 @@ type ArrayLookupExpression struct {
 func (a ArrayLookupExpression) EvaluatesTo() Type {
 	return AnyType
 }
+
 func (a ArrayLookupExpression) AssignableType() Type {
+	return AnyType
+}
+
+type ArrayAppendExpression struct {
+	BaseNode
+	Array Expression
+}
+
+func (a ArrayAppendExpression) EvaluatesTo() Type {
+	return AnyType
+}
+
+func (a ArrayAppendExpression) AssignableType() Type {
 	return AnyType
 }
