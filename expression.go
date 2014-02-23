@@ -72,6 +72,9 @@ func (p *parser) parseExpression() (expr ast.Expression) {
 	// consume expression
 	originalParenLev := p.parenLevel
 	switch p.current.typ {
+	case itemIgnoreErrorOperator:
+		p.next()
+		return p.parseExpression()
 	case itemNewOperator:
 		return &ast.NewExpression{
 			Expression: p.parseNextExpression(),
