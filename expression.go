@@ -118,6 +118,8 @@ func (p *parser) parseOperation(originalParenLevel int, lhs ast.Expression) (exp
 		expr = p.parseUnaryExpressionLeft(lhs, p.current)
 	case itemAdditionOperator, itemSubtractionOperator, itemConcatenationOperator, itemComparisonOperator, itemMultOperator, itemAndOperator, itemOrOperator, itemAmpersandOperator, itemBitwiseXorOperator, itemBitwiseOrOperator, itemBitwiseShiftOperator, itemWrittenAndOperator, itemWrittenXorOperator, itemWrittenOrOperator:
 		expr = p.parseBinaryOperation(lhs, p.current, originalParenLevel)
+	case itemTernaryOperator1:
+		expr = p.parseTernaryOperation(lhs)
 	case itemCloseParen:
 		if p.parenLevel <= originalParenLevel {
 			p.backup()
@@ -147,6 +149,19 @@ func (p *parser) parseBinaryOperation(lhs ast.Expression, operator Item, origina
 		}
 	}
 	return newBinaryOperation(operator, lhs, rhs)
+}
+
+func (p *parser) parseTernaryOperation(lhs ast.Expression) ast.Expression {
+	truthy := p.parseNextExpression()
+	p.expect(itemTernaryOperator2)
+	falsy := p.parseNextExpression()
+	return &ast.OperatorExpression{
+		Operand1: lhs,
+		Operand2: truthy,
+		Operand3: falsy,
+		Type:     truthy.EvaluatesTo() | falsy.EvaluatesTo(),
+		Operator: "?:",
+	}
 }
 
 func (p *parser) parseUnaryExpressionRight(operand ast.Expression, operator Item) ast.Expression {
