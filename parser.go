@@ -134,7 +134,6 @@ func (p *parser) errorPrefix() string {
 
 func (p *parser) parseIf() *ast.IfStmt {
 	p.expect(itemOpenParen)
-	p.parenLevel += 1
 	n := &ast.IfStmt{}
 	p.next()
 	n.Condition = p.parseExpression()
