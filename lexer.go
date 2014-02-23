@@ -7,18 +7,20 @@ import (
 )
 
 type lexer struct {
-	lastPos int
-	pos     int
-	line    int
-	start   int
-	width   int
-	input   string
-	file    string
-	items   chan Item // channel of scanned items.
+	lastPos   int
+	pos       int
+	line      int
+	start     int
+	lastStart int
+	width     int
+	input     string
+	file      string
+	items     chan Item // channel of scanned items.
 }
 
 func newLexer(input string) *lexer {
 	l := &lexer{
+		line:  1,
 		input: input,
 		items: make(chan Item),
 	}
@@ -41,7 +43,7 @@ func (l *lexer) run() {
 
 func (l *lexer) emit(t ItemType) {
 	i := Item{t, l.currentLocation(), l.input[l.start:l.pos]}
-	l.line += strings.Count(i.val, "\n")
+	l.incrementLines()
 	l.items <- i
 	l.start = l.pos
 }
@@ -111,9 +113,14 @@ func (l *lexer) skipSpace() {
 
 func (l *lexer) errorf(format string, args ...interface{}) stateFn {
 	i := Item{itemError, l.currentLocation(), fmt.Sprintf(format, args...)}
-	l.line += strings.Count(i.val, "\n")
+	l.incrementLines()
 	l.items <- i
 	return nil
+}
+
+func (l *lexer) incrementLines() {
+	l.line += strings.Count(l.input[l.lastStart:l.pos], "\n")
+	l.lastStart = l.start
 }
 
 // isSpace reports whether r is a space character.

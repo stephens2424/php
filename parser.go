@@ -9,13 +9,14 @@ import (
 type parser struct {
 	lexer *lexer
 
-	previous []Item
-	idx      int
-	current  Item
-	errors   []error
-
+	previous   []Item
+	idx        int
+	current    Item
+	errors     []error
 	parenLevel int
-	debug      bool
+
+	debug     bool
+	MaxErrors int
 }
 
 func NewParser(input string) *parser {
@@ -24,8 +25,9 @@ func NewParser(input string) *parser {
 
 func newParser(input string) *parser {
 	p := &parser{
-		idx:   -1,
-		lexer: newLexer(input),
+		idx:       -1,
+		MaxErrors: 10,
+		lexer:     newLexer(input),
 	}
 	return p
 }
@@ -37,7 +39,9 @@ func (p *parser) Parse() []ast.Node {
 func (p *parser) parse() []ast.Node {
 	defer func() {
 		if len(p.errors) > 0 {
-			fmt.Println(p.errors)
+			for _, err := range p.errors {
+				fmt.Println(err)
+			}
 		}
 		if r := recover(); r != nil {
 			if p.debug {
@@ -111,10 +115,15 @@ func (p *parser) expected(i ItemType) {
 }
 
 func (p *parser) errorf(str string, args ...interface{}) {
-	p.errors = append(p.errors, fmt.Errorf(str, args...))
-	if len(p.errors) > 0 {
+	errString := fmt.Sprintf(str, args...)
+	p.errors = append(p.errors, fmt.Errorf("%s: %s", p.errorPrefix(), errString))
+	if len(p.errors) > p.MaxErrors {
 		panic("too many errors")
 	}
+}
+
+func (p *parser) errorPrefix() string {
+	return fmt.Sprintf("%s %d", p.lexer.file, p.current.pos.Line)
 }
 
 func (p *parser) parseIf() *ast.IfStmt {
