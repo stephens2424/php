@@ -95,7 +95,7 @@ func (p *parser) parseExpression() (expr ast.Expression) {
 			}
 		}
 		fallthrough
-	case itemNonVariableIdentifier, itemStringLiteral, itemNumberLiteral, itemBooleanLiteral:
+	case itemNonVariableIdentifier, itemStringLiteral, itemNumberLiteral, itemBooleanLiteral, itemInclude:
 		expr = p.parseOperation(originalParenLev, p.expressionize())
 	case itemOpenParen:
 		p.parenLevel += 1
@@ -205,6 +205,8 @@ func (p *parser) expressionize() ast.Expression {
 		}
 	case itemOpenParen:
 		return p.parseExpression()
+	case itemInclude:
+		return ast.Include{Expression: p.parseNextExpression()}
 	}
 	// error?
 	return nil

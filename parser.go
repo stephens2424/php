@@ -309,7 +309,7 @@ func (p *parser) parseStmt() ast.Statement {
 		p.expectStmtEnd()
 		return stmt
 	case itemInclude:
-		stmt := ast.IncludeStmt{Expression: p.parseNextExpression()}
+		stmt := ast.IncludeStmt{ast.Include{Expression: p.parseNextExpression()}}
 		p.expectStmtEnd()
 		return stmt
 	case itemTry:

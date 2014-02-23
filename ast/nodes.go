@@ -118,7 +118,15 @@ type ThrowStmt struct {
 }
 
 type IncludeStmt struct {
+	Include
+}
+
+type Include struct {
 	Expression
+}
+
+func (i Include) EvaluatesTo() Type {
+	return AnyType
 }
 
 type ExitStmt struct {
