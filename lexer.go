@@ -120,7 +120,7 @@ func (l *lexer) errorf(format string, args ...interface{}) stateFn {
 
 func (l *lexer) incrementLines() {
 	l.line += strings.Count(l.input[l.lastStart:l.pos], "\n")
-	l.lastStart = l.start
+	l.lastStart = l.pos
 }
 
 // isSpace reports whether r is a space character.
