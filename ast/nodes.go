@@ -179,8 +179,8 @@ type Block struct {
 
 type FunctionStmt struct {
 	BaseNode
-	FunctionDefinition
-	Body Block
+	*FunctionDefinition
+	Body *Block
 }
 
 type FunctionDefinition struct {
@@ -326,7 +326,7 @@ type TryStmt struct {
 
 type CatchStmt struct {
 	BaseNode
-	CatchBlock Block
+	CatchBlock *Block
 	CatchType  string
 	CatchVar   *Identifier
 }
@@ -345,7 +345,7 @@ type ForeachStmt struct {
 	Source    Expression
 	Key       *Identifier
 	Value     *Identifier
-	LoopBlock Block
+	LoopBlock Statement
 }
 
 type ArrayExpression struct {

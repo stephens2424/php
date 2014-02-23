@@ -269,6 +269,8 @@ func (p *parser) parseStmt() ast.Statement {
 		return p.parseForeach()
 	case itemSwitch:
 		return p.parseSwitch()
+	case itemAbstract:
+		fallthrough
 	case itemClass:
 		return p.parseClass()
 	case itemReturn:
@@ -310,8 +312,7 @@ func (p *parser) parseStmt() ast.Statement {
 		return stmt
 	case itemTry:
 		stmt := &ast.TryStmt{}
-		blk := p.parseBlock()
-		stmt.TryBlock = &blk
+		stmt.TryBlock = p.parseBlock()
 		p.expect(itemCatch)
 		for p.current.typ == itemCatch {
 			caught := &ast.CatchStmt{}
@@ -372,7 +373,7 @@ func (p *parser) parseForeach() ast.Statement {
 		stmt.Value = ast.NewIdentifier(p.current.val)
 	}
 	p.expect(itemCloseParen)
-	stmt.LoopBlock = p.parseBlock()
+	stmt.LoopBlock = p.parseStmt()
 	return stmt
 }
 
@@ -417,12 +418,11 @@ func (p *parser) parseSwitch() ast.Statement {
 			block := p.parseBlock()
 			stmt.Cases = append(stmt.Cases, &ast.SwitchCase{
 				Expression: expr,
-				Block:      block,
+				Block:      *block,
 			})
 		case itemDefault:
 			p.expect(itemTernaryOperator2)
-			block := p.parseBlock()
-			stmt.DefaultCase = &block
+			stmt.DefaultCase = p.parseBlock()
 		case itemBlockEnd:
 			return stmt
 		}
@@ -432,9 +432,16 @@ func (p *parser) parseSwitch() ast.Statement {
 
 func (p *parser) parseFunctionStmt() *ast.FunctionStmt {
 	stmt := &ast.FunctionStmt{}
+	stmt.FunctionDefinition = p.parseFunctionDefinition()
+	stmt.Body = p.parseBlock()
+	return stmt
+}
+
+func (p *parser) parseFunctionDefinition() *ast.FunctionDefinition {
+	def := &ast.FunctionDefinition{}
 	p.expect(itemNonVariableIdentifier)
-	stmt.Name = p.current.val
-	stmt.Arguments = make([]ast.FunctionArgument, 0)
+	def.Name = p.current.val
+	def.Arguments = make([]ast.FunctionArgument, 0)
 	p.expect(itemOpenParen)
 	first := true
 	for {
@@ -462,14 +469,13 @@ func (p *parser) parseFunctionStmt() *ast.FunctionStmt {
 			p.next()
 			arg.Default = p.parseLiteral()
 		}
-		stmt.Arguments = append(stmt.Arguments, arg)
+		def.Arguments = append(def.Arguments, arg)
 	}
-	stmt.Body = p.parseBlock()
-	return stmt
+	return def
 }
 
-func (p *parser) parseBlock() ast.Block {
-	block := ast.Block{}
+func (p *parser) parseBlock() *ast.Block {
+	block := &ast.Block{}
 	p.expect(itemBlockBegin)
 	for {
 		p.next()
@@ -483,6 +489,9 @@ func (p *parser) parseBlock() ast.Block {
 }
 
 func (p *parser) parseClass() ast.Class {
+	if p.current.typ == itemAbstract {
+		p.expect(itemClass)
+	}
 	p.expect(itemNonVariableIdentifier)
 	name := p.current.val
 	p.next()
@@ -500,6 +509,7 @@ func (p *parser) parseClassFields(c ast.Class) ast.Class {
 	c.Properties = make([]ast.Property, 0)
 	p.next()
 	var vis ast.Visibility
+	var abstract bool
 	for p.current.typ != itemBlockEnd {
 		switch p.current.typ {
 		case itemPrivate:
@@ -510,6 +520,10 @@ func (p *parser) parseClassFields(c ast.Class) ast.Class {
 			vis = ast.Public
 		case itemBlockEnd:
 			return c
+		case itemAbstract:
+			abstract = true
+			p.next()
+			continue
 		default:
 			vis = ast.Public
 			p.backup()
@@ -518,12 +532,26 @@ func (p *parser) parseClassFields(c ast.Class) ast.Class {
 		if p.current.typ == itemStatic {
 			p.next()
 		}
+		if p.current.typ == itemAbstract {
+			abstract = true
+			p.next()
+		}
 		switch p.current.typ {
 		case itemFunction:
-			c.Methods = append(c.Methods, ast.Method{
-				Visibility:   vis,
-				FunctionStmt: p.parseFunctionStmt(),
-			})
+			if abstract {
+				f := p.parseFunctionDefinition()
+				m := ast.Method{
+					Visibility:   vis,
+					FunctionStmt: &ast.FunctionStmt{FunctionDefinition: f},
+				}
+				c.Methods = append(c.Methods, m)
+				p.expect(itemStatementEnd)
+			} else {
+				c.Methods = append(c.Methods, ast.Method{
+					Visibility:   vis,
+					FunctionStmt: p.parseFunctionStmt(),
+				})
+			}
 		case itemIdentifier:
 			prop := ast.Property{
 				Visibility: vis,
@@ -538,6 +566,7 @@ func (p *parser) parseClassFields(c ast.Class) ast.Class {
 		default:
 			p.errorf("unexpected class member", p.current)
 		}
+		abstract = false
 		p.next()
 	}
 	return c
