@@ -238,13 +238,13 @@ func lexPHPEnd(l *lexer) stateFn {
 }
 
 func lexLineComment(l *lexer) stateFn {
-	l.pos += strings.Index(l.input[l.start:], "\n")
+	l.pos += strings.Index(l.input[l.pos:], "\n") + 1
 	l.ignore()
 	return lexPHP
 }
 
 func lexBlockComment(l *lexer) stateFn {
-	l.pos += strings.Index(l.input[l.start:], "*/")
+	l.pos += strings.Index(l.input[l.pos:], "*/") + 2
 	l.ignore()
 	return lexPHP
 }

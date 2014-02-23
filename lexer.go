@@ -100,6 +100,7 @@ func (l *lexer) next() rune {
 // ignore skips over the pending input before this point.
 func (l *lexer) ignore() {
 	l.start = l.pos
+	l.incrementLines()
 }
 
 func (l *lexer) skipSpace() {
