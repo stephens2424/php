@@ -265,19 +265,6 @@ func (p *parser) parseStmt() ast.Statement {
 		return p.parseForeach()
 	case itemSwitch:
 		return p.parseSwitch()
-	case itemNonVariableIdentifier:
-		var stmt ast.Statement
-		if p.peek().typ == itemScopeResolutionOperator {
-			p.next()
-			stmt = ast.ClassExpression{
-				Receiver:   p.current.val,
-				Expression: p.parseNextExpression(),
-			}
-		} else {
-			stmt = p.parseFunctionCall()
-		}
-		p.expectStmtEnd()
-		return stmt
 	case itemClass:
 		return p.parseClass()
 	case itemReturn:
@@ -325,6 +312,11 @@ func (p *parser) parseStmt() ast.Statement {
 		// Ignore this operator
 		return p.parseStmt()
 	default:
+		expr := p.parseExpression()
+		if expr != nil {
+			p.expectStmtEnd()
+			return ast.ExpressionStmt{expr}
+		}
 		p.errorf("Found %s, expected html or php begin", p.current)
 		return nil
 	}
