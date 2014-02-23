@@ -106,6 +106,8 @@ const (
 	itemBitwiseOrOperator
 	itemTernaryOperator1
 	itemTernaryOperator2
+
+	itemInclude
 )
 
 // itemTypeMap maps itemType to strings that may be used for debugging and error messages
@@ -193,6 +195,8 @@ var itemTypeMap = map[ItemType]string{
 	itemBitwiseOrOperator:    "|",
 	itemTernaryOperator1:     "?",
 	itemTernaryOperator2:     ":",
+
+	itemInclude: "include",
 }
 
 var tokenList []string
@@ -210,37 +214,41 @@ func init() {
 // tokenMap maps source code string tokens to item types when strings can
 // be represented directly. Not all item types will be represented here.
 var tokenMap = map[string]ItemType{
-	"class":      itemClass,
-	"interface":  itemInterface,
-	"implements": itemImplements,
-	"extends":    itemExtends,
-	"new":        itemNewOperator,
-	"if":         itemIf,
-	"else":       itemElse,
-	"while":      itemWhile,
-	"do":         itemDo,
-	"for":        itemFor,
-	"foreach":    itemForeach,
-	"function":   itemFunction,
-	"return":     itemReturn,
-	"{":          itemBlockBegin,
-	"}":          itemBlockEnd,
-	";":          itemStatementEnd,
-	"(":          itemOpenParen,
-	")":          itemCloseParen,
-	",":          itemArgumentSeparator,
-	"echo":       itemEcho,
-	"throw":      itemThrow,
-	"try":        itemTry,
-	"catch":      itemCatch,
-	"finally":    itemFinally,
-	"private":    itemPrivate,
-	"public":     itemPublic,
-	"protected":  itemProtected,
-	"true":       itemBooleanLiteral,
-	"false":      itemBooleanLiteral,
-	"instanceof": itemInstanceofOperator,
-	"array":      itemArray,
+	"class":        itemClass,
+	"interface":    itemInterface,
+	"implements":   itemImplements,
+	"extends":      itemExtends,
+	"new":          itemNewOperator,
+	"if":           itemIf,
+	"else":         itemElse,
+	"while":        itemWhile,
+	"do":           itemDo,
+	"for":          itemFor,
+	"foreach":      itemForeach,
+	"function":     itemFunction,
+	"return":       itemReturn,
+	"{":            itemBlockBegin,
+	"}":            itemBlockEnd,
+	";":            itemStatementEnd,
+	"(":            itemOpenParen,
+	")":            itemCloseParen,
+	",":            itemArgumentSeparator,
+	"echo":         itemEcho,
+	"throw":        itemThrow,
+	"try":          itemTry,
+	"catch":        itemCatch,
+	"finally":      itemFinally,
+	"private":      itemPrivate,
+	"public":       itemPublic,
+	"protected":    itemProtected,
+	"true":         itemBooleanLiteral,
+	"false":        itemBooleanLiteral,
+	"instanceof":   itemInstanceofOperator,
+	"array":        itemArray,
+	"include":      itemInclude,
+	"include_once": itemInclude,
+	"require":      itemInclude,
+	"require_once": itemInclude,
 
 	"(int)":     itemCastOperator,
 	"(integer)": itemCastOperator,

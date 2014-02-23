@@ -103,6 +103,10 @@ type ThrowStmt struct {
 	Expression
 }
 
+type IncludeStmt struct {
+	Expression
+}
+
 type NewExpression struct {
 	Expression
 }
