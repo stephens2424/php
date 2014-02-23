@@ -40,15 +40,16 @@ left  , many uses
 */
 
 var operatorPrecedence = map[ItemType]int{
-	itemArrayLookupOperator:   19,
-	itemUnaryOperator:         18,
-	itemCastOperator:          18,
-	itemInstanceofOperator:    17,
-	itemNegationOperator:      16,
-	itemMultOperator:          15,
-	itemAdditionOperator:      14,
-	itemSubtractionOperator:   14,
-	itemConcatenationOperator: 14,
+	itemArrayLookupOperatorLeft:  19,
+	itemArrayLookupOperatorRight: 19,
+	itemUnaryOperator:            18,
+	itemCastOperator:             18,
+	itemInstanceofOperator:       17,
+	itemNegationOperator:         16,
+	itemMultOperator:             15,
+	itemAdditionOperator:         14,
+	itemSubtractionOperator:      14,
+	itemConcatenationOperator:    14,
 
 	itemBitwiseShiftOperator: 13,
 	itemComparisonOperator:   12,
@@ -198,16 +199,16 @@ func (p *parser) parseIdentifier() ast.Expression {
 			Receiver: ident,
 			Name:     p.current.val,
 		}
-	case itemArrayLookupOperator:
+	case itemArrayLookupOperatorLeft:
 		return p.parseArrayLookup(ident)
 	}
 	return ident
 }
 
 func (p *parser) parseArrayLookup(e ast.Expression) ast.Expression {
-	p.expect(itemArrayLookupOperator)
-	if p.peek().typ == itemArrayLookupOperator {
-		p.expect(itemArrayLookupOperator)
+	p.expect(itemArrayLookupOperatorLeft)
+	if p.peek().typ == itemArrayLookupOperatorRight {
+		p.expect(itemArrayLookupOperatorRight)
 		return ast.ArrayAppendExpression{Array: e}
 	}
 	p.next()
@@ -215,8 +216,8 @@ func (p *parser) parseArrayLookup(e ast.Expression) ast.Expression {
 		Array: e,
 		Index: p.parseExpression(),
 	}
-	p.expect(itemArrayLookupOperator)
-	if p.peek().typ == itemArrayLookupOperator {
+	p.expect(itemArrayLookupOperatorRight)
+	if p.peek().typ == itemArrayLookupOperatorLeft {
 		return p.parseArrayLookup(expr)
 	}
 	return expr
