@@ -308,10 +308,6 @@ func (p *parser) parseStmt() ast.Statement {
 		}
 		p.expectStmtEnd()
 		return stmt
-	case itemInclude:
-		stmt := ast.IncludeStmt{ast.Include{Expression: p.parseNextExpression()}}
-		p.expectStmtEnd()
-		return stmt
 	case itemTry:
 		stmt := &ast.TryStmt{}
 		blk := p.parseBlock()
