@@ -21,10 +21,6 @@ type parser struct {
 }
 
 func NewParser(input string) *parser {
-	return newParser(input)
-}
-
-func newParser(input string) *parser {
 	p := &parser{
 		idx:       -1,
 		MaxErrors: 10,
@@ -35,10 +31,6 @@ func newParser(input string) *parser {
 }
 
 func (p *parser) Parse() []ast.Node {
-	return p.parse()
-}
-
-func (p *parser) parse() []ast.Node {
 	defer func() {
 		if len(p.errors) > 0 {
 			for _, err := range p.errors {

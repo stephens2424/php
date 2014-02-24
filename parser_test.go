@@ -19,8 +19,8 @@ func assertEquals(found, expected ast.Node) bool {
 
 func TestPHPParserHW(t *testing.T) {
 	testStr := `hello world`
-	p := newParser(testStr)
-	a := p.parse()
+	p := NewParser(testStr)
+	a := p.Parse()
 	tree := ast.Echo(ast.Literal{Type: ast.String})
 	if len(a) != 1 || a[0] != tree {
 		fmt.Println("Expected:", tree)
@@ -32,8 +32,8 @@ func TestPHPParserHW(t *testing.T) {
 func TestPHPParserHWPHP(t *testing.T) {
 	testStr := `<?php
     echo "hello world";`
-	p := newParser(testStr)
-	a := p.parse()
+	p := NewParser(testStr)
+	a := p.Parse()
 	if len(a) != 1 || !reflect.DeepEqual(a[0], ast.Echo(&ast.Literal{Type: ast.String})) {
 		t.Fatalf("Hello world did not correctly parse")
 	}
@@ -45,8 +45,8 @@ func TestIf(t *testing.T) {
       echo "hello world";
     else if (false)
       echo "no hello world";`
-	p := newParser(testStr)
-	a := p.parse()
+	p := NewParser(testStr)
+	a := p.Parse()
 	ifStmtOne := ast.IfStmt{
 		Condition: &ast.Literal{Type: ast.Boolean},
 		TrueBlock: ast.Echo(&ast.Literal{Type: ast.String}),
@@ -72,8 +72,8 @@ func TestAssignment(t *testing.T) {
 	testStr := `<?php
     $test = "hello world";
     echo $test;`
-	p := newParser(testStr)
-	a := p.parse()
+	p := NewParser(testStr)
+	a := p.Parse()
 	if len(a) != 2 {
 		t.Fatalf("Assignment did not correctly parse")
 	}
@@ -85,8 +85,8 @@ func TestFunction(t *testing.T) {
       echo $arg;
     }
     $var = TestFn("world", 0);`
-	p := newParser(testStr)
-	a := p.parse()
+	p := NewParser(testStr)
+	a := p.Parse()
 	if len(a) != 2 {
 		t.Fatalf("Function did not correctly parse")
 	}
@@ -116,8 +116,8 @@ func TestClass(t *testing.T) {
         return $arg;
       }
     }`
-	p := newParser(testStr)
-	a := p.parse()
+	p := NewParser(testStr)
+	a := p.Parse()
 	if len(a) != 1 {
 		t.Fatalf("Class did not correctly parse")
 	}
@@ -146,9 +146,9 @@ func TestClass(t *testing.T) {
 }
 
 func TestExpressionParsing(t *testing.T) {
-	p := newParser(`<? if (1 + 2 > 3)
+	p := NewParser(`<? if (1 + 2 > 3)
     echo "good"; `)
-	a := p.parse()
+	a := p.Parse()
 	ifStmt := ast.IfStmt{
 		Condition: ast.OperatorExpression{
 			Operand1: ast.OperatorExpression{
@@ -175,10 +175,10 @@ func TestExpressionParsing(t *testing.T) {
 		t.Fatalf("If did not correctly parse")
 	}
 
-	p = newParser(`<? if (4 + 5 * 6)
+	p = NewParser(`<? if (4 + 5 * 6)
     echo "bad";
   `)
-	a = p.parse()
+	a = p.Parse()
 	ifStmt = ast.IfStmt{
 		Condition: ast.OperatorExpression{
 			Operand2: ast.OperatorExpression{
@@ -205,10 +205,10 @@ func TestExpressionParsing(t *testing.T) {
 		t.Fatalf("If did not correctly parse")
 	}
 
-	p = newParser(`<? if (1 > 2 * 3 + 4)
+	p = NewParser(`<? if (1 > 2 * 3 + 4)
     echo "good";
   `)
-	a = p.parse()
+	a = p.Parse()
 	ifStmt = ast.IfStmt{
 		Condition: ast.OperatorExpression{
 			Operand1: &ast.Literal{Type: ast.Float},
@@ -240,11 +240,11 @@ func TestExpressionParsing(t *testing.T) {
 		t.Fatalf("If did not correctly parse")
 	}
 
-	p = newParser(`<? if (1 > 2 * 3 + 4 - 2 & 3 && 4 ^ 8 or 14 xor 10 and 13 >> 18 << 10)
+	p = NewParser(`<? if (1 > 2 * 3 + 4 - 2 & 3 && 4 ^ 8 or 14 xor 10 and 13 >> 18 << 10)
     echo "good";
   `)
 	p.Debug = true
-	a = p.parse()
+	a = p.Parse()
 	if len(a) != 1 {
 		t.Fatalf("If did not correctly parse")
 	}
@@ -253,9 +253,9 @@ func TestExpressionParsing(t *testing.T) {
 func TestArray(t *testing.T) {
 	testStr := `<?
   $var = array("one", "two", "three");`
-	p := newParser(testStr)
+	p := NewParser(testStr)
 	p.Debug = true
-	a := p.parse()
+	a := p.Parse()
 	if len(a) == 0 {
 		t.Fatalf("Array did not correctly parse")
 	}
@@ -284,8 +284,8 @@ func TestArray(t *testing.T) {
 func TestArrayKeys(t *testing.T) {
 	testStr := `<?
   $var = array(1 => "one", 2 => "two", 3 => "three");`
-	p := newParser(testStr)
-	a := p.parse()
+	p := NewParser(testStr)
+	a := p.Parse()
 	if len(a) == 0 {
 		t.Fatalf("Array did not correctly parse")
 	}
@@ -312,9 +312,9 @@ func TestArrayKeys(t *testing.T) {
 func TestMethodCall(t *testing.T) {
 	testStr := `<?
   $res = $var->go();`
-	p := newParser(testStr)
+	p := NewParser(testStr)
 	p.Debug = true
-	a := p.parse()
+	a := p.Parse()
 	if len(a) == 0 {
 		t.Fatalf("Method call did not correctly parse")
 	}
@@ -339,8 +339,8 @@ func TestMethodCall(t *testing.T) {
 func TestProperty(t *testing.T) {
 	testStr := `<?
   $res = $var->go;`
-	p := newParser(testStr)
-	a := p.parse()
+	p := NewParser(testStr)
+	a := p.Parse()
 	if len(a) == 0 {
 		t.Fatalf("Property did not correctly parse")
 	}
@@ -364,8 +364,8 @@ func TestDoLoop(t *testing.T) {
   do {
     echo $var;
   } while ($otherVar);`
-	p := newParser(testStr)
-	a := p.parse()
+	p := NewParser(testStr)
+	a := p.Parse()
 	if len(a) == 0 {
 		t.Fatalf("Do loop did not correctly parse")
 	}
@@ -387,8 +387,8 @@ func TestWhileLoop(t *testing.T) {
   while ($otherVar) {
     echo $var;
   }`
-	p := newParser(testStr)
-	a := p.parse()
+	p := NewParser(testStr)
+	a := p.Parse()
 	if len(a) == 0 {
 		t.Fatalf("While loop did not correctly parse")
 	}
@@ -410,8 +410,8 @@ func TestForLoop(t *testing.T) {
   for ($i = 0; $i < 10; $i++) {
     echo $i;
   }`
-	p := newParser(testStr)
-	a := p.parse()
+	p := NewParser(testStr)
+	a := p.Parse()
 	if len(a) == 0 {
 		t.Fatalf("While loop did not correctly parse")
 	}
