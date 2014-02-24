@@ -8,6 +8,15 @@ import (
 	"stephensearles.com/php/ast"
 )
 
+func assertEquals(found, expected ast.Node) bool {
+	if !reflect.DeepEqual(found, expected) {
+		fmt.Printf("Found:    %+v\n", found)
+		fmt.Printf("Expected: %+v\n", expected)
+		return false
+	}
+	return true
+}
+
 func TestPHPParserHW(t *testing.T) {
 	testStr := `hello world`
 	p := newParser(testStr)
@@ -347,5 +356,88 @@ func TestProperty(t *testing.T) {
 		fmt.Printf("Found:    %+v\n", a[0])
 		fmt.Printf("Expected: %+v\n", tree)
 		t.Fatalf("Property did not correctly parse")
+	}
+}
+
+func TestDoLoop(t *testing.T) {
+	testStr := `<?
+  do {
+    echo $var;
+  } while ($otherVar);`
+	p := newParser(testStr)
+	a := p.parse()
+	if len(a) == 0 {
+		t.Fatalf("Do loop did not correctly parse")
+	}
+	tree := &ast.DoWhileStmt{
+		Termination: ast.NewIdentifier("$otherVar"),
+		LoopBlock: &ast.Block{
+			Statements: []ast.Statement{
+				ast.Echo(ast.NewIdentifier("$var")),
+			},
+		},
+	}
+	if !assertEquals(a[0], tree) {
+		t.Fatalf("TestLoop did not correctly parse")
+	}
+}
+
+func TestWhileLoop(t *testing.T) {
+	testStr := `<?
+  while ($otherVar) {
+    echo $var;
+  }`
+	p := newParser(testStr)
+	a := p.parse()
+	if len(a) == 0 {
+		t.Fatalf("While loop did not correctly parse")
+	}
+	tree := &ast.WhileStmt{
+		Termination: ast.NewIdentifier("$otherVar"),
+		LoopBlock: &ast.Block{
+			Statements: []ast.Statement{
+				ast.Echo(ast.NewIdentifier("$var")),
+			},
+		},
+	}
+	if !assertEquals(a[0], tree) {
+		t.Fatalf("TestLoop did not correctly parse")
+	}
+}
+
+func TestForLoop(t *testing.T) {
+	testStr := `<?
+  for ($i = 0; $i < 10; $i++) {
+    echo $i;
+  }`
+	p := newParser(testStr)
+	a := p.parse()
+	if len(a) == 0 {
+		t.Fatalf("While loop did not correctly parse")
+	}
+	tree := &ast.ForStmt{
+		Initialization: ast.AssignmentExpression{
+			Assignee: &ast.Identifier{Type: ast.AnyType, Name: "$i"},
+			Value:    &ast.Literal{Type: ast.Float},
+			Operator: "=",
+		},
+		Termination: ast.OperatorExpression{
+			Operand1: ast.NewIdentifier("$i"),
+			Operand2: &ast.Literal{Type: ast.Float},
+			Operator: "<",
+			Type:     ast.Boolean,
+		},
+		Iteration: ast.OperatorExpression{
+			Operand1: ast.NewIdentifier("$i"),
+			Type:     ast.Numeric,
+		},
+		LoopBlock: &ast.Block{
+			Statements: []ast.Statement{
+				ast.Echo(ast.NewIdentifier("$i")),
+			},
+		},
+	}
+	if !assertEquals(a[0], tree) {
+		t.Fatalf("TestLoop did not correctly parse")
 	}
 }
