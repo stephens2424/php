@@ -200,7 +200,7 @@ type Class struct {
 	BaseNode
 	Name       string
 	Extends    *Class
-	Implements []*Interface
+	Implements []string
 	Methods    []Method
 	Properties []Property
 }
@@ -218,7 +218,9 @@ type ConstantExpression struct {
 
 type Interface struct {
 	BaseNode
-	Methods []FunctionDefinition
+	Name     string
+	Inherits []string
+	Methods  []Method
 }
 
 type Property struct {

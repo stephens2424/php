@@ -273,6 +273,8 @@ func (p *parser) parseStmt() ast.Statement {
 		fallthrough
 	case itemClass:
 		return p.parseClass()
+	case itemInterface:
+		return p.parseInterface()
 	case itemReturn:
 		p.next()
 		stmt := ast.ReturnStmt{}
@@ -494,11 +496,17 @@ func (p *parser) parseClass() ast.Class {
 	}
 	p.expect(itemNonVariableIdentifier)
 	name := p.current.val
-	p.next()
-	if p.current.typ == itemExtends {
+	if p.peek().typ == itemExtends {
+		p.expect(itemExtends)
 		p.expect(itemNonVariableIdentifier)
-	} else {
-		p.backup()
+	}
+	if p.peek().typ == itemImplements {
+		p.expect(itemImplements)
+		p.expect(itemNonVariableIdentifier)
+		for p.peek().typ == itemArgumentSeparator {
+			p.expect(itemArgumentSeparator)
+			p.expect(itemNonVariableIdentifier)
+		}
 	}
 	p.expect(itemBlockBegin)
 	return p.parseClassFields(ast.Class{Name: name})
@@ -570,4 +578,59 @@ func (p *parser) parseClassFields(c ast.Class) ast.Class {
 		p.next()
 	}
 	return c
+}
+
+func (p *parser) parseInterface() *ast.Interface {
+	i := &ast.Interface{
+		Inherits: make([]string, 0),
+	}
+	p.expect(itemNonVariableIdentifier)
+	i.Name = p.current.val
+	if p.peek().typ == itemExtends {
+		p.expect(itemExtends)
+		for {
+			p.expect(itemNonVariableIdentifier)
+			i.Inherits = append(i.Inherits, p.current.val)
+			if p.peek().typ != itemArgumentSeparator {
+				break
+			}
+			p.next()
+		}
+	}
+	var vis ast.Visibility
+	p.expect(itemBlockBegin)
+	p.next()
+	for p.current.typ != itemBlockEnd {
+		switch p.current.typ {
+		case itemPrivate:
+			vis = ast.Private
+		case itemProtected:
+			vis = ast.Protected
+		case itemPublic:
+			vis = ast.Public
+		case itemBlockEnd:
+			return i
+		default:
+			vis = ast.Public
+			p.backup()
+		}
+		p.next()
+		if p.current.typ == itemStatic {
+			p.next()
+		}
+		switch p.current.typ {
+		case itemFunction:
+			f := p.parseFunctionDefinition()
+			m := ast.Method{
+				Visibility:   vis,
+				FunctionStmt: &ast.FunctionStmt{FunctionDefinition: f},
+			}
+			i.Methods = append(i.Methods, m)
+			p.expect(itemStatementEnd)
+		default:
+			p.errorf("unexpected interface member", p.current)
+		}
+		p.next()
+	}
+	return i
 }
