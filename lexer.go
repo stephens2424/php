@@ -6,16 +6,30 @@ import (
 	"unicode/utf8"
 )
 
+// Lexer represents the state of "lexing" items from a source string.
+// The idea is derived from a Rob Pike talk:
+// http://www.youtube.com/watch?v=HxaD_trXwRE
 type lexer struct {
-	lastPos   int
-	pos       int
-	line      int
-	start     int
+	// start stores the start position of the currently lexing item.
+	start int
+	// lastStart stores the start position of the previously lexed item.
 	lastStart int
-	width     int
-	input     string
-	file      string
-	items     chan Item // channel of scanned items.
+	// lastPos stores the position of the previous lexed element.
+	lastPos int
+
+	// pos is the current position of the lexer in the input, as an index
+	// of the input string.
+	pos  int
+	line int
+	// width is the length of the current rune
+	width int
+	items chan Item // channel of scanned items.
+
+	// input is the full input string.
+	input string
+
+	// file is the filename of the input, used to print errors.
+	file string
 }
 
 func newLexer(input string) *lexer {
@@ -41,6 +55,8 @@ func (l *lexer) run() {
 	close(l.items) // No more tokens will be delivered.
 }
 
+// emit gets the current item, sends it on the item channel
+// and prepares for lexing the next item
 func (l *lexer) emit(t ItemType) {
 	i := Item{t, l.currentLocation(), l.input[l.start:l.pos]}
 	l.incrementLines()
@@ -134,6 +150,8 @@ func isKeyword(i ItemType) bool {
 	return is && ok
 }
 
+// keywordMap lists all keywords that should be ignored as a prefix to a longer
+// identifier.
 var keywordMap = map[ItemType]bool{
 	itemFunction: true,
 
