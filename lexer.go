@@ -146,8 +146,7 @@ func isSpace(r rune) bool {
 }
 
 func isKeyword(i ItemType) bool {
-	is, ok := keywordMap[i]
-	return is && ok
+	return keywordMap[i]
 }
 
 // keywordMap lists all keywords that should be ignored as a prefix to a longer
