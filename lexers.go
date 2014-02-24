@@ -107,11 +107,8 @@ func lexPHP(l *lexer) stateFn {
 }
 
 func lexNumberLiteral(l *lexer) stateFn {
-	// is negative?
-	l.accept("-")
-	l.acceptRun(digits)
-
 	// is decimal?
+	l.acceptRun(digits)
 	if l.accept(".") {
 		l.acceptRun(digits)
 	}
@@ -171,41 +168,6 @@ func lexIdentifier(l *lexer) stateFn {
 	l.acceptRun(underscore + alphabet + digits)
 	l.emit(itemIdentifier)
 	return lexPHP
-}
-
-func lexFunctionArgs(l *lexer) stateFn {
-	l.skipSpace()
-	switch r := l.next(); {
-	case r == '(':
-		l.emit(itemOpenParen)
-		if l.peek() == ')' {
-			return lexFunctionArgs
-		}
-		return lexFunctionArg
-	case r == ')':
-		l.emit(itemCloseParen)
-		return lexPHP
-	case r == ',':
-		l.emit(itemArgumentSeparator)
-		return lexFunctionArg
-	default:
-		return l.errorf("invalid function argument separator: '%s'", string(r))
-	}
-}
-
-func lexFunctionArg(l *lexer) stateFn {
-	l.skipSpace()
-	if l.peek() != '$' {
-		l.accept(underscore + alphabet)
-		l.acceptRun(underscore + alphabet + digits)
-		l.emit(itemTypeHint)
-	}
-	l.skipSpace()
-	l.next()
-	l.accept(underscore + alphabet)
-	l.acceptRun(underscore + alphabet + digits)
-	l.emit(itemArgumentName)
-	return lexFunctionArgs
 }
 
 // lexBlockBegin lexes the beginning of a code block delimited by '{'.
