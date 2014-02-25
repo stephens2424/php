@@ -471,14 +471,11 @@ func (p *parser) parseFunctionArgument() ast.FunctionArgument {
 func (p *parser) parseBlock() *ast.Block {
 	block := &ast.Block{}
 	p.expect(itemBlockBegin)
-	for {
+	for p.peek().typ != itemBlockEnd {
 		p.next()
 		block.Statements = append(block.Statements, p.parseStmt())
-		if p.next(); p.current.typ == itemBlockEnd {
-			break
-		}
-		p.backup()
 	}
+	p.next()
 	return block
 }
 
