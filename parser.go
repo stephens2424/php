@@ -501,41 +501,46 @@ func (p *parser) parseClass() ast.Class {
 	return p.parseClassFields(ast.Class{Name: name})
 }
 
+func (p *parser) parseVisibility() (vis ast.Visibility, found bool) {
+	switch p.peek().typ {
+	case itemPrivate:
+		vis = ast.Private
+	case itemPublic:
+		vis = ast.Public
+	case itemProtected:
+		vis = ast.Protected
+	default:
+		return ast.Public, false
+	}
+	p.next()
+	return vis, true
+}
+
+func (p *parser) parseAbstract() bool {
+	if p.peek().typ == itemAbstract {
+		p.next()
+		return true
+	}
+	return false
+}
+
 func (p *parser) parseClassFields(c ast.Class) ast.Class {
 	c.Methods = make([]ast.Method, 0)
 	c.Properties = make([]ast.Property, 0)
-	p.next()
-	var vis ast.Visibility
-	var abstract bool
-	for p.current.typ != itemBlockEnd {
-		switch p.current.typ {
-		case itemPrivate:
-			vis = ast.Private
-		case itemProtected:
-			vis = ast.Protected
-		case itemPublic:
-			vis = ast.Public
-		case itemBlockEnd:
-			return c
-		case itemAbstract:
-			abstract = true
-			p.next()
-			continue
-		default:
-			vis = ast.Public
-			p.backup()
+	for p.peek().typ != itemBlockEnd {
+		vis, foundVis := p.parseVisibility()
+		abstract := p.parseAbstract()
+		if foundVis == false {
+			vis, _ = p.parseVisibility()
 		}
 		p.next()
 		if p.current.typ == itemStatic {
 			p.next()
 		}
-		if p.current.typ == itemAbstract {
-			abstract = true
-			p.next()
-		}
 		switch p.current.typ {
 		case itemFunction:
 			if abstract {
+				p.next()
 				f := p.parseFunctionDefinition()
 				m := ast.Method{
 					Visibility:   vis,
@@ -563,9 +568,8 @@ func (p *parser) parseClassFields(c ast.Class) ast.Class {
 		default:
 			p.errorf("unexpected class member", p.current)
 		}
-		abstract = false
-		p.next()
 	}
+	p.expect(itemBlockEnd)
 	return c
 }
 
