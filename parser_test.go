@@ -441,3 +441,55 @@ func TestForLoop(t *testing.T) {
 		t.Fatalf("TestLoop did not correctly parse")
 	}
 }
+
+func TestWhileLoopWithAssignment(t *testing.T) {
+	testStr := `<?
+  while ($var = mysql_assoc()) {
+    echo $var;
+  }`
+	p := NewParser(testStr)
+	a := p.Parse()
+	if len(a) == 0 {
+		t.Fatalf("While loop did not correctly parse")
+	}
+	tree := &ast.WhileStmt{
+		Termination: ast.AssignmentExpression{
+			Assignee: ast.NewIdentifier("$var"),
+			Value: &ast.FunctionCallExpression{
+				FunctionName: "mysql_assoc",
+				Arguments:    make([]ast.Expression, 0),
+			},
+			Operator: "=",
+		},
+		LoopBlock: &ast.Block{
+			Statements: []ast.Statement{
+				ast.Echo(ast.NewIdentifier("$var")),
+			},
+		},
+	}
+	if !assertEquals(a[0], tree) {
+		t.Fatalf("While loop with assignment did not correctly parse")
+	}
+}
+
+func TestArrayLookup(t *testing.T) {
+	testStr := `<?
+  echo $arr['one'][$two];`
+	p := NewParser(testStr)
+	a := p.Parse()
+	if len(a) == 0 {
+		t.Fatalf("Array lookup did not correctly parse")
+	}
+	tree := ast.EchoStmt{
+		Expression: &ast.ArrayLookupExpression{
+			Array: &ast.ArrayLookupExpression{
+				Array: &ast.Identifier{Name: "$arr", Type: ast.AnyType},
+				Index: &ast.Literal{Type: ast.String},
+			},
+			Index: &ast.Identifier{Name: "$two", Type: ast.AnyType},
+		},
+	}
+	if !assertEquals(a[0], tree) {
+		t.Fatalf("Array lookup did not correctly parse")
+	}
+}
