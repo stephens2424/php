@@ -590,24 +590,10 @@ func (p *parser) parseInterface() *ast.Interface {
 			p.next()
 		}
 	}
-	var vis ast.Visibility
 	p.expect(itemBlockBegin)
 	p.next()
 	for p.current.typ != itemBlockEnd {
-		switch p.current.typ {
-		case itemPrivate:
-			vis = ast.Private
-		case itemProtected:
-			vis = ast.Protected
-		case itemPublic:
-			vis = ast.Public
-		case itemBlockEnd:
-			return i
-		default:
-			vis = ast.Public
-			p.backup()
-		}
-		p.next()
+		vis, _ := p.parseVisibility()
 		if p.current.typ == itemStatic {
 			p.next()
 		}
