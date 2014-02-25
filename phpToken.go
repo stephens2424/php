@@ -47,7 +47,7 @@ const (
 	itemFunctionCallEnd
 	itemArgumentType
 	itemArgumentName
-	itemArgumentSeparator
+	itemComma
 	itemStatementEnd
 	itemEcho
 
@@ -149,7 +149,7 @@ var itemTypeMap = map[ItemType]string{
 	itemFunctionCallEnd:   "Function Call End",
 	itemArgumentType:      "Function Argument Type",
 	itemArgumentName:      "Function Argument Name",
-	itemArgumentSeparator: "Function Argument Separator",
+	itemComma:             "Function Argument Separator",
 	itemStatementEnd:      "Statement End",
 	itemEcho:              "Echo",
 
@@ -269,7 +269,7 @@ var tokenMap = map[string]ItemType{
 	";":            itemStatementEnd,
 	"(":            itemOpenParen,
 	")":            itemCloseParen,
-	",":            itemArgumentSeparator,
+	",":            itemComma,
 	"echo":         itemEcho,
 	"throw":        itemThrow,
 	"try":          itemTry,

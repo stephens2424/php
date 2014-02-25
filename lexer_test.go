@@ -68,7 +68,7 @@ func TestPHPLexer(t *testing.T) {
 	i = assertNext(t, l, itemOpenParen)
 	i = assertNext(t, l, itemNonVariableIdentifier)
 	i = assertNext(t, l, itemIdentifier)
-	i = assertNext(t, l, itemArgumentSeparator)
+	i = assertNext(t, l, itemComma)
 	i = assertNext(t, l, itemIdentifier)
 	i = assertNext(t, l, itemCloseParen)
 	i = assertNext(t, l, itemBlockBegin)

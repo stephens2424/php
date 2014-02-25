@@ -131,13 +131,13 @@ func (p *parser) parseIf() *ast.IfStmt {
 	n.Condition = p.parseExpression()
 	p.expect(itemCloseParen)
 	p.next()
-	n.TrueBlock = p.parseStmt()
+	n.TrueBranch = p.parseStmt()
 	p.next()
 	if p.current.typ == itemElse {
 		p.next()
-		n.FalseBlock = p.parseStmt()
+		n.FalseBranch = p.parseStmt()
 	} else {
-		n.FalseBlock = ast.Block{}
+		n.FalseBranch = ast.Block{}
 		p.backup()
 	}
 	return n
@@ -191,7 +191,7 @@ func (p *parser) parseFunctionCall() *ast.FunctionCallExpression {
 	}
 	expr.Arguments = append(expr.Arguments, p.parseNextExpression())
 	for p.peek().typ != itemCloseParen {
-		p.expect(itemArgumentSeparator)
+		p.expect(itemComma)
 		arg := p.parseNextExpression()
 		if arg == nil {
 			break
@@ -439,7 +439,7 @@ func (p *parser) parseFunctionDefinition() *ast.FunctionDefinition {
 		}
 		p.backup()
 		if !first {
-			p.expect(itemArgumentSeparator)
+			p.expect(itemComma)
 		} else {
 			first = false
 		}
@@ -489,8 +489,8 @@ func (p *parser) parseClass() ast.Class {
 	if p.peek().typ == itemImplements {
 		p.expect(itemImplements)
 		p.expect(itemNonVariableIdentifier)
-		for p.peek().typ == itemArgumentSeparator {
-			p.expect(itemArgumentSeparator)
+		for p.peek().typ == itemComma {
+			p.expect(itemComma)
 			p.expect(itemNonVariableIdentifier)
 		}
 	}
@@ -577,7 +577,7 @@ func (p *parser) parseInterface() *ast.Interface {
 		for {
 			p.expect(itemNonVariableIdentifier)
 			i.Inherits = append(i.Inherits, p.current.val)
-			if p.peek().typ != itemArgumentSeparator {
+			if p.peek().typ != itemComma {
 				break
 			}
 			p.next()

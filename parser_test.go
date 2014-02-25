@@ -48,12 +48,12 @@ func TestIf(t *testing.T) {
 	p := NewParser(testStr)
 	a := p.Parse()
 	ifStmtOne := ast.IfStmt{
-		Condition: &ast.Literal{Type: ast.Boolean},
-		TrueBlock: ast.Echo(&ast.Literal{Type: ast.String}),
-		FalseBlock: &ast.IfStmt{
-			Condition:  &ast.Literal{Type: ast.Boolean},
-			TrueBlock:  ast.Echo(&ast.Literal{Type: ast.String}),
-			FalseBlock: ast.Block{},
+		Condition:  &ast.Literal{Type: ast.Boolean},
+		TrueBranch: ast.Echo(&ast.Literal{Type: ast.String}),
+		FalseBranch: &ast.IfStmt{
+			Condition:   &ast.Literal{Type: ast.Boolean},
+			TrueBranch:  ast.Echo(&ast.Literal{Type: ast.String}),
+			FalseBranch: ast.Block{},
 		},
 	}
 	if len(a) != 1 {
@@ -161,8 +161,8 @@ func TestExpressionParsing(t *testing.T) {
 			Type:     ast.Boolean,
 			Operator: ">",
 		},
-		TrueBlock:  ast.Echo(&ast.Literal{Type: ast.String}),
-		FalseBlock: ast.Block{},
+		TrueBranch:  ast.Echo(&ast.Literal{Type: ast.String}),
+		FalseBranch: ast.Block{},
 	}
 	if len(a) != 1 {
 		t.Fatalf("If did not correctly parse")
@@ -191,8 +191,8 @@ func TestExpressionParsing(t *testing.T) {
 			Type:     ast.Numeric,
 			Operator: "+",
 		},
-		TrueBlock:  ast.Echo(&ast.Literal{Type: ast.String}),
-		FalseBlock: ast.Block{},
+		TrueBranch:  ast.Echo(&ast.Literal{Type: ast.String}),
+		FalseBranch: ast.Block{},
 	}
 	if len(a) != 1 {
 		t.Fatalf("If did not correctly parse")
@@ -226,8 +226,8 @@ func TestExpressionParsing(t *testing.T) {
 			Type:     ast.Boolean,
 			Operator: ">",
 		},
-		TrueBlock:  ast.Echo(&ast.Literal{Type: ast.String}),
-		FalseBlock: ast.Block{},
+		TrueBranch:  ast.Echo(&ast.Literal{Type: ast.String}),
+		FalseBranch: ast.Block{},
 	}
 	if len(a) != 1 {
 		t.Fatalf("If did not correctly parse")

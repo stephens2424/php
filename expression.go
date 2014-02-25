@@ -291,7 +291,7 @@ ArrayLoop:
 				pairs = append(pairs, ast.ArrayPair{key, val})
 			}
 			break ArrayLoop
-		case itemArgumentSeparator:
+		case itemComma:
 			pairs = append(pairs, ast.ArrayPair{key, val})
 			key = nil
 			val = nil

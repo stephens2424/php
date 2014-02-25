@@ -281,9 +281,9 @@ const (
 
 type IfStmt struct {
 	BaseNode
-	Condition  Expression
-	TrueBlock  Statement
-	FalseBlock Statement
+	Condition   Expression
+	TrueBranch  Statement
+	FalseBranch Statement
 }
 
 type SwitchStmt struct {
