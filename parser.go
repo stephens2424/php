@@ -97,11 +97,22 @@ func (p *parser) peek() (i Item) {
 	return
 }
 
-func (p *parser) expect(i ItemType) {
-	p.next()
+func (p *parser) expectCurrent(i ItemType) {
 	if p.current.typ != i {
 		p.expected(i)
 	}
+}
+
+func (p *parser) expectAndNext(i ItemType) {
+	if p.current.typ != i {
+		p.expected(i)
+	}
+	p.next()
+}
+
+func (p *parser) expect(i ItemType) {
+	p.next()
+	p.expectCurrent(i)
 }
 
 func (p *parser) expected(i ItemType) {
@@ -395,8 +406,7 @@ func (p *parser) parseSwitch() ast.Statement {
 	stmt := ast.SwitchStmt{}
 	p.expect(itemOpenParen)
 	stmt.Expression = p.parseExpression()
-	p.backup()
-	p.expect(itemCloseParen)
+	p.expectCurrent(itemCloseParen)
 	p.expect(itemBlockBegin)
 	for {
 		switch p.current.typ {
@@ -431,35 +441,31 @@ func (p *parser) parseFunctionDefinition() *ast.FunctionDefinition {
 	def.Name = p.current.val
 	def.Arguments = make([]ast.FunctionArgument, 0)
 	p.expect(itemOpenParen)
-	first := true
-	for {
-		p.next()
-		if p.current.typ == itemCloseParen {
-			break
-		}
-		p.backup()
-		if !first {
+	for p.current.typ != itemCloseParen {
+		def.Arguments = append(def.Arguments, p.parseFunctionArgument())
+		if p.peek().typ == itemComma {
 			p.expect(itemComma)
-		} else {
-			first = false
 		}
 		p.next()
-		arg := ast.FunctionArgument{}
-		if p.current.typ == itemNonVariableIdentifier {
-			arg.TypeHint = p.current.val
-		} else {
-			p.backup()
-		}
-		p.expect(itemIdentifier)
-		arg.Identifier = ast.NewIdentifier(p.current.val)
-		if p.peek().typ == itemAssignmentOperator {
-			p.expect(itemAssignmentOperator)
-			p.next()
-			arg.Default = p.parseLiteral()
-		}
-		def.Arguments = append(def.Arguments, arg)
 	}
+	p.expectCurrent(itemCloseParen)
 	return def
+}
+
+func (p *parser) parseFunctionArgument() ast.FunctionArgument {
+	arg := ast.FunctionArgument{}
+	if p.peek().typ == itemNonVariableIdentifier {
+		p.expect(itemNonVariableIdentifier)
+		arg.TypeHint = p.current.val
+	}
+	p.expect(itemIdentifier)
+	arg.Identifier = ast.NewIdentifier(p.current.val)
+	if p.peek().typ == itemAssignmentOperator {
+		p.expect(itemAssignmentOperator)
+		p.next()
+		arg.Default = p.parseLiteral()
+	}
+	return arg
 }
 
 func (p *parser) parseBlock() *ast.Block {
