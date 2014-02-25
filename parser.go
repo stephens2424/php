@@ -185,26 +185,20 @@ func (p *parser) parseFunctionCall() *ast.FunctionCallExpression {
 	expr.FunctionName = p.current.val
 	expr.Arguments = make([]ast.Expression, 0)
 	p.expect(itemOpenParen)
-	first := true
-	p.next()
-	for {
-		if p.current.typ == itemCloseParen {
-			break
-		}
-		if !first {
-			p.backup()
-			p.expect(itemArgumentSeparator)
-			p.next()
-		} else {
-			first = false
-		}
-		arg := p.parseExpression()
+	if p.peek().typ == itemCloseParen {
+		p.expect(itemCloseParen)
+		return expr
+	}
+	expr.Arguments = append(expr.Arguments, p.parseNextExpression())
+	for p.peek().typ != itemCloseParen {
+		p.expect(itemArgumentSeparator)
+		arg := p.parseNextExpression()
 		if arg == nil {
 			break
 		}
 		expr.Arguments = append(expr.Arguments, arg)
-		p.next()
 	}
+	p.expect(itemCloseParen)
 	return expr
 }
 
