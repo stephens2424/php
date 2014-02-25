@@ -49,12 +49,12 @@ func lexPHP(l *lexer) stateFn {
 	if r := l.peek(); unicode.IsDigit(r) {
 		return lexNumberLiteral
 	} else if r == '.' {
-		l.next()
-		if unicode.IsDigit(l.peek()) {
-			l.backup()
+		l.next() // must advance because we only peeked before
+		secondR := l.peek()
+		l.backup()
+		if unicode.IsDigit(secondR) {
 			return lexNumberLiteral
 		}
-		l.backup()
 	}
 
 	if strings.HasPrefix(l.input[l.pos:], "?>") {
@@ -74,7 +74,7 @@ func lexPHP(l *lexer) stateFn {
 		if strings.HasPrefix(l.input[l.pos:], token) {
 			l.pos += len(token)
 			if isKeyword(item) && l.accept(alphabet+underscore+digits) {
-				l.backup()
+				l.backup() // to account for the character consumed by accept
 				l.pos -= len(token)
 				break
 			}
@@ -87,11 +87,10 @@ func lexPHP(l *lexer) stateFn {
 		return lexIdentifier
 	}
 
-	if l.next() == eof {
+	if l.peek() == eof {
 		l.emit(itemEOF)
 		return nil
 	}
-	l.backup()
 
 	if l.peek() == '\'' {
 		return lexSingleQuotedStringLiteral
