@@ -408,24 +408,64 @@ func (p *parser) parseSwitch() ast.Statement {
 	stmt.Expression = p.parseExpression()
 	p.expectCurrent(itemCloseParen)
 	p.expect(itemBlockBegin)
+	p.next()
 	for {
 		switch p.current.typ {
 		case itemCase:
 			expr := p.parseNextExpression()
 			p.expect(itemTernaryOperator2)
-			block := p.parseBlock()
+			p.next()
 			stmt.Cases = append(stmt.Cases, &ast.SwitchCase{
 				Expression: expr,
-				Block:      *block,
+				Block:      *(p.parseSwitchBlock()),
 			})
 		case itemDefault:
 			p.expect(itemTernaryOperator2)
-			stmt.DefaultCase = p.parseBlock()
+			p.next()
+			stmt.DefaultCase = p.parseSwitchBlock()
 		case itemBlockEnd:
 			return stmt
+		default:
+			p.errorf("Unexpected item in switch statement:", p.current)
+			return nil
 		}
+	}
+}
+
+func (p *parser) parseSwitchBlock() *ast.Block {
+	needBlockEnd := false
+	if p.current.typ == itemBlockBegin {
+		needBlockEnd = true
 		p.next()
 	}
+	block := &ast.Block{
+		Statements: make([]ast.Statement, 0),
+	}
+stmtLoop:
+	for {
+		switch p.current.typ {
+		case itemBlockEnd:
+			if needBlockEnd {
+				needBlockEnd = false
+				p.next()
+			}
+			fallthrough
+		case itemCase, itemDefault:
+			break stmtLoop
+		default:
+			stmt := p.parseStmt()
+			if stmt == nil {
+				p.errorf("Invalid statement in switch block", p.current)
+				break stmtLoop
+			}
+			block.Statements = append(block.Statements, stmt)
+			p.next()
+		}
+	}
+	if needBlockEnd {
+		p.errorf("switch case needs block end")
+	}
+	return block
 }
 
 func (p *parser) parseFunctionStmt() *ast.FunctionStmt {

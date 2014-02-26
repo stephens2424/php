@@ -493,3 +493,50 @@ func TestArrayLookup(t *testing.T) {
 		t.Fatalf("Array lookup did not correctly parse")
 	}
 }
+
+func TestSwitch(t *testing.T) {
+	testStr := `<?
+  switch ($var) {
+  case 1:
+    echo "one";
+  case 2: {
+    echo "two";
+  }
+  default:
+    echo "def";
+  }`
+	p := NewParser(testStr)
+	a := p.Parse()
+	if len(a) == 0 {
+		t.Fatalf("Array lookup did not correctly parse")
+	}
+	tree := ast.SwitchStmt{
+		Expression: &ast.Identifier{Name: "$var", Type: ast.AnyType},
+		Cases: []*ast.SwitchCase{
+			{
+				Expression: &ast.Literal{Type: ast.Float},
+				Block: ast.Block{
+					Statements: []ast.Statement{
+						ast.Echo(&ast.Literal{Type: ast.String}),
+					},
+				},
+			},
+			{
+				Expression: &ast.Literal{Type: ast.Float},
+				Block: ast.Block{
+					Statements: []ast.Statement{
+						ast.Echo(&ast.Literal{Type: ast.String}),
+					},
+				},
+			},
+		},
+		DefaultCase: &ast.Block{
+			Statements: []ast.Statement{
+				ast.Echo(&ast.Literal{Type: ast.String}),
+			},
+		},
+	}
+	if !assertEquals(a[0], tree) {
+		t.Fatalf("Switch did not correctly parse")
+	}
+}
