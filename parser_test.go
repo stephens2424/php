@@ -6,12 +6,16 @@ import (
 	"testing"
 
 	"stephensearles.com/php/ast"
+	. "stephensearles.com/php/passes/printing"
 )
 
 func assertEquals(found, expected ast.Node) bool {
+	w := &Walker{}
 	if !reflect.DeepEqual(found, expected) {
-		fmt.Printf("Found:    %+v\n", found)
-		fmt.Printf("Expected: %+v\n", expected)
+		fmt.Printf("Found:    %s\n", found)
+		w.Walk(found)
+		fmt.Printf("Expected: %+s\n", expected)
+		w.Walk(expected)
 		return false
 	}
 	return true
@@ -22,9 +26,7 @@ func TestPHPParserHW(t *testing.T) {
 	p := NewParser(testStr)
 	a := p.Parse()
 	tree := ast.Echo(ast.Literal{Type: ast.String})
-	if len(a) != 1 || a[0] != tree {
-		fmt.Println("Expected:", tree)
-		fmt.Println("Found:   ", a[0])
+	if !assertEquals(a[0], tree) {
 		t.Fatalf("Hello world did not correctly parse")
 	}
 }
@@ -34,7 +36,7 @@ func TestPHPParserHWPHP(t *testing.T) {
     echo "hello world";`
 	p := NewParser(testStr)
 	a := p.Parse()
-	if len(a) != 1 || !reflect.DeepEqual(a[0], ast.Echo(&ast.Literal{Type: ast.String})) {
+	if !assertEquals(a[0], ast.Echo(&ast.Literal{Type: ast.String})) {
 		t.Fatalf("Hello world did not correctly parse")
 	}
 }
@@ -47,7 +49,7 @@ func TestIf(t *testing.T) {
       echo "no hello world";`
 	p := NewParser(testStr)
 	a := p.Parse()
-	ifStmtOne := ast.IfStmt{
+	tree := &ast.IfStmt{
 		Condition:  &ast.Literal{Type: ast.Boolean},
 		TrueBranch: ast.Echo(&ast.Literal{Type: ast.String}),
 		FalseBranch: &ast.IfStmt{
@@ -56,14 +58,7 @@ func TestIf(t *testing.T) {
 			FalseBranch: ast.Block{},
 		},
 	}
-	if len(a) != 1 {
-		t.Fatalf("If did not correctly parse")
-	}
-	parsedIf, ok := a[0].(*ast.IfStmt)
-	if !ok {
-		t.Fatalf("If did not correctly parse")
-	}
-	if !reflect.DeepEqual(*parsedIf, ifStmtOne) {
+	if !assertEquals(a[0], tree) {
 		t.Fatalf("If did not correctly parse")
 	}
 }
@@ -87,20 +82,42 @@ func TestFunction(t *testing.T) {
     $var = TestFn("world", 0);`
 	p := NewParser(testStr)
 	a := p.Parse()
+	tree := []ast.Node{
+		&ast.FunctionStmt{
+			FunctionDefinition: &ast.FunctionDefinition{
+				Name: "TestFn",
+				Arguments: []ast.FunctionArgument{
+					{
+						Identifier: ast.NewIdentifier("$arg"),
+					},
+				},
+			},
+			Body: &ast.Block{
+				Statements: []ast.Statement{ast.Echo(ast.NewIdentifier("$arg"))},
+			},
+		},
+		ast.AssignmentStmt{
+			ast.AssignmentExpression{
+				Assignee: &ast.Identifier{Name: "$var", Type: ast.AnyType},
+				Value: &ast.FunctionCallExpression{
+					FunctionName: "TestFn",
+					Arguments: []ast.Expression{
+						&ast.Literal{Type: ast.String},
+						&ast.Literal{Type: ast.Float},
+					},
+				},
+				Operator: "=",
+			},
+		},
+	}
 	if len(a) != 2 {
 		t.Fatalf("Function did not correctly parse")
 	}
-	_, ok := a[0].(*ast.FunctionStmt)
-	if !ok {
-		t.Fatalf("FunctionStmt did not correctly parse")
+	if !assertEquals(a[0], tree[0]) {
+		t.Fatalf("Function did not correctly parse")
 	}
-	assign, ok := a[1].(ast.AssignmentStmt)
-	if !ok {
-		t.Fatalf("FunctionCall did not correctly parse")
-	}
-	_, ok = assign.Value.(*ast.FunctionCallExpression)
-	if !ok {
-		t.Fatalf("FunctionCall did not correctly parse")
+	if !assertEquals(a[1], tree[1]) {
+		t.Fatalf("Function assignment did not correctly parse")
 	}
 }
 

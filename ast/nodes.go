@@ -1,11 +1,11 @@
 package ast
 
-import (
-	"fmt"
-)
+import "fmt"
 
 // Node encapsulates every AST node.
 type Node interface {
+	String() string
+	Children() []Node
 	Position() Position
 }
 
@@ -19,11 +19,23 @@ func (b BaseNode) Position() Position {
 	return Position(b.pos)
 }
 
+func (b BaseNode) Children() []Node {
+	return nil
+}
+
+func (b BaseNode) String() string {
+	return ""
+}
+
 // An Identifier is specifically a variable in code.
 type Identifier struct {
 	BaseNode
 	Name string
 	Type Type
+}
+
+func (i Identifier) String() string {
+	return i.Name
 }
 
 type GlobalIdentifier struct {
@@ -72,14 +84,16 @@ type OperatorExpression struct {
 	Operator string
 }
 
+func (o OperatorExpression) Children() []Node {
+	return []Node{
+		o.Operand1,
+		o.Operand2,
+		o.Operand3,
+	}
+}
+
 func (o OperatorExpression) String() string {
-	if o.Operand2 == nil {
-		return fmt.Sprintf("(%s%v~%v)", o.Operand1, o.Operator, o.Type)
-	}
-	if o.Operand3 == nil {
-		return fmt.Sprintf("(%s %v %s~%v)", o.Operand1, o.Operator, o.Operand2, o.Type)
-	}
-	return fmt.Sprintf("(%s ? %s : %s~%v)", o.Operand1, o.Operand2, o.Operand3, o.Type)
+	return o.Operator
 }
 
 func (o OperatorExpression) EvaluatesTo() Type {
@@ -100,6 +114,14 @@ func Echo(expr Expression) EchoStmt {
 type EchoStmt struct {
 	BaseNode
 	Expression Expression
+}
+
+func (e EchoStmt) String() string {
+	return "Echo"
+}
+
+func (e EchoStmt) Children() []Node {
+	return []Node{e.Expression}
 }
 
 // ReturnStmt represents a function return.
@@ -144,6 +166,17 @@ type AssignmentExpression struct {
 	Operator string
 }
 
+func (a AssignmentExpression) String() string {
+	return a.Operator
+}
+
+func (a AssignmentExpression) Children() []Node {
+	return []Node{
+		a.Assignee,
+		a.Value,
+	}
+}
+
 func (a AssignmentExpression) EvaluatesTo() Type {
 	return a.Value.EvaluatesTo()
 }
@@ -154,6 +187,7 @@ type AssignmentStmt struct {
 }
 
 type Assignable interface {
+	Node
 	AssignableType() Type
 }
 
@@ -177,10 +211,29 @@ type Block struct {
 	Scope      Scope
 }
 
+func (b Block) Children() []Node {
+	n := make([]Node, len(b.Statements))
+	for i, s := range b.Statements {
+		n[i] = s
+	}
+	return n
+}
+
 type FunctionStmt struct {
 	BaseNode
 	*FunctionDefinition
 	Body *Block
+}
+
+func (f FunctionStmt) String() string {
+	return fmt.Sprintf("Func: %s", f.Name)
+}
+
+func (f FunctionStmt) Children() []Node {
+	return []Node{
+		f.FunctionDefinition,
+		f.Body,
+	}
 }
 
 type FunctionDefinition struct {
@@ -189,11 +242,33 @@ type FunctionDefinition struct {
 	Arguments []FunctionArgument
 }
 
+func (fd FunctionDefinition) Children() []Node {
+	n := make([]Node, len(fd.Arguments))
+	for i, arg := range fd.Arguments {
+		n[i] = arg
+	}
+	return n
+}
+
 type FunctionArgument struct {
 	BaseNode
 	TypeHint   string
 	Default    *Literal
 	Identifier *Identifier
+}
+
+func (fa FunctionArgument) String() string {
+	return fmt.Sprintf("Arg: %s", fa.TypeHint)
+}
+
+func (fa FunctionArgument) Children() []Node {
+	n := []Node{
+		fa.Identifier,
+	}
+	if fa.Default != nil {
+		n = append(n, fa.Default)
+	}
+	return n
 }
 
 type Class struct {
@@ -212,7 +287,6 @@ type Constant struct {
 }
 
 type ConstantExpression struct {
-	BaseNode
 	*Identifier
 }
 
@@ -286,6 +360,18 @@ type IfStmt struct {
 	FalseBranch Statement
 }
 
+func (i IfStmt) String() string {
+	return "if"
+}
+
+func (i IfStmt) Children() []Node {
+	return []Node{
+		i.Condition,
+		i.TrueBranch,
+		i.FalseBranch,
+	}
+}
+
 type SwitchStmt struct {
 	BaseNode
 	Expression  Expression
@@ -336,6 +422,10 @@ type CatchStmt struct {
 type Literal struct {
 	BaseNode
 	Type Type
+}
+
+func (l Literal) String() string {
+	return fmt.Sprintf("Literal-%s", l.Type)
 }
 
 func (l Literal) EvaluatesTo() Type {
