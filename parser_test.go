@@ -339,10 +339,11 @@ func TestMethodCall(t *testing.T) {
 
 func TestProperty(t *testing.T) {
 	testStr := `<?
-  $res = $var->go;`
+  $res = $var->go;
+  $var->go = $res;`
 	p := NewParser(testStr)
 	a := p.Parse()
-	if len(a) == 0 {
+	if len(a) != 2 {
 		t.Fatalf("Property did not correctly parse")
 	}
 	tree := ast.AssignmentStmt{ast.AssignmentExpression{
@@ -353,9 +354,19 @@ func TestProperty(t *testing.T) {
 			Name:     "go",
 		},
 	}}
-	if !reflect.DeepEqual(a[0], tree) {
-		fmt.Printf("Found:    %+v\n", a[0])
-		fmt.Printf("Expected: %+v\n", tree)
+	if !assertEquals(a[0], tree) {
+		t.Fatalf("Property did not correctly parse")
+	}
+
+	tree = ast.AssignmentStmt{ast.AssignmentExpression{
+		Assignee: &ast.PropertyExpression{
+			Receiver: ast.NewIdentifier("$var"),
+			Name:     "go",
+		},
+		Operator: "=",
+		Value:    ast.NewIdentifier("$res"),
+	}}
+	if !assertEquals(a[1], tree) {
 		t.Fatalf("Property did not correctly parse")
 	}
 }

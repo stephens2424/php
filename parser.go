@@ -226,14 +226,15 @@ func (p *parser) parseStmt() ast.Statement {
 		p.expectStmtEnd()
 		return ident
 	case itemIdentifier:
+		ident := p.parseIdentifier()
 		switch p.peek().typ {
 		case itemUnaryOperator:
-			expr := ast.ExpressionStmt{p.parseExpression()}
+			expr := ast.ExpressionStmt{p.parseOperation(p.parenLevel, ident)}
 			p.expectStmtEnd()
 			return expr
 		case itemAssignmentOperator, itemArrayLookupOperatorLeft:
 			n := ast.AssignmentStmt{}
-			n.Assignee = p.parseIdentifier().(ast.Assignable)
+			n.Assignee = ident.(ast.Assignable)
 			p.expect(itemAssignmentOperator)
 			n.Operator = p.current.val
 			p.next()
