@@ -108,6 +108,7 @@ func TestClass(t *testing.T) {
 	testStr := `<?php
     abstract class TestClass {
       public $myProp;
+      protected $myProp2;
       abstract public function method0($arg);
       public function method1($arg) {
         echo $arg;
@@ -128,6 +129,10 @@ func TestClass(t *testing.T) {
 			{
 				Visibility: ast.Public,
 				Name:       "$myProp",
+			},
+			{
+				Visibility: ast.Protected,
+				Name:       "$myProp2",
 			},
 		},
 		Methods: []ast.Method{
