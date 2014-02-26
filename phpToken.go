@@ -82,6 +82,7 @@ const (
 	itemExtends
 	itemNewOperator
 
+	itemNull
 	itemStringLiteral
 	itemNumberLiteral
 	itemBooleanLiteral
@@ -170,6 +171,7 @@ var itemTypeMap = map[ItemType]string{
 	itemCloseParen: "close-paren",
 	itemContinue:   "continue",
 	itemBreak:      "break",
+	itemNull:       "null",
 
 	itemComment: "/* */",
 
@@ -289,6 +291,8 @@ var tokenMap = map[string]ItemType{
 	"require":      itemInclude,
 	"require_once": itemInclude,
 	"@":            itemIgnoreErrorOperator,
+	"null":         itemNull,
+	"NULL":         itemNull,
 
 	"(int)":     itemCastOperator,
 	"(integer)": itemCastOperator,

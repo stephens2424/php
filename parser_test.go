@@ -541,3 +541,43 @@ func TestSwitch(t *testing.T) {
 		t.Fatalf("Switch did not correctly parse")
 	}
 }
+
+func TestLiterals(t *testing.T) {
+	testStr := `<?
+  $var = "one";
+  $var = 2;
+  $var = true;
+  $var = null;`
+	p := NewParser(testStr)
+	a := p.Parse()
+	if len(a) != 4 {
+		t.Fatalf("Literals did not correctly parse")
+	}
+	tree := []ast.Node{
+		ast.AssignmentStmt{ast.AssignmentExpression{
+			Assignee: ast.NewIdentifier("$var"),
+			Value:    &ast.Literal{Type: ast.String},
+			Operator: "=",
+		}},
+		ast.AssignmentStmt{ast.AssignmentExpression{
+			Assignee: ast.NewIdentifier("$var"),
+			Value:    &ast.Literal{Type: ast.Float},
+			Operator: "=",
+		}},
+		ast.AssignmentStmt{ast.AssignmentExpression{
+			Assignee: ast.NewIdentifier("$var"),
+			Value:    &ast.Literal{Type: ast.Boolean},
+			Operator: "=",
+		}},
+		ast.AssignmentStmt{ast.AssignmentExpression{
+			Assignee: ast.NewIdentifier("$var"),
+			Value:    &ast.Literal{Type: ast.Null},
+			Operator: "=",
+		}},
+	}
+	if !reflect.DeepEqual(a, tree) {
+		fmt.Printf("Found:    %+v\n", a)
+		fmt.Printf("Expected: %+v\n", tree)
+		t.Fatalf("Literals did not correctly parse")
+	}
+}

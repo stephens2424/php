@@ -95,7 +95,7 @@ func (p *parser) parseExpression() (expr ast.Expression) {
 			}
 		}
 		fallthrough
-	case itemNonVariableIdentifier, itemStringLiteral, itemNumberLiteral, itemBooleanLiteral, itemInclude:
+	case itemNonVariableIdentifier, itemStringLiteral, itemNumberLiteral, itemBooleanLiteral, itemInclude, itemNull:
 		expr = p.parseOperation(originalParenLev, p.expressionize())
 	case itemOpenParen:
 		p.parenLevel += 1
@@ -183,7 +183,7 @@ func (p *parser) expressionize() ast.Expression {
 	switch p.current.typ {
 	case itemIdentifier:
 		return p.parseIdentifier()
-	case itemStringLiteral, itemBooleanLiteral, itemNumberLiteral:
+	case itemStringLiteral, itemBooleanLiteral, itemNumberLiteral, itemNull:
 		return p.parseLiteral()
 	case itemNonVariableIdentifier:
 		if p.peek().typ == itemOpenParen {
@@ -220,6 +220,8 @@ func (p *parser) parseLiteral() *ast.Literal {
 		return &ast.Literal{Type: ast.Boolean}
 	case itemNumberLiteral:
 		return &ast.Literal{Type: ast.Float}
+	case itemNull:
+		return &ast.Literal{Type: ast.Null}
 	}
 	p.errorf("Unknown literal type")
 	return nil
