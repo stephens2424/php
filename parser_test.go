@@ -639,3 +639,22 @@ func TestLiterals(t *testing.T) {
 		t.Fatalf("Literals did not correctly parse")
 	}
 }
+
+func TestComments(t *testing.T) {
+	testStr := `<?
+  // comment line
+  /*
+  block
+  */
+  #line ?>html`
+	tree := []ast.Node{
+		ast.EchoStmt{Expression: ast.Literal{Type: ast.String}},
+	}
+	p := NewParser(testStr)
+	a := p.Parse()
+	if !reflect.DeepEqual(a, tree) {
+		fmt.Printf("Found:    %+v\n", a)
+		fmt.Printf("Expected: %+v\n", tree)
+		t.Fatalf("Literals did not correctly parse")
+	}
+}

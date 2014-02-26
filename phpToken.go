@@ -309,6 +309,7 @@ var tokenMap = map[string]ItemType{
 	"/*": itemComment,
 	"*/": itemComment,
 	"//": itemComment,
+	"#":  itemComment,
 
 	"->": itemObjectOperator,
 	"::": itemScopeResolutionOperator,

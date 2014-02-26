@@ -61,6 +61,10 @@ func lexPHP(l *lexer) stateFn {
 		return lexPHPEnd
 	}
 
+	if strings.HasPrefix(l.input[l.pos:], "#") {
+		return lexLineComment
+	}
+
 	if strings.HasPrefix(l.input[l.pos:], "//") {
 		return lexLineComment
 	}
@@ -198,13 +202,30 @@ func lexPHPEnd(l *lexer) stateFn {
 }
 
 func lexLineComment(l *lexer) stateFn {
-	l.pos += strings.Index(l.input[l.pos:], "\n") + 1
+	lineLength := strings.Index(l.input[l.pos:], "\n") + 1
+	if lineLength == 0 {
+		// this is the last line, so lex until the end
+		lineLength = len(l.input[l.pos:])
+	}
+	// don't lex php end
+	if phpEndLength := strings.Index(l.input[l.pos:l.pos+lineLength], phpEnd); phpEndLength >= 0 && phpEndLength < lineLength {
+		lineLength = phpEndLength
+	}
+	l.pos += lineLength
 	l.ignore()
 	return lexPHP
 }
 
 func lexBlockComment(l *lexer) stateFn {
-	l.pos += strings.Index(l.input[l.pos:], "*/") + 2
+	commentLength := strings.Index(l.input[l.pos:], "*/") + 2
+	if commentLength == 1 {
+		// the file ends before we find */
+		commentLength = len(l.input[l.pos:])
+	}
+	if phpEndLength := strings.Index(l.input[l.pos:l.pos+commentLength], phpEnd); phpEndLength >= 0 {
+		commentLength = phpEndLength
+	}
+	l.pos += commentLength
 	l.ignore()
 	return lexPHP
 }
