@@ -241,7 +241,7 @@ func TestExpressionParsing(t *testing.T) {
 	if !ok {
 		t.Fatalf("If did not correctly parse")
 	}
-	if !reflect.DeepEqual(*parsedIf, ifStmt) {
+	if !assertEquals(*parsedIf, ifStmt) {
 		t.Fatalf("If did not correctly parse")
 	}
 
@@ -337,9 +337,9 @@ func TestArray(t *testing.T) {
 				ast.BaseNode{},
 				ast.ArrayType{},
 				[]ast.ArrayPair{
-					{nil, &ast.Literal{Type: ast.String}},
-					{nil, &ast.Literal{Type: ast.String}},
-					{nil, &ast.Literal{Type: ast.String}},
+					{Value: &ast.Literal{Type: ast.String}},
+					{Value: &ast.Literal{Type: ast.String}},
+					{Value: &ast.Literal{Type: ast.String}},
 				},
 			},
 		},
@@ -366,15 +366,13 @@ func TestArrayKeys(t *testing.T) {
 			ast.BaseNode{},
 			ast.ArrayType{},
 			[]ast.ArrayPair{
-				{&ast.Literal{Type: ast.Float}, &ast.Literal{Type: ast.String}},
-				{&ast.Literal{Type: ast.Float}, &ast.Literal{Type: ast.String}},
-				{&ast.Literal{Type: ast.Float}, &ast.Literal{Type: ast.String}},
+				{Key: &ast.Literal{Type: ast.Float}, Value: &ast.Literal{Type: ast.String}},
+				{Key: &ast.Literal{Type: ast.Float}, Value: &ast.Literal{Type: ast.String}},
+				{Key: &ast.Literal{Type: ast.Float}, Value: &ast.Literal{Type: ast.String}},
 			},
 		},
 	}}
-	if !reflect.DeepEqual(a[0], tree) {
-		fmt.Printf("Found:    %+v\n", a[0])
-		fmt.Printf("Expected: %+v\n", tree)
+	if !assertEquals(a[0], tree) {
 		t.Fatalf("Array did not correctly parse")
 	}
 }
@@ -399,9 +397,7 @@ func TestMethodCall(t *testing.T) {
 			},
 		},
 	}}
-	if !reflect.DeepEqual(a[0], tree) {
-		fmt.Printf("Found:    %+v\n", a[0])
-		fmt.Printf("Expected: %+v\n", tree)
+	if !assertEquals(a[0], tree) {
 		t.Fatalf("Method call did not correctly parse")
 	}
 }

@@ -290,11 +290,11 @@ ArrayLoop:
 			val = p.parseExpression()
 		case itemCloseParen:
 			if val != nil {
-				pairs = append(pairs, ast.ArrayPair{key, val})
+				pairs = append(pairs, ast.ArrayPair{Key: key, Value: val})
 			}
 			break ArrayLoop
 		case itemComma:
-			pairs = append(pairs, ast.ArrayPair{key, val})
+			pairs = append(pairs, ast.ArrayPair{Key: key, Value: val})
 			key = nil
 			val = nil
 		default:

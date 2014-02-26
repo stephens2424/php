@@ -85,11 +85,17 @@ type OperatorExpression struct {
 }
 
 func (o OperatorExpression) Children() []Node {
-	return []Node{
-		o.Operand1,
-		o.Operand2,
-		o.Operand3,
+	n := make([]Node, 0, 3)
+	if o.Operand1 != nil {
+		n = append(n, o.Operand1)
 	}
+	if o.Operand2 != nil {
+		n = append(n, o.Operand2)
+	}
+	if o.Operand3 != nil {
+		n = append(n, o.Operand3)
+	}
+	return n
 }
 
 func (o OperatorExpression) String() string {
@@ -128,6 +134,15 @@ func (e EchoStmt) Children() []Node {
 type ReturnStmt struct {
 	Expression
 }
+
+func (r ReturnStmt) String() string {
+	return fmt.Sprintf("return %s", r.Expression.String())
+}
+
+func (r ReturnStmt) Children() []Node {
+	return r.Expression.Children()
+}
+
 type BreakStmt struct {
 	Expression
 }
@@ -205,6 +220,18 @@ func (f FunctionCallExpression) EvaluatesTo() Type {
 	return String | Integer | Float | Boolean | Null | Resource | Array | Object
 }
 
+func (f FunctionCallExpression) String() string {
+	return fmt.Sprintf("%s()", f.FunctionName)
+}
+
+func (f FunctionCallExpression) Children() []Node {
+	n := make([]Node, len(f.Arguments))
+	for i, a := range f.Arguments {
+		n[i] = a
+	}
+	return n
+}
+
 type Block struct {
 	BaseNode
 	Statements []Statement
@@ -230,10 +257,14 @@ func (f FunctionStmt) String() string {
 }
 
 func (f FunctionStmt) Children() []Node {
-	return []Node{
-		f.FunctionDefinition,
-		f.Body,
+	n := make([]Node, 0, 2)
+	if f.FunctionDefinition != nil {
+		n = append(n, f.FunctionDefinition)
 	}
+	if f.Body != nil {
+		n = append(n, f.Body)
+	}
+	return n
 }
 
 type FunctionDefinition struct {
@@ -280,6 +311,22 @@ type Class struct {
 	Properties []Property
 }
 
+func (c Class) String() string {
+	return fmt.Sprintf("class %s", c.Name)
+}
+
+func (c Class) Children() []Node {
+	n := make([]Node, len(c.Methods)+len(c.Properties))
+	for i, p := range c.Properties {
+		n[i] = p
+	}
+	offset := len(c.Properties)
+	for i, m := range c.Methods {
+		n[i+offset] = m
+	}
+	return n
+}
+
 type Constant struct {
 	BaseNode
 	*Identifier
@@ -303,6 +350,10 @@ type Property struct {
 	Visibility     Visibility
 	Type           Type
 	Initialization Expression
+}
+
+func (p Property) String() string {
+	return fmt.Sprintf("Prop: %s", p.Name)
 }
 
 func (p Property) AssignableType() Type {
@@ -340,9 +391,28 @@ type Method struct {
 	Visibility Visibility
 }
 
+func (m Method) String() string {
+	return m.Name
+}
+
+func (m Method) Children() []Node {
+	return m.FunctionStmt.Children()
+}
+
 type MethodCallExpression struct {
 	Receiver Expression
 	*FunctionCallExpression
+}
+
+func (m MethodCallExpression) Children() []Node {
+	return []Node{
+		m.Receiver,
+		m.FunctionCallExpression,
+	}
+}
+
+func (m MethodCallExpression) String() string {
+	return fmt.Sprintf("%s->", m.Receiver)
 }
 
 type Visibility int
@@ -365,11 +435,13 @@ func (i IfStmt) String() string {
 }
 
 func (i IfStmt) Children() []Node {
-	return []Node{
-		i.Condition,
-		i.TrueBranch,
-		i.FalseBranch,
+	n := make([]Node, 0, 3)
+	n = append(n, i.Condition)
+	n = append(n, i.TrueBranch)
+	if i.FalseBranch != nil {
+		n = append(n, i.FalseBranch)
 	}
+	return n
 }
 
 type SwitchStmt struct {
@@ -446,9 +518,29 @@ type ArrayExpression struct {
 	Pairs []ArrayPair
 }
 
+func (a ArrayExpression) String() string {
+	return "array"
+}
+
+func (a ArrayExpression) Children() []Node {
+	n := make([]Node, len(a.Pairs))
+	for i, p := range a.Pairs {
+		n[i] = p
+	}
+	return n
+}
+
 type ArrayPair struct {
+	BaseNode
 	Key   Expression
 	Value Expression
+}
+
+func (p ArrayPair) Children() []Node {
+	if p.Key != nil {
+		return []Node{p.Key, p.Value}
+	}
+	return []Node{p.Value}
 }
 
 func (a ArrayExpression) EvaluatesTo() Type {
