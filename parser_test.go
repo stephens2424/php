@@ -106,8 +106,9 @@ func TestFunction(t *testing.T) {
 
 func TestClass(t *testing.T) {
 	testStr := `<?php
-    class TestClass {
+    abstract class TestClass {
       public $myProp;
+      abstract public function method0($arg);
       public function method1($arg) {
         echo $arg;
       }
@@ -128,16 +129,16 @@ func TestClass(t *testing.T) {
 	if parsedClass.Name != "TestClass" {
 		t.Fatalf("Class Name did not correctly parse. Got:%s", parsedClass.Name)
 	}
-	if len(parsedClass.Methods) != 2 {
+	if len(parsedClass.Methods) != 3 {
 		t.Fatalf("Class methods did not correctly parse")
 	}
-	if parsedClass.Methods[0].Name != "method1" {
+	if parsedClass.Methods[1].Name != "method1" {
 		t.Fatalf("Class method did not correctly parse. Got:%s", parsedClass.Methods[0].Name)
 	}
-	if parsedClass.Methods[1].Name != "method2" {
+	if parsedClass.Methods[2].Name != "method2" {
 		t.Fatalf("Class method did not correctly parse. Got:%s", parsedClass.Methods[0].Name)
 	}
-	if parsedClass.Methods[1].Arguments[0].TypeHint != "TestClass" {
+	if parsedClass.Methods[2].Arguments[0].TypeHint != "TestClass" {
 		t.Fatalf("Class method did not correctly parse. Got:%s", parsedClass.Methods[0].Name)
 	}
 	if len(parsedClass.Properties) != 1 {

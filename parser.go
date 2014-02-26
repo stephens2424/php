@@ -573,16 +573,17 @@ func (p *parser) parseClassFields(c ast.Class) ast.Class {
 		vis, foundVis := p.parseVisibility()
 		abstract := p.parseAbstract()
 		if foundVis == false {
-			vis, _ = p.parseVisibility()
+			vis, foundVis = p.parseVisibility()
 		}
-		p.next()
+		if foundVis {
+			p.next()
+		}
 		if p.current.typ == itemStatic {
 			p.next()
 		}
 		switch p.current.typ {
 		case itemFunction:
 			if abstract {
-				p.next()
 				f := p.parseFunctionDefinition()
 				m := ast.Method{
 					Visibility:   vis,
