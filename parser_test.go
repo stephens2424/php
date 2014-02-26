@@ -112,7 +112,7 @@ func TestClass(t *testing.T) {
       public function method1($arg) {
         echo $arg;
       }
-      private function method2(TestClass $arg) {
+      private function method2(TestClass $arg, $arg2 = false) {
         echo $arg;
         return $arg;
       }
@@ -122,27 +122,74 @@ func TestClass(t *testing.T) {
 	if len(a) != 1 {
 		t.Fatalf("Class did not correctly parse")
 	}
-	parsedClass, ok := a[0].(ast.Class)
-	if !ok {
-		t.Fatalf("Class did not correctly parse")
+	tree := ast.Class{
+		Name: "TestClass",
+		Properties: []ast.Property{
+			{
+				Visibility: ast.Public,
+				Name:       "$myProp",
+			},
+		},
+		Methods: []ast.Method{
+			{
+				Visibility: ast.Public,
+				FunctionStmt: &ast.FunctionStmt{
+					FunctionDefinition: &ast.FunctionDefinition{
+						Name: "method0",
+						Arguments: []ast.FunctionArgument{
+							{
+								Identifier: &ast.Identifier{Name: "$arg", Type: ast.AnyType},
+							},
+						},
+					},
+				},
+			},
+			{
+				Visibility: ast.Public,
+				FunctionStmt: &ast.FunctionStmt{
+					FunctionDefinition: &ast.FunctionDefinition{
+						Name: "method1",
+						Arguments: []ast.FunctionArgument{
+							{
+								Identifier: &ast.Identifier{Name: "$arg", Type: ast.AnyType},
+							},
+						},
+					},
+					Body: &ast.Block{
+						Statements: []ast.Statement{
+							ast.Echo(&ast.Identifier{Name: "$arg", Type: ast.AnyType}),
+						},
+					},
+				},
+			},
+			{
+				Visibility: ast.Private,
+				FunctionStmt: &ast.FunctionStmt{
+					FunctionDefinition: &ast.FunctionDefinition{
+						Name: "method2",
+						Arguments: []ast.FunctionArgument{
+							{
+								TypeHint:   "TestClass",
+								Identifier: &ast.Identifier{Name: "$arg", Type: ast.AnyType},
+							},
+							{
+								Identifier: &ast.Identifier{Name: "$arg2", Type: ast.AnyType},
+								Default:    &ast.Literal{Type: ast.Boolean},
+							},
+						},
+					},
+					Body: &ast.Block{
+						Statements: []ast.Statement{
+							ast.Echo(&ast.Identifier{Name: "$arg", Type: ast.AnyType}),
+							ast.ReturnStmt{Expression: &ast.Identifier{Name: "$arg", Type: ast.AnyType}},
+						},
+					},
+				},
+			},
+		},
 	}
-	if parsedClass.Name != "TestClass" {
-		t.Fatalf("Class Name did not correctly parse. Got:%s", parsedClass.Name)
-	}
-	if len(parsedClass.Methods) != 3 {
-		t.Fatalf("Class methods did not correctly parse")
-	}
-	if parsedClass.Methods[1].Name != "method1" {
-		t.Fatalf("Class method did not correctly parse. Got:%s", parsedClass.Methods[0].Name)
-	}
-	if parsedClass.Methods[2].Name != "method2" {
-		t.Fatalf("Class method did not correctly parse. Got:%s", parsedClass.Methods[0].Name)
-	}
-	if parsedClass.Methods[2].Arguments[0].TypeHint != "TestClass" {
-		t.Fatalf("Class method did not correctly parse. Got:%s", parsedClass.Methods[0].Name)
-	}
-	if len(parsedClass.Properties) != 1 {
-		t.Fatal("Class properties did not correctly parse.")
+	if !assertEquals(a[0], tree) {
+		t.Fatalf("Class did not parse correctly")
 	}
 }
 

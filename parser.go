@@ -484,15 +484,23 @@ func (p *parser) parseFunctionDefinition() *ast.FunctionDefinition {
 	def.Name = p.current.val
 	def.Arguments = make([]ast.FunctionArgument, 0)
 	p.expect(itemOpenParen)
-	for p.current.typ != itemCloseParen {
-		def.Arguments = append(def.Arguments, p.parseFunctionArgument())
-		if p.peek().typ == itemComma {
-			p.expect(itemComma)
-		}
-		p.next()
+	if p.peek().typ == itemCloseParen {
+		return def
 	}
-	p.expectCurrent(itemCloseParen)
-	return def
+	def.Arguments = append(def.Arguments, p.parseFunctionArgument())
+	for {
+		switch p.peek().typ {
+		case itemComma:
+			p.expect(itemComma)
+			def.Arguments = append(def.Arguments, p.parseFunctionArgument())
+		case itemCloseParen:
+			p.expect(itemCloseParen)
+			return def
+		default:
+			p.errorf("unexpected argument separator:", p.current)
+			return def
+		}
+	}
 }
 
 func (p *parser) parseFunctionArgument() ast.FunctionArgument {
