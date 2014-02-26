@@ -15,6 +15,7 @@ type parser struct {
 	errors     []error
 	parenLevel int
 	errorMap   map[int]bool
+	errorCount int
 
 	Debug     bool
 	MaxErrors int
@@ -120,15 +121,16 @@ func (p *parser) expected(i ItemType) {
 }
 
 func (p *parser) errorf(str string, args ...interface{}) {
+	p.errorCount += 1
+	if p.errorCount > p.MaxErrors {
+		panic("too many errors")
+	}
 	if _, ok := p.errorMap[p.current.pos.Line]; ok {
 		return
 	}
 	errString := fmt.Sprintf(str, args...)
 	p.errorMap[p.current.pos.Line] = true
 	p.errors = append(p.errors, fmt.Errorf("%s: %s", p.errorPrefix(), errString))
-	if len(p.errors) > p.MaxErrors {
-		panic("too many errors")
-	}
 }
 
 func (p *parser) errorPrefix() string {
