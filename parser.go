@@ -506,8 +506,9 @@ func (p *parser) parseFunctionDefinition() *ast.FunctionDefinition {
 
 func (p *parser) parseFunctionArgument() ast.FunctionArgument {
 	arg := ast.FunctionArgument{}
-	if p.peek().typ == itemNonVariableIdentifier {
-		p.expect(itemNonVariableIdentifier)
+	switch p.peek().typ {
+	case itemNonVariableIdentifier, itemArray:
+		p.next()
 		arg.TypeHint = p.current.val
 	}
 	p.expect(itemIdentifier)
