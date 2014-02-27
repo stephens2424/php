@@ -388,7 +388,8 @@ func (p *parser) parseFor() ast.Statement {
 	p.expect(itemStatementEnd)
 	stmt.Iteration = p.parseNextExpression()
 	p.expect(itemCloseParen)
-	stmt.LoopBlock = p.parseBlock()
+	p.next()
+	stmt.LoopBlock = p.parseStmt()
 	return stmt
 }
 
