@@ -238,6 +238,10 @@ type Block struct {
 	Scope      Scope
 }
 
+func (b Block) String() string {
+	return "{}"
+}
+
 func (b Block) Children() []Node {
 	n := make([]Node, len(b.Statements))
 	for i, s := range b.Statements {
@@ -367,6 +371,10 @@ type PropertyExpression struct {
 	Type     Type
 }
 
+func (p PropertyExpression) String() string {
+	return fmt.Sprintf("%s->%s", p.Receiver, p.Name)
+}
+
 func (p PropertyExpression) AssignableType() Type {
 	return p.Type
 }
@@ -451,10 +459,38 @@ type SwitchStmt struct {
 	DefaultCase *Block
 }
 
+func (s SwitchStmt) String() string {
+	return "switch"
+}
+
+func (s SwitchStmt) Children() []Node {
+	n := []Node{
+		s.Expression,
+	}
+	for _, c := range s.Cases {
+		n = append(n, c)
+	}
+	if s.DefaultCase != nil {
+		n = append(n, s.DefaultCase)
+	}
+	return n
+}
+
 type SwitchCase struct {
 	BaseNode
 	Expression Expression
 	Block      Block
+}
+
+func (s SwitchCase) String() string {
+	return "case"
+}
+
+func (s SwitchCase) Children() []Node {
+	return []Node{
+		s.Expression,
+		s.Block,
+	}
 }
 
 type ForStmt struct {
@@ -465,16 +501,51 @@ type ForStmt struct {
 	LoopBlock      Statement
 }
 
+func (f ForStmt) String() string {
+	return "for"
+}
+
+func (f ForStmt) Children() []Node {
+	return []Node{
+		f.Initialization,
+		f.Termination,
+		f.Iteration,
+		f.LoopBlock,
+	}
+}
+
 type WhileStmt struct {
 	BaseNode
 	Termination Expression
 	LoopBlock   Statement
 }
 
+func (w WhileStmt) String() string {
+	return fmt.Sprintf("while")
+}
+
+func (w WhileStmt) Children() []Node {
+	return []Node{
+		w.Termination,
+		w.LoopBlock,
+	}
+}
+
 type DoWhileStmt struct {
 	BaseNode
 	Termination Expression
 	LoopBlock   Statement
+}
+
+func (d DoWhileStmt) String() string {
+	return fmt.Sprintf("do ... while")
+}
+
+func (d DoWhileStmt) Children() []Node {
+	return []Node{
+		d.LoopBlock,
+		d.Termination,
+	}
 }
 
 type TryStmt struct {
@@ -555,6 +626,14 @@ type ArrayLookupExpression struct {
 	BaseNode
 	Array Expression
 	Index Expression
+}
+
+func (a ArrayLookupExpression) String() string {
+	return fmt.Sprintf("%s[", a.Array)
+}
+
+func (a ArrayLookupExpression) Children() []Node {
+	return []Node{a.Index}
 }
 
 func (a ArrayLookupExpression) EvaluatesTo() Type {
