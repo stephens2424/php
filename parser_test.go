@@ -482,6 +482,34 @@ func TestWhileLoop(t *testing.T) {
 	}
 }
 
+func TestForeachLoop(t *testing.T) {
+	testStr := `<?
+  foreach ($arr as $key => $val) {
+    echo $key . $val;
+  } ?>`
+	p := NewParser(testStr)
+	a := p.Parse()
+	if len(a) == 0 {
+		t.Fatalf("While loop did not correctly parse")
+	}
+	tree := &ast.ForeachStmt{
+		Source: &ast.Identifier{Name: "$arr", Type: ast.AnyType},
+		Key:    &ast.Identifier{Name: "$key", Type: ast.AnyType},
+		Value:  &ast.Identifier{Name: "$val", Type: ast.AnyType},
+		LoopBlock: &ast.Block{
+			Statements: []ast.Statement{ast.Echo(ast.OperatorExpression{
+				Operator: ".",
+				Operand1: &ast.Identifier{Name: "$key", Type: ast.AnyType},
+				Operand2: &ast.Identifier{Name: "$val", Type: ast.AnyType},
+				Type:     ast.String,
+			})},
+		},
+	}
+	if !assertEquals(a[0], tree) {
+		t.Fatalf("Foreach did not correctly parse")
+	}
+}
+
 func TestForLoop(t *testing.T) {
 	testStr := `<?
   for ($i = 0; $i < 10; $i++) {

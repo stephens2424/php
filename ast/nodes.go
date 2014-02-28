@@ -583,6 +583,19 @@ type ForeachStmt struct {
 	LoopBlock Statement
 }
 
+func (f ForeachStmt) String() string {
+	return "foreach"
+}
+
+func (f ForeachStmt) Children() []Node {
+	return []Node{
+		f.Source,
+		f.Key,
+		f.Value,
+		f.LoopBlock,
+	}
+}
+
 type ArrayExpression struct {
 	BaseNode
 	ArrayType

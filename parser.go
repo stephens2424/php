@@ -375,6 +375,7 @@ func (p *parser) parseForeach() ast.Statement {
 		stmt.Value = ast.NewIdentifier(p.current.val)
 	}
 	p.expect(itemCloseParen)
+	p.next()
 	stmt.LoopBlock = p.parseStmt()
 	return stmt
 }
