@@ -13,7 +13,7 @@ type Walker struct {
 }
 
 func (w *Walker) Walk(node ast.Node) {
-	fmt.Println(strings.Repeat("\t", w.tabLevel), node.String())
+	fmt.Printf("%s(%T)%s\n", strings.Repeat("\t", w.tabLevel), node, node.String())
 	switch children := node.Children(); children {
 	case nil:
 	default:
