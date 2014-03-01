@@ -187,9 +187,10 @@ func (p *parser) expressionize() ast.Expression {
 		return p.parseLiteral()
 	case itemNonVariableIdentifier:
 		if p.peek().typ == itemOpenParen {
-			expr := p.parseFunctionCall()
-			if p.peek().typ == itemObjectOperator {
-				return p.parseObjectLookup(expr)
+			var expr ast.Expression
+			expr = p.parseFunctionCall()
+			for p.peek().typ == itemObjectOperator {
+				expr = p.parseObjectLookup(expr)
 			}
 			return expr
 		}
@@ -228,25 +229,31 @@ func (p *parser) parseLiteral() *ast.Literal {
 }
 
 func (p *parser) parseIdentifier() ast.Expression {
-	ident := ast.NewIdentifier(p.current.val)
+	var expr ast.Expression
+	expr = ast.NewIdentifier(p.current.val)
 	switch pk := p.peek(); pk.typ {
 	case itemObjectOperator:
-		return p.parseObjectLookup(ident)
+		for p.peek().typ == itemObjectOperator {
+			expr = p.parseObjectLookup(expr)
+		}
 	case itemArrayLookupOperatorLeft:
-		return p.parseArrayLookup(ident)
+		return p.parseArrayLookup(expr)
 	}
-	return ident
+	return expr
 }
 
 func (p *parser) parseObjectLookup(r ast.Expression) ast.Expression {
 	p.expect(itemObjectOperator)
 	p.expect(itemNonVariableIdentifier)
-	if pk := p.peek(); pk.typ == itemOpenParen {
+	switch pk := p.peek(); pk.typ {
+	case itemOpenParen:
 		expr := &ast.MethodCallExpression{
 			Receiver:               r,
 			FunctionCallExpression: p.parseFunctionCall(),
 		}
 		return expr
+	case itemArrayLookupOperatorLeft:
+		return p.parseArrayLookup(r)
 	}
 	return &ast.PropertyExpression{
 		Receiver: r,

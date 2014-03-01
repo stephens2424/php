@@ -239,7 +239,7 @@ func (p *parser) parseStmt() ast.Statement {
 			p.expectStmtEnd()
 			return n
 		default:
-			expr := ast.ExpressionStmt{p.parseExpression()}
+			expr := ast.ExpressionStmt{ident}
 			p.expectStmtEnd()
 			return expr
 		}
