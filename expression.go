@@ -79,9 +79,6 @@ func (p *parser) parseExpression() (expr ast.Expression) {
 		return &ast.NewExpression{
 			Expression: p.parseNextExpression(),
 		}
-	case itemUnaryOperator, itemNegationOperator, itemAmpersandOperator, itemCastOperator:
-		op := p.current
-		expr = p.parseUnaryExpressionRight(p.parseNextExpression(), op)
 	case itemArray:
 		return p.parseArrayDeclaration()
 	case itemIdentifier:
@@ -94,6 +91,8 @@ func (p *parser) parseExpression() (expr ast.Expression) {
 				Value:    p.parseNextExpression(),
 			}
 		}
+		fallthrough
+	case itemUnaryOperator, itemNegationOperator, itemAmpersandOperator, itemCastOperator:
 		fallthrough
 	case itemNonVariableIdentifier, itemStringLiteral, itemNumberLiteral, itemBooleanLiteral, itemInclude, itemNull:
 		expr = p.parseOperation(originalParenLev, p.expressionize())
@@ -131,6 +130,13 @@ func (p *parser) parseOperation(originalParenLevel int, lhs ast.Expression) (exp
 		}
 		p.parenLevel -= 1
 		return p.parseOperation(originalParenLevel, lhs)
+	case itemAssignmentOperator:
+		assignee := lhs.(ast.Assignable)
+		expr = ast.AssignmentExpression{
+			Assignee: assignee,
+			Operator: p.current.val,
+			Value:    p.parseNextExpression(),
+		}
 	default:
 		p.backup()
 		return lhs
@@ -181,6 +187,10 @@ func (p *parser) parseUnaryExpressionLeft(operand ast.Expression, operator Item)
 // except for the object operator.
 func (p *parser) expressionize() ast.Expression {
 	switch p.current.typ {
+	case itemUnaryOperator, itemNegationOperator:
+		op := p.current
+		p.next()
+		return p.parseUnaryExpressionRight(p.expressionize(), op)
 	case itemIdentifier:
 		return p.parseIdentifier()
 	case itemStringLiteral, itemBooleanLiteral, itemNumberLiteral, itemNull:
