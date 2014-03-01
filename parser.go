@@ -31,19 +31,16 @@ func NewParser(input string) *parser {
 	return p
 }
 
-func (p *parser) Parse() []ast.Node {
+func (p *parser) Parse() ([]ast.Node, []error) {
 	defer func() {
-		if len(p.errors) > 0 {
-			for _, err := range p.errors {
-				fmt.Println(err)
-			}
-		}
 		if r := recover(); r != nil {
 			if p.Debug {
+				for _, err := range p.errors {
+					fmt.Println(err)
+				}
 				panic(r)
-			} else {
-				fmt.Println(r)
 			}
+			p.errors = append([]error{fmt.Errorf("%s", r)}, p.errors...)
 		}
 	}()
 	// expecting either itemHTML or itemPHPBegin
@@ -61,7 +58,7 @@ TokenLoop:
 			}
 		}
 	}
-	return nodes
+	return nodes, p.errors
 }
 
 func (p *parser) parseNode() ast.Node {
@@ -331,6 +328,7 @@ func (p *parser) parseStmt() ast.Statement {
 		return stmt
 	case itemIgnoreErrorOperator:
 		// Ignore this operator
+		p.next()
 		return p.parseStmt()
 	default:
 		expr := p.parseExpression()
@@ -367,12 +365,14 @@ func (p *parser) parseForeach() ast.Statement {
 	stmt.Source = p.parseNextExpression()
 	p.expect(itemAsOperator)
 	p.expect(itemIdentifier)
-	stmt.Value = ast.NewIdentifier(p.current.val)
+	first := ast.NewIdentifier(p.current.val)
 	if p.peek().typ == itemArrayKeyOperator {
-		stmt.Key = stmt.Value
+		stmt.Key = first
 		p.expect(itemArrayKeyOperator)
 		p.expect(itemIdentifier)
 		stmt.Value = ast.NewIdentifier(p.current.val)
+	} else {
+		stmt.Value = first
 	}
 	p.expect(itemCloseParen)
 	p.next()

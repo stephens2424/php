@@ -110,6 +110,20 @@ type ExpressionStmt struct {
 	Expression
 }
 
+func (e ExpressionStmt) String() string {
+	if e.Expression != nil {
+		return e.Expression.String()
+	}
+	return ""
+}
+
+func (e ExpressionStmt) Children() []Node {
+	if e.Expression != nil {
+		return e.Expression.Children()
+	}
+	return nil
+}
+
 // Echo returns a new echo statement.
 func Echo(expr Expression) EchoStmt {
 	return EchoStmt{Expression: expr}
@@ -146,6 +160,21 @@ func (r ReturnStmt) Children() []Node {
 type BreakStmt struct {
 	Expression
 }
+
+func (b BreakStmt) Children() []Node {
+	if b.Expression != nil {
+		return b.Expression.Children()
+	}
+	return nil
+}
+
+func (b BreakStmt) String() string {
+	if b.Expression != nil {
+		return fmt.Sprint("break", b.Expression.String())
+	}
+	return "break"
+}
+
 type ContinueStmt struct {
 	Expression
 }
@@ -384,6 +413,12 @@ func (p PropertyExpression) EvaluatesTo() Type {
 	return AnyType
 }
 
+func (p PropertyExpression) Children() []Node {
+	return []Node{
+		p.Receiver,
+	}
+}
+
 type ClassExpression struct {
 	BaseNode
 	Receiver   string
@@ -589,12 +624,12 @@ func (f ForeachStmt) String() string {
 }
 
 func (f ForeachStmt) Children() []Node {
-	return []Node{
-		f.Source,
-		f.Key,
-		f.Value,
-		f.LoopBlock,
+	n := []Node{f.Source}
+	if f.Key != nil {
+		n = append(n, f.Key)
 	}
+	n = append(n, f.Value, f.LoopBlock)
+	return n
 }
 
 type ArrayExpression struct {

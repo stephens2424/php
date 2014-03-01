@@ -106,11 +106,11 @@ func (p *parser) parseExpression() (expr ast.Expression) {
 		expr = p.parseOperation(originalParenLev, expr)
 	default:
 		p.errorf("Expected expression. Found %s", p.current)
-		return nil
+		return
 	}
 	if p.parenLevel != originalParenLev {
 		p.errorf("unbalanced parens: %d prev: %d", p.parenLevel, originalParenLev)
-		return nil
+		return
 	}
 	return
 }
@@ -275,31 +275,30 @@ func (p *parser) parseArrayLookup(e ast.Expression) ast.Expression {
 func (p *parser) parseArrayDeclaration() ast.Expression {
 	pairs := make([]ast.ArrayPair, 0)
 	p.expect(itemOpenParen)
-	var key, val ast.Expression
 ArrayLoop:
 	for {
-		p.next()
-		switch p.current.typ {
-		case itemArrayKeyOperator:
-			if val == nil {
-				p.errorf("expected array key before =>.")
-				return nil
-			}
-			key = val
-			p.next()
-			val = p.parseExpression()
-		case itemCloseParen:
-			if val != nil {
-				pairs = append(pairs, ast.ArrayPair{Key: key, Value: val})
-			}
-			break ArrayLoop
+		var key, val ast.Expression
+		val = p.parseNextExpression()
+		switch p.peek().typ {
 		case itemComma:
+			p.expect(itemComma)
+		case itemCloseParen:
 			pairs = append(pairs, ast.ArrayPair{Key: key, Value: val})
-			key = nil
-			val = nil
+			break ArrayLoop
+		case itemArrayKeyOperator:
+			p.expect(itemArrayKeyOperator)
+			key = val
+			val = p.parseNextExpression()
+			if p.peek().typ == itemCloseParen {
+				pairs = append(pairs, ast.ArrayPair{Key: key, Value: val})
+				break ArrayLoop
+			}
+			p.expect(itemComma)
 		default:
-			val = p.parseExpression()
+			p.errorf("expected => or ,")
+			return nil
 		}
+		pairs = append(pairs, ast.ArrayPair{Key: key, Value: val})
 	}
 	return &ast.ArrayExpression{Pairs: pairs}
 }
