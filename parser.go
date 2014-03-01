@@ -587,12 +587,10 @@ func (p *parser) parseClassFields(c ast.Class) ast.Class {
 		if foundVis == false {
 			vis, foundVis = p.parseVisibility()
 		}
-		if foundVis {
+		if p.peek().typ == itemStatic {
 			p.next()
 		}
-		if p.current.typ == itemStatic {
-			p.next()
-		}
+		p.next()
 		switch p.current.typ {
 		case itemFunction:
 			if abstract {
@@ -620,8 +618,18 @@ func (p *parser) parseClassFields(c ast.Class) ast.Class {
 			}
 			c.Properties = append(c.Properties, prop)
 			p.expect(itemStatementEnd)
+		case itemConst:
+			constant := ast.Constant{}
+			p.expect(itemNonVariableIdentifier)
+			constant.Identifier = ast.NewIdentifier(p.current.val)
+			if p.peek().typ == itemAssignmentOperator {
+				p.expect(itemAssignmentOperator)
+				constant.Value = p.parseNextExpression()
+			}
+			c.Constants = append(c.Constants, constant)
+			p.expect(itemStatementEnd)
 		default:
-			p.errorf("unexpected class member", p.current)
+			p.errorf("unexpected class member %v", p.current)
 		}
 	}
 	p.expect(itemBlockEnd)
@@ -662,7 +670,7 @@ func (p *parser) parseInterface() *ast.Interface {
 			i.Methods = append(i.Methods, m)
 			p.expect(itemStatementEnd)
 		default:
-			p.errorf("unexpected interface member", p.current)
+			p.errorf("unexpected interface member %v", p.current)
 		}
 		p.next()
 	}

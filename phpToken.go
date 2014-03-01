@@ -81,6 +81,7 @@ const (
 	itemImplements
 	itemExtends
 	itemNewOperator
+	itemConst
 
 	itemNull
 	itemStringLiteral
@@ -181,6 +182,7 @@ var itemTypeMap = map[ItemType]string{
 	itemThrow:   "throw",
 
 	itemClass:       "Class",
+	itemConst:       "Const",
 	itemAbstract:    "abstract",
 	itemPrivate:     "Private",
 	itemProtected:   "Protected",
@@ -247,6 +249,7 @@ func init() {
 // be represented directly. Not all item types will be represented here.
 var tokenMap = map[string]ItemType{
 	"class":        itemClass,
+	"const":        itemConst,
 	"abstract":     itemAbstract,
 	"interface":    itemInterface,
 	"implements":   itemImplements,

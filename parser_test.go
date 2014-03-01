@@ -126,6 +126,7 @@ func TestClass(t *testing.T) {
     abstract class TestClass {
       public $myProp;
       protected $myProp2;
+      const my_const = "test";
       abstract public function method0($arg);
       public function method1($arg) {
         echo $arg;
@@ -142,6 +143,12 @@ func TestClass(t *testing.T) {
 	}
 	tree := ast.Class{
 		Name: "TestClass",
+		Constants: []ast.Constant{
+			{
+				Identifier: ast.NewIdentifier("my_const"),
+				Value:      &ast.Literal{Type: ast.String},
+			},
+		},
 		Properties: []ast.Property{
 			{
 				Visibility: ast.Public,

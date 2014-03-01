@@ -313,6 +313,7 @@ type Class struct {
 	Implements []string
 	Methods    []Method
 	Properties []Property
+	Constants  []Constant
 }
 
 func (c Class) String() string {
