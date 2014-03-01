@@ -166,6 +166,7 @@ func newUnaryOperation(operator Item, expr ast.Expression) ast.OperatorExpressio
 	return ast.OperatorExpression{
 		Type:     t,
 		Operand1: expr,
+		Operator: operator.val,
 	}
 }
 

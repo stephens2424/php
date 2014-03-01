@@ -540,6 +540,7 @@ func TestForLoop(t *testing.T) {
 			Type:     ast.Boolean,
 		},
 		Iteration: ast.OperatorExpression{
+			Operator: "++",
 			Operand1: ast.NewIdentifier("$i"),
 			Type:     ast.Numeric,
 		},
