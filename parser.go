@@ -655,12 +655,12 @@ func (p *parser) parseInterface() *ast.Interface {
 		}
 	}
 	p.expect(itemBlockBegin)
-	p.next()
-	for p.current.typ != itemBlockEnd {
+	for p.peek().typ != itemBlockEnd {
 		vis, _ := p.parseVisibility()
-		if p.current.typ == itemStatic {
+		if p.peek().typ == itemStatic {
 			p.next()
 		}
+		p.next()
 		switch p.current.typ {
 		case itemFunction:
 			f := p.parseFunctionDefinition()
