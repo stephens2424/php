@@ -278,7 +278,12 @@ func (p *parser) parseArrayDeclaration() ast.Expression {
 ArrayLoop:
 	for {
 		var key, val ast.Expression
-		val = p.parseNextExpression()
+		switch p.peek().typ {
+		case itemCloseParen:
+			break ArrayLoop
+		default:
+			val = p.parseNextExpression()
+		}
 		switch p.peek().typ {
 		case itemComma:
 			p.expect(itemComma)
@@ -300,5 +305,6 @@ ArrayLoop:
 		}
 		pairs = append(pairs, ast.ArrayPair{Key: key, Value: val})
 	}
+	p.expect(itemCloseParen)
 	return &ast.ArrayExpression{Pairs: pairs}
 }
