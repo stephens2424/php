@@ -365,11 +365,17 @@ func (p *parser) parseForeach() ast.Statement {
 	p.expect(itemOpenParen)
 	stmt.Source = p.parseNextExpression()
 	p.expect(itemAsOperator)
+	if p.peek().typ == itemAmpersandOperator {
+		p.expect(itemAmpersandOperator)
+	}
 	p.expect(itemIdentifier)
 	first := ast.NewIdentifier(p.current.val)
 	if p.peek().typ == itemArrayKeyOperator {
 		stmt.Key = first
 		p.expect(itemArrayKeyOperator)
+		if p.peek().typ == itemAmpersandOperator {
+			p.expect(itemAmpersandOperator)
+		}
 		p.expect(itemIdentifier)
 		stmt.Value = ast.NewIdentifier(p.current.val)
 	} else {
