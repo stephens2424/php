@@ -488,6 +488,7 @@ func (p *parser) parseFunctionDefinition() *ast.FunctionDefinition {
 	def.Arguments = make([]ast.FunctionArgument, 0)
 	p.expect(itemOpenParen)
 	if p.peek().typ == itemCloseParen {
+		p.expect(itemCloseParen)
 		return def
 	}
 	def.Arguments = append(def.Arguments, p.parseFunctionArgument())
