@@ -187,7 +187,7 @@ func (p *parser) parseUnaryExpressionLeft(operand ast.Expression, operator Item)
 // except for the object operator.
 func (p *parser) expressionize() ast.Expression {
 	switch p.current.typ {
-	case itemUnaryOperator, itemNegationOperator:
+	case itemUnaryOperator, itemNegationOperator, itemCastOperator:
 		op := p.current
 		p.next()
 		return p.parseUnaryExpressionRight(p.expressionize(), op)

@@ -745,3 +745,24 @@ func TestScopeResolutionOperator(t *testing.T) {
 		t.Fatalf("Scope resolution operator expression did not correctly parse")
 	}
 }
+
+func TestCastOperator(t *testing.T) {
+	testStr := `<?
+  $var = (double) 1.0; ?>`
+	p := NewParser(testStr)
+	a, _ := p.Parse()
+	tree := []ast.Node{
+		ast.AssignmentStmt{ast.AssignmentExpression{
+			Assignee: &ast.Identifier{Name: "$var", Type: ast.AnyType},
+			Value: ast.OperatorExpression{
+				Operand1: &ast.Literal{Type: ast.Float},
+				Operator: "(double)",
+				Type:     ast.Numeric,
+			},
+			Operator: "=",
+		}},
+	}
+	if !assertEquals(a[0], tree[0]) {
+		t.Fatalf("Cast operator parsing failed")
+	}
+}
