@@ -79,8 +79,6 @@ func (p *parser) parseExpression() (expr ast.Expression) {
 		return &ast.NewExpression{
 			Expression: p.parseNextExpression(),
 		}
-	case itemArray:
-		return p.parseArrayDeclaration()
 	case itemIdentifier:
 		if p.peek().typ == itemAssignmentOperator {
 			assignee := p.parseIdentifier().(ast.Assignable)
@@ -91,6 +89,8 @@ func (p *parser) parseExpression() (expr ast.Expression) {
 				Value:    p.parseNextExpression(),
 			}
 		}
+		fallthrough
+	case itemArray:
 		fallthrough
 	case itemUnaryOperator, itemNegationOperator, itemAmpersandOperator, itemCastOperator:
 		fallthrough
@@ -191,6 +191,8 @@ func (p *parser) expressionize() ast.Expression {
 		op := p.current
 		p.next()
 		return p.parseUnaryExpressionRight(p.expressionize(), op)
+	case itemArray:
+		return p.parseArrayDeclaration()
 	case itemIdentifier:
 		return p.parseIdentifier()
 	case itemStringLiteral, itemBooleanLiteral, itemNumberLiteral, itemNull:
