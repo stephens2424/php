@@ -31,6 +31,9 @@ const (
 	itemSpace
 	itemFunction
 	itemStatic
+	itemSelf
+	itemParent
+	itemFinal
 	itemFunctionName
 	itemTypeHint
 	itemIdentifier
@@ -139,6 +142,9 @@ var itemTypeMap = map[ItemType]string{
 	itemSpace:        "Space",
 	itemFunction:     "Function",
 	itemStatic:       "static",
+	itemSelf:         "self",
+	itemParent:       "parent",
+	itemFinal:        "final",
 	itemFunctionName: "Function Name",
 	itemTypeHint:     "Function Type Hint",
 	itemIdentifier:   "Identifier",
@@ -268,6 +274,9 @@ var tokenMap = map[string]ItemType{
 	"default":      itemDefault,
 	"function":     itemFunction,
 	"static":       itemStatic,
+	"final":        itemFinal,
+	"self":         itemSelf,
+	"parent":       itemParent,
 	"return":       itemReturn,
 	"{":            itemBlockBegin,
 	"}":            itemBlockEnd,

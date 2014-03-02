@@ -595,6 +595,9 @@ func (p *parser) parseClassFields(c ast.Class) ast.Class {
 		if foundVis == false {
 			vis, foundVis = p.parseVisibility()
 		}
+		if p.peek().typ == itemFinal {
+			p.next()
+		}
 		if p.peek().typ == itemStatic {
 			p.next()
 		}

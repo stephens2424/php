@@ -94,7 +94,7 @@ func (p *parser) parseExpression() (expr ast.Expression) {
 		fallthrough
 	case itemUnaryOperator, itemNegationOperator, itemAmpersandOperator, itemCastOperator:
 		fallthrough
-	case itemNonVariableIdentifier, itemStringLiteral, itemNumberLiteral, itemBooleanLiteral, itemInclude, itemNull:
+	case itemNonVariableIdentifier, itemStringLiteral, itemNumberLiteral, itemBooleanLiteral, itemInclude, itemNull, itemSelf, itemStatic, itemParent:
 		expr = p.parseOperation(originalParenLev, p.expressionize())
 	case itemOpenParen:
 		p.parenLevel += 1
@@ -195,7 +195,7 @@ func (p *parser) expressionize() ast.Expression {
 		return p.parseIdentifier()
 	case itemStringLiteral, itemBooleanLiteral, itemNumberLiteral, itemNull:
 		return p.parseLiteral()
-	case itemNonVariableIdentifier:
+	case itemNonVariableIdentifier, itemSelf, itemStatic, itemParent:
 		if p.peek().typ == itemOpenParen {
 			var expr ast.Expression
 			expr = p.parseFunctionCall()
