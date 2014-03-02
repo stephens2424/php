@@ -429,6 +429,14 @@ func (c ClassExpression) EvaluatesTo() Type {
 	return AnyType
 }
 
+func (c ClassExpression) String() string {
+	return fmt.Sprintf("%s::", c.Receiver)
+}
+
+func (c ClassExpression) Children() []Node {
+	return []Node{c.Expression}
+}
+
 type Method struct {
 	BaseNode
 	*FunctionStmt

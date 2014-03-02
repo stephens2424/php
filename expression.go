@@ -205,9 +205,10 @@ func (p *parser) expressionize() ast.Expression {
 			return expr
 		}
 		if p.peek().typ == itemScopeResolutionOperator {
+			r := p.current.val
 			p.expect(itemScopeResolutionOperator)
 			return &ast.ClassExpression{
-				Receiver:   p.current.val,
+				Receiver:   r,
 				Expression: p.parseNextExpression(),
 			}
 		}
@@ -242,6 +243,14 @@ func (p *parser) parseIdentifier() ast.Expression {
 	var expr ast.Expression
 	expr = ast.NewIdentifier(p.current.val)
 	switch pk := p.peek(); pk.typ {
+	case itemScopeResolutionOperator:
+		r := p.current.val
+		p.expect(itemScopeResolutionOperator)
+		p.next()
+		return &ast.ClassExpression{
+			Receiver:   r,
+			Expression: p.expressionize(),
+		}
 	case itemObjectOperator:
 		for p.peek().typ == itemObjectOperator {
 			expr = p.parseObjectLookup(expr)

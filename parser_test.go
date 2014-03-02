@@ -712,3 +712,36 @@ func TestComments(t *testing.T) {
 		t.Fatalf("Literals did not correctly parse")
 	}
 }
+
+func TestScopeResolutionOperator(t *testing.T) {
+	testStr := `<?
+  MyClass::myfunc($var);
+  echo MyClass::myconst;`
+	p := NewParser(testStr)
+	a, _ := p.Parse()
+	tree := []ast.Node{
+		ast.ExpressionStmt{
+			&ast.ClassExpression{
+				Receiver: "MyClass",
+				Expression: &ast.FunctionCallExpression{
+					FunctionName: "myfunc",
+					Arguments: []ast.Expression{
+						&ast.Identifier{Name: "$var", Type: ast.AnyType},
+					},
+				},
+			},
+		},
+		ast.Echo(&ast.ClassExpression{
+			Receiver: "MyClass",
+			Expression: ast.ConstantExpression{
+				&ast.Identifier{Name: "myconst", Type: ast.AnyType},
+			},
+		}),
+	}
+	if !assertEquals(a[0], tree[0]) {
+		t.Fatalf("Scope resolution operator function call did not correctly parse")
+	}
+	if !assertEquals(a[1], tree[1]) {
+		t.Fatalf("Scope resolution operator expression did not correctly parse")
+	}
+}
