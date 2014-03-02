@@ -41,6 +41,16 @@ func TestPHPParserHWPHP(t *testing.T) {
 	}
 }
 
+func TestInclude(t *testing.T) {
+	testStr := `<?php
+  include test.php; ?>`
+	p := NewParser(testStr)
+	_, errs := p.Parse()
+	if len(errs) > 0 {
+		t.Fatalf("Did not parse include correctly")
+	}
+}
+
 func TestIf(t *testing.T) {
 	testStr := `<?php
     if (true)
@@ -317,7 +327,7 @@ func TestExpressionParsing(t *testing.T) {
 		t.Fatalf("If did not correctly parse")
 	}
 
-	p = NewParser(`<? if (1 > 2 * 3 + 4 - 2 & 3 && 4 ^ 8 or 14 xor 10 and 13 >> 18 << 10)
+	p = NewParser(`<? if ($var = 1 > 2 * (3 + 4) - 2 & 3 && 4 ^ 8 or 14 xor 10 and 13 >> 18 << 10 ? true : false)
     echo "good";
   `)
 	p.Debug = true
@@ -716,7 +726,8 @@ func TestComments(t *testing.T) {
 func TestScopeResolutionOperator(t *testing.T) {
 	testStr := `<?
   MyClass::myfunc($var);
-  echo MyClass::myconst;`
+  echo MyClass::myconst;
+  echo $var::myfunc();`
 	p := NewParser(testStr)
 	a, _ := p.Parse()
 	tree := []ast.Node{
@@ -737,12 +748,22 @@ func TestScopeResolutionOperator(t *testing.T) {
 				&ast.Identifier{Name: "myconst", Type: ast.AnyType},
 			},
 		}),
+		ast.Echo(&ast.ClassExpression{
+			Receiver: "$var",
+			Expression: &ast.FunctionCallExpression{
+				FunctionName: "myfunc",
+				Arguments:    []ast.Expression{},
+			},
+		}),
 	}
 	if !assertEquals(a[0], tree[0]) {
 		t.Fatalf("Scope resolution operator function call did not correctly parse")
 	}
 	if !assertEquals(a[1], tree[1]) {
 		t.Fatalf("Scope resolution operator expression did not correctly parse")
+	}
+	if !assertEquals(a[2], tree[2]) {
+		t.Fatalf("Scope resolution operator function call on identifier did not correctly parse")
 	}
 }
 
