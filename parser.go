@@ -223,6 +223,20 @@ func (p *parser) parseStmt() ast.Statement {
 		ident := ast.GlobalIdentifier{ast.NewIdentifier(p.current.val)}
 		p.expectStmtEnd()
 		return ident
+	case itemNamespace:
+		p.expect(itemNonVariableIdentifier)
+		p.expectStmtEnd()
+		// We are ignoring this for now
+		return nil
+	case itemUse:
+		p.expect(itemNonVariableIdentifier)
+		if p.peek().typ == itemAsOperator {
+			p.expect(itemAsOperator)
+			p.expect(itemNonVariableIdentifier)
+		}
+		p.expectStmtEnd()
+		// We are ignoring this for now
+		return nil
 	case itemIdentifier:
 		ident := p.parseIdentifier()
 		switch p.peek().typ {

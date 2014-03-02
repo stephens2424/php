@@ -41,6 +41,9 @@ const (
 	itemBlockEnd
 	itemGlobal
 
+	itemNamespace
+	itemUse
+
 	itemComment
 
 	itemIgnoreErrorOperator
@@ -160,6 +163,9 @@ var itemTypeMap = map[ItemType]string{
 	itemComma:             "Function Argument Separator",
 	itemStatementEnd:      "Statement End",
 	itemEcho:              "Echo",
+
+	itemNamespace: "namespace",
+	itemUse:       "use",
 
 	itemIgnoreErrorOperator: "@",
 
@@ -305,6 +311,9 @@ var tokenMap = map[string]ItemType{
 	"@":            itemIgnoreErrorOperator,
 	"null":         itemNull,
 	"NULL":         itemNull,
+
+	"use":       itemUse,
+	"namespace": itemNamespace,
 
 	"(int)":     itemCastOperator,
 	"(integer)": itemCastOperator,
