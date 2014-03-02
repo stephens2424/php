@@ -150,11 +150,14 @@ type ReturnStmt struct {
 }
 
 func (r ReturnStmt) String() string {
-	return fmt.Sprintf("return %s", r.Expression.String())
+	return fmt.Sprintf("return")
 }
 
 func (r ReturnStmt) Children() []Node {
-	return r.Expression.Children()
+	if r.Expression == nil {
+		return nil
+	}
+	return []Node{r.Expression}
 }
 
 type BreakStmt struct {
@@ -169,14 +172,22 @@ func (b BreakStmt) Children() []Node {
 }
 
 func (b BreakStmt) String() string {
-	if b.Expression != nil {
-		return fmt.Sprint("break", b.Expression.String())
-	}
 	return "break"
 }
 
 type ContinueStmt struct {
 	Expression
+}
+
+func (c ContinueStmt) String() string {
+	return "continue"
+}
+
+func (c ContinueStmt) Children() []Node {
+	if c.Expression != nil {
+		return c.Expression.Children()
+	}
+	return nil
 }
 
 type ThrowStmt struct {
