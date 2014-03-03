@@ -148,19 +148,6 @@ func lexDoubleQuotedStringLiteral(l *lexer) stateFn {
 	}
 }
 
-func lexIf(l *lexer) stateFn {
-	return l.errorf("if is not supported")
-}
-
-func lexCondition(l *lexer) stateFn {
-	// this could be useful in the condition of a while, do-while, for terminator, if, and if-else block
-	// what state should it return?
-	// in all cases except do-while, after this is done, a block-begin is the correct state
-
-	// how can this take advantage of the lexPHP function?
-	return lexPHP
-}
-
 const alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 const digits = "0123456789"
 const underscore = "_"
@@ -170,27 +157,6 @@ func lexIdentifier(l *lexer) stateFn {
 	l.accept(underscore + alphabet)
 	l.acceptRun(underscore + alphabet + digits)
 	l.emit(itemIdentifier)
-	return lexPHP
-}
-
-// lexBlockBegin lexes the beginning of a code block delimited by '{'.
-// This state occurs after the declaration of control flow structures.
-func lexBlockBegin(l *lexer) stateFn {
-	for isSpace(l.peek()) {
-		l.next()
-	}
-	if l.next() == '{' {
-		l.emit(itemBlockBegin)
-	} else {
-		l.errorf("expecting { to begin a new block")
-	}
-	return lexPHP
-}
-
-// lexBlockEnd lexes the end of a code block delimited by '}'.
-func lexBlockEnd(l *lexer) stateFn {
-	l.pos += 1
-	l.emit(itemBlockEnd)
 	return lexPHP
 }
 
