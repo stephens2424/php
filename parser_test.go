@@ -33,10 +33,14 @@ func TestPHPParserHW(t *testing.T) {
 
 func TestPHPParserHWPHP(t *testing.T) {
 	testStr := `<?php
-    echo "hello world";`
+    echo "hello world", "!";`
 	p := NewParser(testStr)
 	a, _ := p.Parse()
-	if !assertEquals(a[0], ast.Echo(&ast.Literal{Type: ast.String})) {
+	tree := ast.Echo(
+		&ast.Literal{Type: ast.String},
+		&ast.Literal{Type: ast.String},
+	)
+	if !assertEquals(a[0], tree) {
 		t.Fatalf("Hello world did not correctly parse")
 	}
 }
@@ -606,13 +610,13 @@ func TestArrayLookup(t *testing.T) {
 	}
 	tree := []ast.Node{
 		ast.EchoStmt{
-			Expression: &ast.ArrayLookupExpression{
+			Expressions: []ast.Expression{&ast.ArrayLookupExpression{
 				Array: &ast.ArrayLookupExpression{
 					Array: &ast.Identifier{Name: "$arr", Type: ast.AnyType},
 					Index: &ast.Literal{Type: ast.String},
 				},
 				Index: &ast.Identifier{Name: "$two", Type: ast.AnyType},
-			},
+			}},
 		},
 		ast.AssignmentStmt{
 			ast.AssignmentExpression{
@@ -730,7 +734,7 @@ func TestComments(t *testing.T) {
   */
   #line ?>html`
 	tree := []ast.Node{
-		ast.EchoStmt{Expression: ast.Literal{Type: ast.String}},
+		ast.Echo(ast.Literal{Type: ast.String}),
 	}
 	p := NewParser(testStr)
 	a, _ := p.Parse()

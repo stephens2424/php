@@ -128,15 +128,15 @@ func (e ExpressionStmt) Children() []Node {
 }
 
 // Echo returns a new echo statement.
-func Echo(expr Expression) EchoStmt {
-	return EchoStmt{Expression: expr}
+func Echo(exprs ...Expression) EchoStmt {
+	return EchoStmt{Expressions: exprs}
 }
 
 // Echo represents an echo statement. It may be either a literal statement
 // or it may be from data outside PHP-mode, such as "here" in: <? not here ?> here <? not here ?>
 type EchoStmt struct {
 	BaseNode
-	Expression Expression
+	Expressions []Expression
 }
 
 func (e EchoStmt) String() string {
@@ -144,7 +144,11 @@ func (e EchoStmt) String() string {
 }
 
 func (e EchoStmt) Children() []Node {
-	return []Node{e.Expression}
+	nodes := make([]Node, len(e.Expressions))
+	for i, expr := range e.Expressions {
+		nodes[i] = expr
+	}
+	return nodes
 }
 
 // ReturnStmt represents a function return.

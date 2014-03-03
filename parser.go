@@ -265,10 +265,15 @@ func (p *parser) parseStmt() ast.Statement {
 	case itemFunction:
 		return p.parseFunctionStmt()
 	case itemEcho:
-		p.next()
-		expr := p.parseExpression()
+		exprs := []ast.Expression{
+			p.parseNextExpression(),
+		}
+		for p.peek().typ == itemComma {
+			p.expect(itemComma)
+			exprs = append(exprs, p.parseNextExpression())
+		}
 		p.expectStmtEnd()
-		return ast.Echo(expr)
+		return ast.Echo(exprs...)
 	case itemIf:
 		return p.parseIf()
 	case itemWhile:
