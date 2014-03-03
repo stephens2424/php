@@ -2,6 +2,7 @@ package php
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 	"unicode/utf8"
 )
@@ -151,33 +152,13 @@ func isKeyword(i ItemType) bool {
 
 // keywordMap lists all keywords that should be ignored as a prefix to a longer
 // identifier.
-var keywordMap = map[ItemType]bool{
-	itemFunction: true,
+var keywordMap = map[ItemType]bool{}
 
-	itemReturn: true,
-	itemEcho:   true,
-
-	itemIf:      true,
-	itemElse:    true,
-	itemElseIf:  true,
-	itemFor:     true,
-	itemForeach: true,
-	itemWhile:   true,
-	itemDo:      true,
-
-	itemTry:     true,
-	itemCatch:   true,
-	itemFinally: true,
-
-	itemClass:       true,
-	itemPrivate:     true,
-	itemProtected:   true,
-	itemPublic:      true,
-	itemInterface:   true,
-	itemImplements:  true,
-	itemExtends:     true,
-	itemNewOperator: true,
-
-	itemInstanceofOperator: true,
-	itemArray:              true,
+func init() {
+	re := regexp.MustCompile("^[a-zA-Z]+")
+	for keyword, item := range tokenMap {
+		if re.MatchString(keyword) {
+			keywordMap[item] = true
+		}
+	}
 }

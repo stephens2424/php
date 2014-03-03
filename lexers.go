@@ -73,20 +73,6 @@ func lexPHP(l *lexer) stateFn {
 		return lexBlockComment
 	}
 
-	for _, token := range tokenList {
-		item := tokenMap[token]
-		if strings.HasPrefix(l.input[l.pos:], token) {
-			l.pos += len(token)
-			if isKeyword(item) && l.accept(alphabet+underscore+digits) {
-				l.backup() // to account for the character consumed by accept
-				l.pos -= len(token)
-				break
-			}
-			l.emit(item)
-			return lexPHP
-		}
-	}
-
 	if strings.HasPrefix(l.input[l.pos:], "$") {
 		return lexIdentifier
 	}
@@ -102,6 +88,20 @@ func lexPHP(l *lexer) stateFn {
 
 	if l.peek() == '"' {
 		return lexDoubleQuotedStringLiteral
+	}
+
+	for _, token := range tokenList {
+		item := tokenMap[token]
+		if strings.HasPrefix(l.input[l.pos:], token) {
+			l.pos += len(token)
+			if isKeyword(item) && l.accept(alphabet+underscore+digits) {
+				l.backup() // to account for the character consumed by accept
+				l.pos -= len(token)
+				break
+			}
+			l.emit(item)
+			return lexPHP
+		}
 	}
 
 	l.acceptRun(alphabet + underscore + digits + "\\")
