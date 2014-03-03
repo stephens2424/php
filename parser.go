@@ -324,7 +324,9 @@ func (p *parser) parseStmt() ast.Statement {
 		stmt := ast.ExitStmt{}
 		if p.peek().typ == itemOpenParen {
 			p.expect(itemOpenParen)
-			stmt.Expression = p.parseNextExpression()
+			if p.peek().typ != itemCloseParen {
+				stmt.Expression = p.parseNextExpression()
+			}
 			p.expect(itemCloseParen)
 		}
 		p.expectStmtEnd()
