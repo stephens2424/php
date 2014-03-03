@@ -597,23 +597,41 @@ func TestWhileLoopWithAssignment(t *testing.T) {
 
 func TestArrayLookup(t *testing.T) {
 	testStr := `<?
-  echo $arr['one'][$two];`
+  echo $arr['one'][$two];
+  $var->arr[] = 2;`
 	p := NewParser(testStr)
 	a, _ := p.Parse()
 	if len(a) == 0 {
 		t.Fatalf("Array lookup did not correctly parse")
 	}
-	tree := ast.EchoStmt{
-		Expression: &ast.ArrayLookupExpression{
-			Array: &ast.ArrayLookupExpression{
-				Array: &ast.Identifier{Name: "$arr", Type: ast.AnyType},
-				Index: &ast.Literal{Type: ast.String},
+	tree := []ast.Node{
+		ast.EchoStmt{
+			Expression: &ast.ArrayLookupExpression{
+				Array: &ast.ArrayLookupExpression{
+					Array: &ast.Identifier{Name: "$arr", Type: ast.AnyType},
+					Index: &ast.Literal{Type: ast.String},
+				},
+				Index: &ast.Identifier{Name: "$two", Type: ast.AnyType},
 			},
-			Index: &ast.Identifier{Name: "$two", Type: ast.AnyType},
+		},
+		ast.AssignmentStmt{
+			ast.AssignmentExpression{
+				Assignee: ast.ArrayAppendExpression{
+					Array: &ast.PropertyExpression{
+						Receiver: ast.NewIdentifier("$var"),
+						Name:     "arr",
+					},
+				},
+				Operator: "=",
+				Value:    &ast.Literal{Type: ast.Float},
+			},
 		},
 	}
-	if !assertEquals(a[0], tree) {
+	if !assertEquals(a[0], tree[0]) {
 		t.Fatalf("Array lookup did not correctly parse")
+	}
+	if !assertEquals(a[1], tree[1]) {
+		t.Fatalf("Array append expression did not correctly parse")
 	}
 }
 

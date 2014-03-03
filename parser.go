@@ -238,7 +238,7 @@ func (p *parser) parseStmt() ast.Statement {
 		// We are ignoring this for now
 		return nil
 	case itemIdentifier:
-		ident := p.parseIdentifier()
+		ident := p.expressionize()
 		switch p.peek().typ {
 		case itemUnaryOperator:
 			expr := ast.ExpressionStmt{p.parseOperation(p.parenLevel, ident)}

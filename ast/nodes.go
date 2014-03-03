@@ -724,3 +724,7 @@ func (a ArrayAppendExpression) EvaluatesTo() Type {
 func (a ArrayAppendExpression) AssignableType() Type {
 	return AnyType
 }
+
+func (a ArrayAppendExpression) String() string {
+	return a.Array.String() + "[]"
+}

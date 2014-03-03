@@ -274,7 +274,10 @@ func (p *parser) parseObjectLookup(r ast.Expression) ast.Expression {
 		}
 		return expr
 	case itemArrayLookupOperatorLeft:
-		return p.parseArrayLookup(r)
+		return p.parseArrayLookup(&ast.PropertyExpression{
+			Receiver: r,
+			Name:     p.current.val,
+		})
 	}
 	return &ast.PropertyExpression{
 		Receiver: r,
