@@ -294,8 +294,11 @@ func (p *parser) parseArrayLookup(e ast.Expression) ast.Expression {
 		Index: p.parseExpression(),
 	}
 	p.expect(itemArrayLookupOperatorRight)
-	if p.peek().typ == itemArrayLookupOperatorLeft {
+	switch p.peek().typ {
+	case itemArrayLookupOperatorLeft:
 		return p.parseArrayLookup(expr)
+	case itemObjectOperator:
+		return p.parseObjectLookup(expr)
 	}
 	return expr
 }
