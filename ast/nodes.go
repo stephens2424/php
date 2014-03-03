@@ -1,6 +1,9 @@
 package ast
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 // Node encapsulates every AST node.
 type Node interface {
@@ -387,6 +390,18 @@ type Interface struct {
 	Name     string
 	Inherits []string
 	Methods  []Method
+}
+
+func (i Interface) String() string {
+	return fmt.Sprintf("interface %s extends %s", i.Name, strings.Join(i.Inherits, ", "))
+}
+
+func (i Interface) Children() []Node {
+	n := make([]Node, len(i.Methods))
+	for ii, method := range i.Methods {
+		n[ii] = method
+	}
+	return n
 }
 
 type Property struct {

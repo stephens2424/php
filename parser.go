@@ -675,7 +675,7 @@ func (p *parser) parseInterface() *ast.Interface {
 			if p.peek().typ != itemComma {
 				break
 			}
-			p.next()
+			p.expect(itemComma)
 		}
 	}
 	p.expect(itemBlockBegin)
@@ -697,7 +697,7 @@ func (p *parser) parseInterface() *ast.Interface {
 		default:
 			p.errorf("unexpected interface member %v", p.current)
 		}
-		p.next()
 	}
+	p.expect(itemBlockEnd)
 	return i
 }

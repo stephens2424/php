@@ -805,3 +805,40 @@ func TestCastOperator(t *testing.T) {
 		t.Fatalf("Cast operator parsing failed")
 	}
 }
+
+func TestInterface(t *testing.T) {
+	testStr := `<?
+  interface MyInterface extends YourInterface, HerInterface {
+    public function TheirFunc();
+    private function MyFunc();
+  }`
+	p := NewParser(testStr)
+	a, _ := p.Parse()
+	tree := &ast.Interface{
+		Name:     "MyInterface",
+		Inherits: []string{"YourInterface", "HerInterface"},
+		Methods: []ast.Method{
+			{
+				Visibility: ast.Public,
+				FunctionStmt: &ast.FunctionStmt{
+					FunctionDefinition: &ast.FunctionDefinition{
+						Name:      "TheirFunc",
+						Arguments: []ast.FunctionArgument{},
+					},
+				},
+			},
+			{
+				Visibility: ast.Private,
+				FunctionStmt: &ast.FunctionStmt{
+					FunctionDefinition: &ast.FunctionDefinition{
+						Name:      "MyFunc",
+						Arguments: []ast.FunctionArgument{},
+					},
+				},
+			},
+		},
+	}
+	if !assertEquals(a[0], tree) {
+		t.Fatalf("Interface did not parse correctly")
+	}
+}
