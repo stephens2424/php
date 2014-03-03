@@ -91,7 +91,7 @@ func (p *parser) parseExpression() (expr ast.Expression) {
 		fallthrough
 	case itemArray:
 		fallthrough
-	case itemUnaryOperator, itemNegationOperator, itemAmpersandOperator, itemCastOperator:
+	case itemUnaryOperator, itemNegationOperator, itemAmpersandOperator, itemCastOperator, itemSubtractionOperator:
 		fallthrough
 	case itemNonVariableIdentifier, itemStringLiteral, itemNumberLiteral, itemBooleanLiteral, itemInclude, itemNull, itemSelf, itemStatic, itemParent:
 		expr = p.parseOperation(originalParenLev, p.expressionize())
@@ -184,7 +184,7 @@ func (p *parser) parseUnaryExpressionLeft(operand ast.Expression, operator Item)
 // except for the object operator.
 func (p *parser) expressionize() ast.Expression {
 	switch p.current.typ {
-	case itemUnaryOperator, itemNegationOperator, itemCastOperator:
+	case itemUnaryOperator, itemNegationOperator, itemCastOperator, itemSubtractionOperator:
 		op := p.current
 		p.next()
 		return p.parseUnaryExpressionRight(p.expressionize(), op)
