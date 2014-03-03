@@ -238,7 +238,7 @@ func (p *parser) parseStmt() ast.Statement {
 		// We are ignoring this for now
 		return nil
 	case itemIdentifier:
-		ident := p.expressionize()
+		ident := p.parseIdentifier()
 		switch p.peek().typ {
 		case itemUnaryOperator:
 			expr := ast.ExpressionStmt{p.parseOperation(p.parenLevel, ident)}
@@ -334,8 +334,7 @@ func (p *parser) parseStmt() ast.Statement {
 	case itemTry:
 		stmt := &ast.TryStmt{}
 		stmt.TryBlock = p.parseBlock()
-		p.expect(itemCatch)
-		for p.current.typ == itemCatch {
+		for p.expect(itemCatch); p.current.typ == itemCatch; p.next() {
 			caught := &ast.CatchStmt{}
 			p.expect(itemOpenParen)
 			p.expect(itemNonVariableIdentifier)
@@ -345,8 +344,8 @@ func (p *parser) parseStmt() ast.Statement {
 			p.expect(itemCloseParen)
 			caught.CatchBlock = p.parseBlock()
 			stmt.CatchStmts = append(stmt.CatchStmts, caught)
-			p.next()
 		}
+		p.backup()
 		return stmt
 	case itemIgnoreErrorOperator:
 		// Ignore this operator

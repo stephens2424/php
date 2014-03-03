@@ -629,11 +629,34 @@ type TryStmt struct {
 	CatchStmts   []*CatchStmt
 }
 
+func (t TryStmt) String() string {
+	return "try"
+}
+
+func (t TryStmt) Children() []Node {
+	n := []Node{t.TryBlock}
+	for _, catch := range t.CatchStmts {
+		n = append(n, catch)
+	}
+	if t.FinallyBlock != nil {
+		n = append(n, t.FinallyBlock)
+	}
+	return n
+}
+
 type CatchStmt struct {
 	BaseNode
 	CatchBlock *Block
 	CatchType  string
 	CatchVar   *Identifier
+}
+
+func (c CatchStmt) String() string {
+	return fmt.Sprintf("catch %s %s", c.CatchType, c.CatchVar)
+}
+
+func (c CatchStmt) Children() []Node {
+	return []Node{c.CatchBlock}
 }
 
 type Literal struct {
