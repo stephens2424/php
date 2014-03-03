@@ -40,16 +40,15 @@ left  , many uses
 */
 
 var operatorPrecedence = map[ItemType]int{
-	itemArrayLookupOperatorLeft:  19,
-	itemArrayLookupOperatorRight: 19,
-	itemUnaryOperator:            18,
-	itemCastOperator:             18,
-	itemInstanceofOperator:       17,
-	itemNegationOperator:         16,
-	itemMultOperator:             15,
-	itemAdditionOperator:         14,
-	itemSubtractionOperator:      14,
-	itemConcatenationOperator:    14,
+	itemArrayLookupOperatorLeft: 19,
+	itemUnaryOperator:           18,
+	itemCastOperator:            18,
+	itemInstanceofOperator:      17,
+	itemNegationOperator:        16,
+	itemMultOperator:            15,
+	itemAdditionOperator:        14,
+	itemSubtractionOperator:     14,
+	itemConcatenationOperator:   14,
 
 	itemBitwiseShiftOperator: 13,
 	itemComparisonOperator:   12,
@@ -148,9 +147,7 @@ func (p *parser) parseBinaryOperation(lhs ast.Expression, operator Item, origina
 	p.next()
 	rhs := p.expressionize()
 	for {
-		p.next()
-		nextOperator := p.current
-		p.backup()
+		nextOperator := p.peek()
 		nextOperatorPrecedence, ok := operatorPrecedence[nextOperator.typ]
 		if ok && nextOperatorPrecedence > operatorPrecedence[operator.typ] {
 			rhs = p.parseOperation(originalParenLevel, rhs)

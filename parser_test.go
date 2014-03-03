@@ -602,7 +602,8 @@ func TestWhileLoopWithAssignment(t *testing.T) {
 func TestArrayLookup(t *testing.T) {
 	testStr := `<?
   echo $arr['one'][$two];
-  $var->arr[] = 2;`
+  $var->arr[] = 2;
+  echo $arr[2 + 1];`
 	p := NewParser(testStr)
 	a, _ := p.Parse()
 	if len(a) == 0 {
