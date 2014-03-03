@@ -12,6 +12,7 @@ import (
 )
 
 func main() {
+	astonerror := flag.Bool("astonerror", false, "Print the AST on errors")
 	flag.Parse()
 	fmt.Println(flag.Arg(0))
 	fBytes, err := ioutil.ReadFile(flag.Arg(0))
@@ -23,7 +24,7 @@ func main() {
 	parser := php.NewParser(string(fBytes))
 	nodes, errs := parser.Parse()
 	if len(errs) != 0 {
-		if len(nodes) != 0 && nodes[0] != nil {
+		if *astonerror && len(nodes) != 0 && nodes[0] != nil {
 			walker.Walk(nodes[0])
 		}
 		for _, err := range errs {
