@@ -541,6 +541,9 @@ func (p *parser) parseFunctionArgument() ast.FunctionArgument {
 		p.next()
 		arg.TypeHint = p.current.val
 	}
+	if p.peek().typ == itemAmpersandOperator {
+		p.next()
+	}
 	p.expect(itemIdentifier)
 	arg.Identifier = ast.NewIdentifier(p.current.val)
 	if p.peek().typ == itemAssignmentOperator {
