@@ -383,7 +383,7 @@ func (p *parser) parseFunctionArgument() ast.FunctionArgument {
 	if p.peek().typ == itemAssignmentOperator {
 		p.expect(itemAssignmentOperator)
 		p.next()
-		arg.Default = p.parseLiteral()
+		arg.Default = p.parseExpression()
 	}
 	return arg
 }

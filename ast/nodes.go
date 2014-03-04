@@ -363,7 +363,7 @@ func (fd FunctionDefinition) Children() []Node {
 type FunctionArgument struct {
 	BaseNode
 	TypeHint   string
-	Default    *Literal
+	Default    Expression
 	Identifier *Identifier
 }
 
