@@ -116,6 +116,8 @@ func (p *parser) parseExpression() (expr ast.Expression) {
 func (p *parser) parseOperation(originalParenLevel int, lhs ast.Expression) (expr ast.Expression) {
 	p.next()
 	switch p.current.typ {
+	case itemIgnoreErrorOperator:
+		return p.parseOperation(originalParenLevel, lhs)
 	case itemUnaryOperator:
 		expr = p.parseUnaryExpressionLeft(lhs, p.current)
 	case itemAdditionOperator, itemSubtractionOperator, itemConcatenationOperator, itemComparisonOperator, itemMultOperator, itemAndOperator, itemOrOperator, itemAmpersandOperator, itemBitwiseXorOperator, itemBitwiseOrOperator, itemBitwiseShiftOperator, itemWrittenAndOperator, itemWrittenXorOperator, itemWrittenOrOperator, itemInstanceofOperator:
@@ -184,6 +186,9 @@ func (p *parser) parseUnaryExpressionLeft(operand ast.Expression, operator Item)
 // except for the object operator.
 func (p *parser) expressionize() ast.Expression {
 	switch p.current.typ {
+	case itemIgnoreErrorOperator:
+		p.next()
+		return p.expressionize()
 	case itemUnaryOperator, itemNegationOperator, itemCastOperator, itemSubtractionOperator, itemAmpersandOperator:
 		op := p.current
 		p.next()
