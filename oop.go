@@ -128,7 +128,7 @@ func (p *parser) parseClassFields(c ast.Class) ast.Class {
 				})
 			}
 		case itemVariableOperator:
-			p.expect(itemIdentifier)
+			p.next()
 			prop := ast.Property{
 				Visibility: vis,
 				Name:       "$" + p.current.val,
