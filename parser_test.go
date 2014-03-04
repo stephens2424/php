@@ -847,3 +847,19 @@ func TestInterface(t *testing.T) {
 		t.Fatalf("Interface did not parse correctly")
 	}
 }
+
+func TestGlobal(t *testing.T) {
+	testStr := `<?
+  global $var, $otherVar;`
+	p := NewParser(testStr)
+	a, _ := p.Parse()
+	tree := &ast.GlobalDeclaration{
+		Identifiers: []*ast.Identifier{
+			{Name: "$var", Type: ast.AnyType},
+			{Name: "$otherVar", Type: ast.AnyType},
+		},
+	}
+	if !assertEquals(a[0], tree) {
+		t.Fatalf("Global did not parse correctly")
+	}
+}

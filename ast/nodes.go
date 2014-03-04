@@ -41,8 +41,21 @@ func (i Identifier) String() string {
 	return i.Name
 }
 
-type GlobalIdentifier struct {
-	*Identifier
+type GlobalDeclaration struct {
+	BaseNode
+	Identifiers []*Identifier
+}
+
+func (g GlobalDeclaration) Children() []Node {
+	n := make([]Node, len(g.Identifiers))
+	for i, node := range g.Identifiers {
+		n[i] = node
+	}
+	return n
+}
+
+func (g GlobalDeclaration) String() string {
+	return "global"
 }
 
 func (i Identifier) AssignableType() Type {

@@ -238,11 +238,18 @@ func (p *parser) parseLiteral() *ast.Literal {
 	return nil
 }
 
-func (p *parser) parseIdentifier() ast.Expression {
-	var expr ast.Expression
+func (p *parser) parseVariable() ast.Expression {
 	p.expectCurrent(itemVariableOperator)
-	p.expect(itemIdentifier)
-	expr = ast.NewIdentifier("$" + p.current.val)
+	switch p.next(); p.current.typ {
+	case itemIdentifier:
+		return ast.NewIdentifier("$" + p.current.val)
+	default:
+		return p.parseExpression()
+	}
+}
+
+func (p *parser) parseIdentifier() (expr ast.Expression) {
+	expr = p.parseVariable()
 	switch pk := p.peek(); pk.typ {
 	case itemScopeResolutionOperator:
 		r := "$" + p.current.val

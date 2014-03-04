@@ -150,7 +150,7 @@ var itemTypeMap = map[ItemType]string{
 	itemFinal:            "final",
 	itemFunctionName:     "Function Name",
 	itemTypeHint:         "Function Type Hint",
-	itemVariableOperator: "Identifier",
+	itemVariableOperator: "$",
 	itemBlockBegin:       "Block Begin",
 	itemBlockEnd:         "Block End",
 
@@ -208,7 +208,7 @@ var itemTypeMap = map[ItemType]string{
 	itemNumberLiteral:  "number-literal",
 	itemBooleanLiteral: "bool-literal",
 
-	itemIdentifier: "non-variable-identifier",
+	itemIdentifier: "identifier",
 
 	itemAssignmentOperator:      "=",
 	itemNegationOperator:        "!",

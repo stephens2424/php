@@ -220,9 +220,24 @@ func (p *parser) parseStmt() ast.Statement {
 		return p.parseBlock()
 	case itemGlobal:
 		p.next()
-		ident := ast.GlobalIdentifier{ast.NewIdentifier(p.current.val)}
+		g := &ast.GlobalDeclaration{
+			Identifiers: make([]*ast.Identifier, 0, 1),
+		}
+		for p.current.typ == itemVariableOperator {
+			variable, ok := p.parseVariable().(*ast.Identifier)
+			if !ok {
+				p.errorf("global declarations must be of standard variables")
+				break
+			}
+			g.Identifiers = append(g.Identifiers, variable)
+			if p.peek().typ != itemComma {
+				break
+			}
+			p.expect(itemComma)
+			p.next()
+		}
 		p.expectStmtEnd()
-		return ident
+		return g
 	case itemNamespace:
 		p.expect(itemIdentifier)
 		p.expectStmtEnd()
