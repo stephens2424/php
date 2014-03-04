@@ -50,7 +50,15 @@ func (p *parser) parseClass() ast.Class {
 
 func (p *parser) parseObjectLookup(r ast.Expression) ast.Expression {
 	p.expect(itemObjectOperator)
-	p.expect(itemIdentifier)
+	prop := &ast.PropertyExpression{
+		Receiver: r,
+	}
+	switch p.next(); p.current.typ {
+	case itemVariableOperator:
+		prop.Name = p.parseVariable()
+	case itemIdentifier:
+		prop.Name = ast.PropertyIdentifier{Name: p.current.val}
+	}
 	switch pk := p.peek(); pk.typ {
 	case itemOpenParen:
 		expr := &ast.MethodCallExpression{
@@ -59,15 +67,9 @@ func (p *parser) parseObjectLookup(r ast.Expression) ast.Expression {
 		}
 		return expr
 	case itemArrayLookupOperatorLeft:
-		return p.parseArrayLookup(&ast.PropertyExpression{
-			Receiver: r,
-			Name:     p.current.val,
-		})
+		return p.parseArrayLookup(prop)
 	}
-	return &ast.PropertyExpression{
-		Receiver: r,
-		Name:     p.current.val,
-	}
+	return prop
 }
 
 func (p *parser) parseVisibility() (vis ast.Visibility, found bool) {

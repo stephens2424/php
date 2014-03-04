@@ -437,7 +437,7 @@ func TestProperty(t *testing.T) {
 		Operator: "=",
 		Value: &ast.PropertyExpression{
 			Receiver: ast.NewIdentifier("$var"),
-			Name:     "go",
+			Name:     ast.PropertyIdentifier{Name: "go"},
 		},
 	}}
 	if !assertEquals(a[0], tree) {
@@ -447,7 +447,7 @@ func TestProperty(t *testing.T) {
 	tree = ast.AssignmentStmt{ast.AssignmentExpression{
 		Assignee: &ast.PropertyExpression{
 			Receiver: ast.NewIdentifier("$var"),
-			Name:     "go",
+			Name:     ast.PropertyIdentifier{Name: "go"},
 		},
 		Operator: "=",
 		Value:    ast.NewIdentifier("$res"),
@@ -624,7 +624,7 @@ func TestArrayLookup(t *testing.T) {
 				Assignee: ast.ArrayAppendExpression{
 					Array: &ast.PropertyExpression{
 						Receiver: ast.NewIdentifier("$var"),
-						Name:     "arr",
+						Name:     ast.PropertyIdentifier{Name: "arr"},
 					},
 				},
 				Operator: "=",

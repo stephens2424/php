@@ -455,7 +455,7 @@ func (p Property) AssignableType() Type {
 type PropertyExpression struct {
 	BaseNode
 	Receiver Expression
-	Name     string
+	Name     Expression
 	Type     Type
 }
 
@@ -475,6 +475,15 @@ func (p PropertyExpression) Children() []Node {
 	return []Node{
 		p.Receiver,
 	}
+}
+
+type PropertyIdentifier struct {
+	BaseNode
+	Name string
+}
+
+func (p PropertyIdentifier) EvaluatesTo() Type {
+	return String
 }
 
 type ClassExpression struct {
