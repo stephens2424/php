@@ -276,28 +276,6 @@ func (p *parser) parseIdentifier() (expr ast.Expression) {
 	return expr
 }
 
-func (p *parser) parseObjectLookup(r ast.Expression) ast.Expression {
-	p.expect(itemObjectOperator)
-	p.expect(itemIdentifier)
-	switch pk := p.peek(); pk.typ {
-	case itemOpenParen:
-		expr := &ast.MethodCallExpression{
-			Receiver:               r,
-			FunctionCallExpression: p.parseFunctionCall(),
-		}
-		return expr
-	case itemArrayLookupOperatorLeft:
-		return p.parseArrayLookup(&ast.PropertyExpression{
-			Receiver: r,
-			Name:     p.current.val,
-		})
-	}
-	return &ast.PropertyExpression{
-		Receiver: r,
-		Name:     p.current.val,
-	}
-}
-
 func (p *parser) parseArrayLookup(e ast.Expression) ast.Expression {
 	p.expect(itemArrayLookupOperatorLeft)
 	if p.peek().typ == itemArrayLookupOperatorRight {
@@ -354,28 +332,4 @@ ArrayLoop:
 	}
 	p.expect(itemCloseParen)
 	return &ast.ArrayExpression{Pairs: pairs}
-}
-
-func (p *parser) parseInstantiation() ast.Expression {
-	p.expectCurrent(itemNewOperator)
-	expr := &ast.NewExpression{}
-	switch p.next(); p.current.typ {
-	case itemVariableOperator:
-		expr.Class = p.parseExpression()
-	case itemIdentifier:
-		expr.Class = ast.ClassIdentifier{ClassName: p.current.val}
-	}
-
-	if p.peek().typ == itemOpenParen {
-		p.expect(itemOpenParen)
-		if p.peek().typ != itemCloseParen {
-			expr.Arguments = append(expr.Arguments, p.parseNextExpression())
-			for p.peek().typ == itemComma {
-				p.expect(itemComma)
-				expr.Arguments = append(expr.Arguments, p.parseNextExpression())
-			}
-		}
-		p.expect(itemCloseParen)
-	}
-	return expr
 }
