@@ -231,7 +231,22 @@ type ExitStmt struct {
 }
 
 type NewExpression struct {
-	Expression
+	BaseNode
+	Class     Expression
+	Arguments []Expression
+}
+
+func (n NewExpression) EvaluatesTo() Type {
+	return Object
+}
+
+type ClassIdentifier struct {
+	BaseNode
+	ClassName string
+}
+
+func (c ClassIdentifier) EvaluatesTo() Type {
+	return String
 }
 
 type AssignmentExpression struct {

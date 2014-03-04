@@ -75,9 +75,7 @@ func (p *parser) parseExpression() (expr ast.Expression) {
 		p.next()
 		return p.parseExpression()
 	case itemNewOperator:
-		return &ast.NewExpression{
-			Expression: p.parseNextExpression(),
-		}
+		return p.parseInstantiation()
 	case itemVariableOperator:
 		if p.peek().typ == itemAssignmentOperator {
 			assignee := p.parseIdentifier().(ast.Assignable)
@@ -352,4 +350,28 @@ ArrayLoop:
 	}
 	p.expect(itemCloseParen)
 	return &ast.ArrayExpression{Pairs: pairs}
+}
+
+func (p *parser) parseInstantiation() ast.Expression {
+	p.expectCurrent(itemNewOperator)
+	expr := &ast.NewExpression{}
+	switch p.next(); p.current.typ {
+	case itemVariableOperator:
+		expr.Class = p.parseExpression()
+	case itemIdentifier:
+		expr.Class = ast.ClassIdentifier{ClassName: p.current.val}
+	}
+
+	if p.peek().typ == itemOpenParen {
+		p.expect(itemOpenParen)
+		if p.peek().typ != itemCloseParen {
+			expr.Arguments = append(expr.Arguments, p.parseNextExpression())
+			for p.peek().typ == itemComma {
+				p.expect(itemComma)
+				expr.Arguments = append(expr.Arguments, p.parseNextExpression())
+			}
+		}
+		p.expect(itemCloseParen)
+	}
+	return expr
 }
