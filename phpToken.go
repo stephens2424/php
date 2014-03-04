@@ -261,6 +261,7 @@ func init() {
 // be represented directly. Not all item types will be represented here.
 var tokenMap = map[string]ItemType{
 	"class":        itemClass,
+	"clone":        itemUnaryOperator,
 	"const":        itemConst,
 	"abstract":     itemAbstract,
 	"interface":    itemInterface,
