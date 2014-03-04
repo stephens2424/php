@@ -74,6 +74,8 @@ func (p *parser) parseExpression() (expr ast.Expression) {
 	case itemIgnoreErrorOperator:
 		p.next()
 		return p.parseExpression()
+	case itemFunction:
+		return p.parseAnonymousFunction()
 	case itemNewOperator:
 		return p.parseInstantiation()
 	case itemVariableOperator:
@@ -304,4 +306,30 @@ func (p *parser) parseIdentifier() (expr ast.Expression) {
 		return p.parseArrayLookup(expr)
 	}
 	return expr
+}
+
+func (p *parser) parseAnonymousFunction() ast.Expression {
+	f := &ast.AnonymousFunction{}
+	f.Arguments = make([]ast.FunctionArgument, 0)
+	p.expect(itemOpenParen)
+	if p.peek().typ == itemCloseParen {
+		p.expect(itemCloseParen)
+		return f
+	}
+	f.Arguments = append(f.Arguments, p.parseFunctionArgument())
+	for {
+		switch p.peek().typ {
+		case itemComma:
+			p.expect(itemComma)
+			f.Arguments = append(f.Arguments, p.parseFunctionArgument())
+		case itemCloseParen:
+			p.expect(itemCloseParen)
+			return f
+		default:
+			p.errorf("unexpected argument separator:", p.current)
+			return f
+		}
+	}
+	f.Body = p.parseBlock()
+	return f
 }

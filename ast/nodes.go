@@ -346,6 +346,16 @@ func (f FunctionStmt) Children() []Node {
 	return n
 }
 
+type AnonymousFunction struct {
+	BaseNode
+	Arguments []FunctionArgument
+	Body      *Block
+}
+
+func (a AnonymousFunction) EvaluatesTo() Type {
+	return Function
+}
+
 type FunctionDefinition struct {
 	BaseNode
 	Name      string

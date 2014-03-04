@@ -15,6 +15,7 @@ const (
 	Resource
 	Array
 	Object
+	Function
 
 	Numeric Type = Float | Integer
 )
@@ -28,6 +29,7 @@ var typeMap = map[Type]string{
 	Resource: "resource",
 	Array:    "array",
 	Object:   "object",
+	Function: "function",
 }
 
 func (t Type) Contains(typ Type) bool {
