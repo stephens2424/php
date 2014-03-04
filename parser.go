@@ -562,7 +562,7 @@ func (p *parser) parseFunctionArgument() ast.FunctionArgument {
 		p.next()
 	}
 	p.expect(itemVariableOperator)
-	p.expect(itemIdentifier)
+	p.next()
 	arg.Identifier = ast.NewIdentifier("$" + p.current.val)
 	if p.peek().typ == itemAssignmentOperator {
 		p.expect(itemAssignmentOperator)

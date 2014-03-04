@@ -243,9 +243,13 @@ func (p *parser) parseLiteral() *ast.Literal {
 
 func (p *parser) parseVariable() ast.Expression {
 	p.expectCurrent(itemVariableOperator)
-	switch p.next(); p.current.typ {
-	case itemIdentifier:
-		return ast.NewIdentifier("$" + p.current.val)
+	switch p.next(); {
+	case isKeyword(p.current.typ):
+		// keywords are all valid variable names
+		fallthrough
+	case p.current.typ == itemIdentifier:
+		expr := ast.NewIdentifier("$" + p.current.val)
+		return expr
 	default:
 		return p.parseExpression()
 	}
