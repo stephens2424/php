@@ -4,7 +4,6 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
-	"os"
 
 	"stephensearles.com/php"
 	//"stephensearles.com/php/passes/typechecking"
@@ -13,29 +12,38 @@ import (
 
 func main() {
 	astonerror := flag.Bool("astonerror", false, "Print the AST on errors")
+	ast := flag.Bool("ast", false, "Print the AST")
+	showErrors := flag.Bool("showerrors", true, "show errors. If this is false, astonerror will be ignored")
 	flag.Parse()
-	fmt.Println(flag.Arg(0))
-	fBytes, err := ioutil.ReadFile(flag.Arg(0))
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-	walker := printing.Walker{}
-	parser := php.NewParser(string(fBytes))
-	nodes, errs := parser.Parse()
-	if len(errs) != 0 {
-		if *astonerror && len(nodes) != 0 && nodes[0] != nil {
-			walker.Walk(nodes[0])
-		}
-		for _, err := range errs {
+
+	var files, errors int
+	for _, filename := range flag.Args() {
+		files += 1
+		fBytes, err := ioutil.ReadFile(filename)
+		if err != nil {
 			fmt.Println(err)
+			continue
+		}
+		walker := printing.Walker{}
+		parser := php.NewParser(string(fBytes))
+		nodes, errs := parser.Parse()
+		if *ast && len(nodes) != 0 && nodes[0] != nil {
+			for _, node := range nodes {
+				walker.Walk(node)
+			}
+		}
+		if len(errs) != 0 {
+			errors += 1
+			if *showErrors {
+				fmt.Println(filename)
+				if !*ast && *astonerror && len(nodes) != 0 && nodes[0] != nil {
+					walker.Walk(nodes[0])
+				}
+				for _, err := range errs {
+					fmt.Println(err)
+				}
+			}
 		}
 	}
-	/*
-		  nodes := parser.Parse()
-				walker := typecheck.Walker{}
-				for _, node := range nodes {
-					walker.Walk(node)
-				}
-	*/
+	fmt.Printf("Compiled %d files. %d files with errors - %f%% success\n", flag.NArg(), errors, 1-(float64(errors)/float64(files)))
 }
