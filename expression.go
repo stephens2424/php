@@ -78,7 +78,7 @@ func (p *parser) parseExpression() (expr ast.Expression) {
 		return &ast.NewExpression{
 			Expression: p.parseNextExpression(),
 		}
-	case itemIdentifier:
+	case itemVariableOperator:
 		if p.peek().typ == itemAssignmentOperator {
 			assignee := p.parseIdentifier().(ast.Assignable)
 			p.next()
@@ -93,7 +93,7 @@ func (p *parser) parseExpression() (expr ast.Expression) {
 		fallthrough
 	case itemUnaryOperator, itemNegationOperator, itemAmpersandOperator, itemCastOperator, itemSubtractionOperator:
 		fallthrough
-	case itemNonVariableIdentifier, itemStringLiteral, itemNumberLiteral, itemBooleanLiteral, itemInclude, itemNull, itemSelf, itemStatic, itemParent:
+	case itemIdentifier, itemStringLiteral, itemNumberLiteral, itemBooleanLiteral, itemInclude, itemNull, itemSelf, itemStatic, itemParent:
 		expr = p.parseOperation(originalParenLev, p.expressionize())
 	case itemOpenParen:
 		p.parenLevel += 1
@@ -190,11 +190,11 @@ func (p *parser) expressionize() ast.Expression {
 		return p.parseUnaryExpressionRight(p.expressionize(), op)
 	case itemArray:
 		return p.parseArrayDeclaration()
-	case itemIdentifier:
+	case itemVariableOperator:
 		return p.parseIdentifier()
 	case itemStringLiteral, itemBooleanLiteral, itemNumberLiteral, itemNull:
 		return p.parseLiteral()
-	case itemNonVariableIdentifier, itemSelf, itemStatic, itemParent:
+	case itemIdentifier, itemSelf, itemStatic, itemParent:
 		if p.peek().typ == itemOpenParen {
 			var expr ast.Expression
 			expr = p.parseFunctionCall()
@@ -240,10 +240,12 @@ func (p *parser) parseLiteral() *ast.Literal {
 
 func (p *parser) parseIdentifier() ast.Expression {
 	var expr ast.Expression
-	expr = ast.NewIdentifier(p.current.val)
+	p.expectCurrent(itemVariableOperator)
+	p.expect(itemIdentifier)
+	expr = ast.NewIdentifier("$" + p.current.val)
 	switch pk := p.peek(); pk.typ {
 	case itemScopeResolutionOperator:
-		r := p.current.val
+		r := "$" + p.current.val
 		p.expect(itemScopeResolutionOperator)
 		p.next()
 		return &ast.ClassExpression{
@@ -262,7 +264,7 @@ func (p *parser) parseIdentifier() ast.Expression {
 
 func (p *parser) parseObjectLookup(r ast.Expression) ast.Expression {
 	p.expect(itemObjectOperator)
-	p.expect(itemNonVariableIdentifier)
+	p.expect(itemIdentifier)
 	switch pk := p.peek(); pk.typ {
 	case itemOpenParen:
 		expr := &ast.MethodCallExpression{

@@ -190,8 +190,8 @@ func newBinaryOperation(operator Item, expr1, expr2 ast.Expression) ast.Operator
 
 func (p *parser) parseFunctionCall() *ast.FunctionCallExpression {
 	expr := &ast.FunctionCallExpression{}
-	if p.current.typ != itemNonVariableIdentifier {
-		p.expected(itemNonVariableIdentifier)
+	if p.current.typ != itemIdentifier {
+		p.expected(itemIdentifier)
 	}
 	expr.FunctionName = p.current.val
 	expr.Arguments = make([]ast.Expression, 0)
@@ -224,20 +224,20 @@ func (p *parser) parseStmt() ast.Statement {
 		p.expectStmtEnd()
 		return ident
 	case itemNamespace:
-		p.expect(itemNonVariableIdentifier)
+		p.expect(itemIdentifier)
 		p.expectStmtEnd()
 		// We are ignoring this for now
 		return nil
 	case itemUse:
-		p.expect(itemNonVariableIdentifier)
+		p.expect(itemIdentifier)
 		if p.peek().typ == itemAsOperator {
 			p.expect(itemAsOperator)
-			p.expect(itemNonVariableIdentifier)
+			p.expect(itemIdentifier)
 		}
 		p.expectStmtEnd()
 		// We are ignoring this for now
 		return nil
-	case itemIdentifier:
+	case itemVariableOperator:
 		ident := p.parseIdentifier()
 		switch p.peek().typ {
 		case itemUnaryOperator:
@@ -337,10 +337,11 @@ func (p *parser) parseStmt() ast.Statement {
 		for p.expect(itemCatch); p.current.typ == itemCatch; p.next() {
 			caught := &ast.CatchStmt{}
 			p.expect(itemOpenParen)
-			p.expect(itemNonVariableIdentifier)
-			caught.CatchType = p.current.val
 			p.expect(itemIdentifier)
-			caught.CatchVar = ast.NewIdentifier(p.current.val)
+			caught.CatchType = p.current.val
+			p.expect(itemVariableOperator)
+			p.expect(itemIdentifier)
+			caught.CatchVar = ast.NewIdentifier("$" + p.current.val)
 			p.expect(itemCloseParen)
 			caught.CatchBlock = p.parseBlock()
 			stmt.CatchStmts = append(stmt.CatchStmts, caught)
@@ -388,16 +389,18 @@ func (p *parser) parseForeach() ast.Statement {
 	if p.peek().typ == itemAmpersandOperator {
 		p.expect(itemAmpersandOperator)
 	}
+	p.expect(itemVariableOperator)
 	p.expect(itemIdentifier)
-	first := ast.NewIdentifier(p.current.val)
+	first := ast.NewIdentifier("$" + p.current.val)
 	if p.peek().typ == itemArrayKeyOperator {
 		stmt.Key = first
 		p.expect(itemArrayKeyOperator)
 		if p.peek().typ == itemAmpersandOperator {
 			p.expect(itemAmpersandOperator)
 		}
+		p.expect(itemVariableOperator)
 		p.expect(itemIdentifier)
-		stmt.Value = ast.NewIdentifier(p.current.val)
+		stmt.Value = ast.NewIdentifier("$" + p.current.val)
 	} else {
 		stmt.Value = first
 	}
@@ -509,7 +512,7 @@ func (p *parser) parseFunctionStmt() *ast.FunctionStmt {
 
 func (p *parser) parseFunctionDefinition() *ast.FunctionDefinition {
 	def := &ast.FunctionDefinition{}
-	p.expect(itemNonVariableIdentifier)
+	p.expect(itemIdentifier)
 	def.Name = p.current.val
 	def.Arguments = make([]ast.FunctionArgument, 0)
 	p.expect(itemOpenParen)
@@ -536,15 +539,16 @@ func (p *parser) parseFunctionDefinition() *ast.FunctionDefinition {
 func (p *parser) parseFunctionArgument() ast.FunctionArgument {
 	arg := ast.FunctionArgument{}
 	switch p.peek().typ {
-	case itemNonVariableIdentifier, itemArray:
+	case itemIdentifier, itemArray:
 		p.next()
 		arg.TypeHint = p.current.val
 	}
 	if p.peek().typ == itemAmpersandOperator {
 		p.next()
 	}
+	p.expect(itemVariableOperator)
 	p.expect(itemIdentifier)
-	arg.Identifier = ast.NewIdentifier(p.current.val)
+	arg.Identifier = ast.NewIdentifier("$" + p.current.val)
 	if p.peek().typ == itemAssignmentOperator {
 		p.expect(itemAssignmentOperator)
 		p.next()
@@ -568,18 +572,18 @@ func (p *parser) parseClass() ast.Class {
 	if p.current.typ == itemAbstract {
 		p.expect(itemClass)
 	}
-	p.expect(itemNonVariableIdentifier)
+	p.expect(itemIdentifier)
 	name := p.current.val
 	if p.peek().typ == itemExtends {
 		p.expect(itemExtends)
-		p.expect(itemNonVariableIdentifier)
+		p.expect(itemIdentifier)
 	}
 	if p.peek().typ == itemImplements {
 		p.expect(itemImplements)
-		p.expect(itemNonVariableIdentifier)
+		p.expect(itemIdentifier)
 		for p.peek().typ == itemComma {
 			p.expect(itemComma)
-			p.expect(itemNonVariableIdentifier)
+			p.expect(itemIdentifier)
 		}
 	}
 	p.expect(itemBlockBegin)
@@ -641,10 +645,11 @@ func (p *parser) parseClassFields(c ast.Class) ast.Class {
 					FunctionStmt: p.parseFunctionStmt(),
 				})
 			}
-		case itemIdentifier:
+		case itemVariableOperator:
+			p.expect(itemIdentifier)
 			prop := ast.Property{
 				Visibility: vis,
-				Name:       p.current.val,
+				Name:       "$" + p.current.val,
 			}
 			if p.peek().typ == itemAssignmentOperator {
 				p.expect(itemAssignmentOperator)
@@ -654,7 +659,7 @@ func (p *parser) parseClassFields(c ast.Class) ast.Class {
 			p.expect(itemStatementEnd)
 		case itemConst:
 			constant := ast.Constant{}
-			p.expect(itemNonVariableIdentifier)
+			p.expect(itemIdentifier)
 			constant.Identifier = ast.NewIdentifier(p.current.val)
 			if p.peek().typ == itemAssignmentOperator {
 				p.expect(itemAssignmentOperator)
@@ -674,12 +679,12 @@ func (p *parser) parseInterface() *ast.Interface {
 	i := &ast.Interface{
 		Inherits: make([]string, 0),
 	}
-	p.expect(itemNonVariableIdentifier)
+	p.expect(itemIdentifier)
 	i.Name = p.current.val
 	if p.peek().typ == itemExtends {
 		p.expect(itemExtends)
 		for {
-			p.expect(itemNonVariableIdentifier)
+			p.expect(itemIdentifier)
 			i.Inherits = append(i.Inherits, p.current.val)
 			if p.peek().typ != itemComma {
 				break

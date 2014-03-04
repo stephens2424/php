@@ -36,7 +36,7 @@ const (
 	itemFinal
 	itemFunctionName
 	itemTypeHint
-	itemIdentifier
+	itemVariableOperator
 	itemBlockBegin
 	itemBlockEnd
 	itemGlobal
@@ -94,7 +94,7 @@ const (
 	itemNumberLiteral
 	itemBooleanLiteral
 
-	itemNonVariableIdentifier
+	itemIdentifier
 
 	itemAssignmentOperator
 	itemNegationOperator
@@ -135,24 +135,24 @@ const (
 
 // itemTypeMap maps itemType to strings that may be used for debugging and error messages
 var itemTypeMap = map[ItemType]string{
-	itemHTML:         "HTML",
-	itemPHP:          "PHP",
-	itemPHPBegin:     "PHP Begin",
-	itemPHPEnd:       "PHP End",
-	itemPHPToken:     "PHP Token",
-	itemEOF:          "EOF",
-	itemError:        "Error",
-	itemSpace:        "Space",
-	itemFunction:     "Function",
-	itemStatic:       "static",
-	itemSelf:         "self",
-	itemParent:       "parent",
-	itemFinal:        "final",
-	itemFunctionName: "Function Name",
-	itemTypeHint:     "Function Type Hint",
-	itemIdentifier:   "Identifier",
-	itemBlockBegin:   "Block Begin",
-	itemBlockEnd:     "Block End",
+	itemHTML:             "HTML",
+	itemPHP:              "PHP",
+	itemPHPBegin:         "PHP Begin",
+	itemPHPEnd:           "PHP End",
+	itemPHPToken:         "PHP Token",
+	itemEOF:              "EOF",
+	itemError:            "Error",
+	itemSpace:            "Space",
+	itemFunction:         "Function",
+	itemStatic:           "static",
+	itemSelf:             "self",
+	itemParent:           "parent",
+	itemFinal:            "final",
+	itemFunctionName:     "Function Name",
+	itemTypeHint:         "Function Type Hint",
+	itemVariableOperator: "Identifier",
+	itemBlockBegin:       "Block Begin",
+	itemBlockEnd:         "Block End",
 
 	itemGlobal:            "global",
 	itemReturn:            "Return",
@@ -208,7 +208,7 @@ var itemTypeMap = map[ItemType]string{
 	itemNumberLiteral:  "number-literal",
 	itemBooleanLiteral: "bool-literal",
 
-	itemNonVariableIdentifier: "non-variable-identifier",
+	itemIdentifier: "non-variable-identifier",
 
 	itemAssignmentOperator:      "=",
 	itemNegationOperator:        "!",
@@ -384,6 +384,8 @@ var tokenMap = map[string]ItemType{
 
 	"[": itemArrayLookupOperatorLeft,
 	"]": itemArrayLookupOperatorRight,
+
+	"$": itemVariableOperator,
 }
 
 func (i ItemType) String() string {

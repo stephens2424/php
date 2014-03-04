@@ -73,10 +73,6 @@ func lexPHP(l *lexer) stateFn {
 		return lexBlockComment
 	}
 
-	if strings.HasPrefix(l.input[l.pos:], "$") {
-		return lexIdentifier
-	}
-
 	if l.peek() == eof {
 		l.emit(itemEOF)
 		return nil
@@ -105,7 +101,7 @@ func lexPHP(l *lexer) stateFn {
 	}
 
 	l.acceptRun(alphabet + underscore + digits + "\\")
-	l.emit(itemNonVariableIdentifier)
+	l.emit(itemIdentifier)
 	return lexPHP
 }
 
@@ -156,7 +152,7 @@ func lexIdentifier(l *lexer) stateFn {
 	l.accept("$")
 	l.accept(underscore + alphabet)
 	l.acceptRun(underscore + alphabet + digits)
-	l.emit(itemIdentifier)
+	l.emit(itemVariableOperator)
 	return lexPHP
 }
 
