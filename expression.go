@@ -143,6 +143,36 @@ func (p *parser) parseOperation(originalParenLevel int, lhs ast.Expression) (exp
 	return p.parseOperation(originalParenLevel, expr)
 }
 
+func newUnaryOperation(operator Item, expr ast.Expression) ast.OperatorExpression {
+	t := ast.Numeric
+	if operator.val == "!" {
+		t = ast.Boolean
+	}
+	return ast.OperatorExpression{
+		Type:     t,
+		Operand1: expr,
+		Operator: operator.val,
+	}
+}
+
+func newBinaryOperation(operator Item, expr1, expr2 ast.Expression) ast.OperatorExpression {
+	t := ast.Numeric
+	switch operator.typ {
+	case itemComparisonOperator, itemAndOperator, itemOrOperator, itemWrittenAndOperator, itemWrittenOrOperator, itemWrittenXorOperator:
+		t = ast.Boolean
+	case itemConcatenationOperator:
+		t = ast.String
+	case itemAmpersandOperator, itemBitwiseXorOperator, itemBitwiseOrOperator, itemBitwiseShiftOperator:
+		t = ast.AnyType
+	}
+	return ast.OperatorExpression{
+		Type:     t,
+		Operand1: expr1,
+		Operand2: expr2,
+		Operator: operator.val,
+	}
+}
+
 func (p *parser) parseBinaryOperation(lhs ast.Expression, operator Item, originalParenLevel int) ast.Expression {
 	p.next()
 	rhs := p.expressionize()
@@ -274,62 +304,4 @@ func (p *parser) parseIdentifier() (expr ast.Expression) {
 		return p.parseArrayLookup(expr)
 	}
 	return expr
-}
-
-func (p *parser) parseArrayLookup(e ast.Expression) ast.Expression {
-	p.expect(itemArrayLookupOperatorLeft)
-	if p.peek().typ == itemArrayLookupOperatorRight {
-		p.expect(itemArrayLookupOperatorRight)
-		return ast.ArrayAppendExpression{Array: e}
-	}
-	p.next()
-	expr := &ast.ArrayLookupExpression{
-		Array: e,
-		Index: p.parseExpression(),
-	}
-	p.expect(itemArrayLookupOperatorRight)
-	switch p.peek().typ {
-	case itemArrayLookupOperatorLeft:
-		return p.parseArrayLookup(expr)
-	case itemObjectOperator:
-		return p.parseObjectLookup(expr)
-	}
-	return expr
-}
-
-func (p *parser) parseArrayDeclaration() ast.Expression {
-	pairs := make([]ast.ArrayPair, 0)
-	p.expect(itemOpenParen)
-ArrayLoop:
-	for {
-		var key, val ast.Expression
-		switch p.peek().typ {
-		case itemCloseParen:
-			break ArrayLoop
-		default:
-			val = p.parseNextExpression()
-		}
-		switch p.peek().typ {
-		case itemComma:
-			p.expect(itemComma)
-		case itemCloseParen:
-			pairs = append(pairs, ast.ArrayPair{Key: key, Value: val})
-			break ArrayLoop
-		case itemArrayKeyOperator:
-			p.expect(itemArrayKeyOperator)
-			key = val
-			val = p.parseNextExpression()
-			if p.peek().typ == itemCloseParen {
-				pairs = append(pairs, ast.ArrayPair{Key: key, Value: val})
-				break ArrayLoop
-			}
-			p.expect(itemComma)
-		default:
-			p.errorf("expected => or ,")
-			return nil
-		}
-		pairs = append(pairs, ast.ArrayPair{Key: key, Value: val})
-	}
-	p.expect(itemCloseParen)
-	return &ast.ArrayExpression{Pairs: pairs}
 }
