@@ -99,17 +99,7 @@ func (p *parser) parseClassFields(c ast.Class) ast.Class {
 	c.Methods = make([]ast.Method, 0)
 	c.Properties = make([]ast.Property, 0)
 	for p.peek().typ != itemBlockEnd {
-		vis, foundVis := p.parseVisibility()
-		abstract := p.parseAbstract()
-		if foundVis == false {
-			vis, foundVis = p.parseVisibility()
-		}
-		if p.peek().typ == itemFinal {
-			p.next()
-		}
-		if p.peek().typ == itemStatic {
-			p.next()
-		}
+		vis, _, _, abstract := p.parseClassMemberSettings()
 		p.next()
 		switch p.current.typ {
 		case itemFunction:
@@ -196,4 +186,39 @@ func (p *parser) parseInterface() *ast.Interface {
 	}
 	p.expect(itemBlockEnd)
 	return i
+}
+
+func (p *parser) parseClassMemberSettings() (vis ast.Visibility, static, final, abstract bool) {
+	var foundVis bool
+	vis = ast.Public
+	for {
+		switch p.peek().typ {
+		case itemAbstract:
+			if abstract {
+				p.errorf("found multiple abstract declarations")
+			}
+			abstract = true
+			p.next()
+		case itemPrivate, itemPublic, itemProtected:
+			if foundVis {
+				p.errorf("found multiple visibility declarations")
+			}
+			vis, foundVis = p.parseVisibility()
+		case itemFinal:
+			if final {
+				p.errorf("found multiple final declarations")
+			}
+			final = true
+			p.next()
+		case itemStatic:
+			if static {
+				p.errorf("found multiple static declarations")
+			}
+			static = true
+			p.next()
+		default:
+			return
+		}
+	}
+	return
 }
