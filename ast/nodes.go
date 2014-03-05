@@ -240,6 +240,18 @@ func (n NewExpression) EvaluatesTo() Type {
 	return Object
 }
 
+func (n NewExpression) String() string {
+	return "new " + n.Class.String()
+}
+
+func (c NewExpression) Children() []Node {
+	n := make([]Node, len(c.Arguments))
+	for i, arg := range c.Arguments {
+		n[i] = arg
+	}
+	return n
+}
+
 type ClassIdentifier struct {
 	BaseNode
 	ClassName string

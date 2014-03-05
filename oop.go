@@ -9,7 +9,11 @@ func (p *parser) parseInstantiation() ast.Expression {
 	case itemVariableOperator:
 		expr.Class = p.parseExpression()
 	case itemIdentifier:
-		expr.Class = ast.ClassIdentifier{ClassName: p.current.val}
+		if p.peek().typ == itemScopeResolutionOperator {
+			expr.Class = p.parseExpression()
+		} else {
+			expr.Class = ast.ClassIdentifier{ClassName: p.current.val}
+		}
 	}
 
 	if p.peek().typ == itemOpenParen {
