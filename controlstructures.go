@@ -11,10 +11,13 @@ func (p *parser) parseIf() *ast.IfStmt {
 	p.next()
 	n.TrueBranch = p.parseStmt()
 	p.next()
-	if p.current.typ == itemElse {
+	switch p.current.typ {
+	case itemElseIf:
+		n.FalseBranch = p.parseIf()
+	case itemElse:
 		p.next()
 		n.FalseBranch = p.parseStmt()
-	} else {
+	default:
 		n.FalseBranch = ast.Block{}
 		p.backup()
 	}

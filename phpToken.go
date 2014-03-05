@@ -270,6 +270,7 @@ var tokenMap = map[string]ItemType{
 	"new":          itemNewOperator,
 	"if":           itemIf,
 	"else":         itemElse,
+	"elseif":       itemElseIf,
 	"while":        itemWhile,
 	"do":           itemDo,
 	"for":          itemFor,
