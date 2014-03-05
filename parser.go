@@ -144,7 +144,11 @@ func (p *parser) parseFunctionCall() *ast.FunctionCallExpression {
 	if p.current.typ != itemIdentifier {
 		p.expected(itemIdentifier)
 	}
-	expr.FunctionName = p.current.val
+	expr.FunctionName = ast.FunctionNameExpression{Name: p.current.val}
+	return p.parseFunctionArguments(expr)
+}
+
+func (p *parser) parseFunctionArguments(expr *ast.FunctionCallExpression) *ast.FunctionCallExpression {
 	expr.Arguments = make([]ast.Expression, 0)
 	p.expect(itemOpenParen)
 	if p.peek().typ == itemCloseParen {
@@ -162,6 +166,7 @@ func (p *parser) parseFunctionCall() *ast.FunctionCallExpression {
 	}
 	p.expect(itemCloseParen)
 	return expr
+
 }
 
 func (p *parser) parseStmt() ast.Statement {
@@ -219,6 +224,16 @@ func (p *parser) parseStmt() ast.Statement {
 			n.Value = p.parseExpression()
 			p.expectStmtEnd()
 			return n
+		case itemOpenParen:
+			var expr ast.Expression
+			expr = p.parseFunctionArguments(&ast.FunctionCallExpression{
+				FunctionName: ident,
+			})
+			if p.peek().typ == itemObjectOperator {
+				expr = p.parseObjectLookup(expr)
+			}
+			p.expectStmtEnd()
+			return expr
 		default:
 			expr := ast.ExpressionStmt{ident}
 			p.expectStmtEnd()

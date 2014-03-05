@@ -287,8 +287,17 @@ type FunctionCallStmt struct {
 
 type FunctionCallExpression struct {
 	BaseNode
-	FunctionName string
+	FunctionName Expression
 	Arguments    []Expression
+}
+
+type FunctionNameExpression struct {
+	BaseNode
+	Name string
+}
+
+func (f FunctionNameExpression) EvaluatesTo() Type {
+	return String
 }
 
 func (f FunctionCallExpression) EvaluatesTo() Type {

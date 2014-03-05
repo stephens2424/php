@@ -114,7 +114,7 @@ func TestFunction(t *testing.T) {
 			ast.AssignmentExpression{
 				Assignee: &ast.Identifier{Name: "$var", Type: ast.AnyType},
 				Value: &ast.FunctionCallExpression{
-					FunctionName: "TestFn",
+					FunctionName: ast.FunctionNameExpression{Name: "TestFn"},
 					Arguments: []ast.Expression{
 						&ast.Literal{Type: ast.String},
 						&ast.Literal{Type: ast.Float},
@@ -413,7 +413,7 @@ func TestMethodCall(t *testing.T) {
 		Value: &ast.MethodCallExpression{
 			Receiver: ast.NewIdentifier("$var"),
 			FunctionCallExpression: &ast.FunctionCallExpression{
-				FunctionName: "go",
+				FunctionName: ast.FunctionNameExpression{Name: "go"},
 				Arguments:    make([]ast.Expression, 0),
 			},
 		},
@@ -583,7 +583,7 @@ func TestWhileLoopWithAssignment(t *testing.T) {
 		Termination: ast.AssignmentExpression{
 			Assignee: ast.NewIdentifier("$var"),
 			Value: &ast.FunctionCallExpression{
-				FunctionName: "mysql_assoc",
+				FunctionName: ast.FunctionNameExpression{Name: "mysql_assoc"},
 				Arguments:    make([]ast.Expression, 0),
 			},
 			Operator: "=",
@@ -758,7 +758,7 @@ func TestScopeResolutionOperator(t *testing.T) {
 			&ast.ClassExpression{
 				Receiver: "MyClass",
 				Expression: &ast.FunctionCallExpression{
-					FunctionName: "myfunc",
+					FunctionName: ast.FunctionNameExpression{Name: "myfunc"},
 					Arguments: []ast.Expression{
 						&ast.Identifier{Name: "$var", Type: ast.AnyType},
 					},
@@ -774,7 +774,7 @@ func TestScopeResolutionOperator(t *testing.T) {
 		ast.Echo(&ast.ClassExpression{
 			Receiver: "$var",
 			Expression: &ast.FunctionCallExpression{
-				FunctionName: "myfunc",
+				FunctionName: ast.FunctionNameExpression{Name: "myfunc"},
 				Arguments:    []ast.Expression{},
 			},
 		}),

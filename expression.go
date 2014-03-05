@@ -304,6 +304,14 @@ func (p *parser) parseIdentifier() (expr ast.Expression) {
 		}
 	case itemArrayLookupOperatorLeft:
 		return p.parseArrayLookup(expr)
+	case itemOpenParen:
+		var expr ast.Expression
+		expr = p.parseFunctionArguments(&ast.FunctionCallExpression{
+			FunctionName: expr,
+		})
+		if p.peek().typ == itemObjectOperator {
+			expr = p.parseObjectLookup(expr)
+		}
 	}
 	return expr
 }
