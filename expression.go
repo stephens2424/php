@@ -247,7 +247,7 @@ func (p *parser) expressionize() ast.Expression {
 			}
 		}
 		return ast.ConstantExpression{
-			Identifier: ast.NewIdentifier(p.current.val),
+			Variable: ast.NewIdentifier(p.current.val),
 		}
 	case itemOpenParen:
 		return p.parseExpression()

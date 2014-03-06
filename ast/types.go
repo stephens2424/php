@@ -69,5 +69,5 @@ type ArrayType struct {
 
 type ObjectType struct {
 	Class             *Class
-	DynamicProperties []Identifier
+	DynamicProperties []Variable
 }

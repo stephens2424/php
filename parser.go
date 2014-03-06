@@ -177,10 +177,10 @@ func (p *parser) parseStmt() ast.Statement {
 	case itemGlobal:
 		p.next()
 		g := &ast.GlobalDeclaration{
-			Identifiers: make([]*ast.Identifier, 0, 1),
+			Identifiers: make([]*ast.Variable, 0, 1),
 		}
 		for p.current.typ == itemVariableOperator {
-			variable, ok := p.parseVariable().(*ast.Identifier)
+			variable, ok := p.parseVariable().(*ast.Variable)
 			if !ok {
 				p.errorf("global declarations must be of standard variables")
 				break
@@ -394,7 +394,7 @@ func (p *parser) parseFunctionArgument() ast.FunctionArgument {
 	}
 	p.expect(itemVariableOperator)
 	p.next()
-	arg.Identifier = ast.NewIdentifier("$" + p.current.val)
+	arg.Variable = ast.NewIdentifier("$" + p.current.val)
 	if p.peek().typ == itemAssignmentOperator {
 		p.expect(itemAssignmentOperator)
 		p.next()

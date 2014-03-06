@@ -34,8 +34,8 @@ func TestClass(t *testing.T) {
 		Name: "TestClass",
 		Constants: []ast.Constant{
 			{
-				Identifier: ast.NewIdentifier("my_const"),
-				Value:      &ast.Literal{Type: ast.String},
+				Variable: ast.NewIdentifier("my_const"),
+				Value:    &ast.Literal{Type: ast.String},
 			},
 		},
 		Properties: []ast.Property{
@@ -56,7 +56,7 @@ func TestClass(t *testing.T) {
 						Name: "method0",
 						Arguments: []ast.FunctionArgument{
 							{
-								Identifier: &ast.Identifier{Name: "$arg", Type: ast.AnyType},
+								Variable: &ast.Variable{Name: "$arg", Type: ast.AnyType},
 							},
 						},
 					},
@@ -69,13 +69,13 @@ func TestClass(t *testing.T) {
 						Name: "method1",
 						Arguments: []ast.FunctionArgument{
 							{
-								Identifier: &ast.Identifier{Name: "$arg", Type: ast.AnyType},
+								Variable: &ast.Variable{Name: "$arg", Type: ast.AnyType},
 							},
 						},
 					},
 					Body: &ast.Block{
 						Statements: []ast.Statement{
-							ast.Echo(&ast.Identifier{Name: "$arg", Type: ast.AnyType}),
+							ast.Echo(&ast.Variable{Name: "$arg", Type: ast.AnyType}),
 						},
 					},
 				},
@@ -87,19 +87,19 @@ func TestClass(t *testing.T) {
 						Name: "method2",
 						Arguments: []ast.FunctionArgument{
 							{
-								TypeHint:   "TestClass",
-								Identifier: &ast.Identifier{Name: "$arg", Type: ast.AnyType},
+								TypeHint: "TestClass",
+								Variable: &ast.Variable{Name: "$arg", Type: ast.AnyType},
 							},
 							{
-								Identifier: &ast.Identifier{Name: "$arg2", Type: ast.AnyType},
-								Default:    &ast.Literal{Type: ast.Boolean},
+								Variable: &ast.Variable{Name: "$arg2", Type: ast.AnyType},
+								Default:  &ast.Literal{Type: ast.Boolean},
 							},
 						},
 					},
 					Body: &ast.Block{
 						Statements: []ast.Statement{
-							ast.Echo(&ast.Identifier{Name: "$arg", Type: ast.AnyType}),
-							ast.ReturnStmt{Expression: &ast.Identifier{Name: "$arg", Type: ast.AnyType}},
+							ast.Echo(&ast.Variable{Name: "$arg", Type: ast.AnyType}),
+							ast.ReturnStmt{Expression: &ast.Variable{Name: "$arg", Type: ast.AnyType}},
 						},
 					},
 				},

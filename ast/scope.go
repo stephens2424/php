@@ -2,7 +2,7 @@ package ast
 
 // superGlobalScope represents the scope containing superglobals such as $_GET
 type SuperGlobalScope struct {
-	Identifiers []Identifier
+	Identifiers []Variable
 }
 
 // globalScope represents the global scope on which functions and classes are
@@ -19,7 +19,7 @@ type GlobalScope struct {
 
 // scope represents a particular local scope (such as within a function).
 type Scope struct {
-	Identifiers      []Identifier
+	Identifiers      []Variable
 	EnclosingScope   *Scope
 	GlobalScope      *GlobalScope
 	SuperGlobalScope *SuperGlobalScope

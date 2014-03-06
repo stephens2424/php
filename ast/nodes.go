@@ -31,19 +31,19 @@ func (b BaseNode) String() string {
 }
 
 // An Identifier is specifically a variable in code.
-type Identifier struct {
+type Variable struct {
 	BaseNode
 	Name string
 	Type Type
 }
 
-func (i Identifier) String() string {
+func (i Variable) String() string {
 	return i.Name
 }
 
 type GlobalDeclaration struct {
 	BaseNode
-	Identifiers []*Identifier
+	Identifiers []*Variable
 }
 
 func (g GlobalDeclaration) Children() []Node {
@@ -58,18 +58,18 @@ func (g GlobalDeclaration) String() string {
 	return "global"
 }
 
-func (i Identifier) AssignableType() Type {
+func (i Variable) AssignableType() Type {
 	return i.Type
 }
 
 // EvaluatesTo returns the known type of the variable.
-func (i Identifier) EvaluatesTo() Type {
+func (i Variable) EvaluatesTo() Type {
 	return i.Type
 }
 
 // NewIdentifier intializes an identifier node with its type set to AnyType.
-func NewIdentifier(name string) *Identifier {
-	return &Identifier{Name: name, Type: AnyType}
+func NewIdentifier(name string) *Variable {
+	return &Variable{Name: name, Type: AnyType}
 }
 
 // A statement is an executable piece of code. It may be as simple as
@@ -393,9 +393,9 @@ func (fd FunctionDefinition) Children() []Node {
 
 type FunctionArgument struct {
 	BaseNode
-	TypeHint   string
-	Default    Expression
-	Identifier *Identifier
+	TypeHint string
+	Default  Expression
+	Variable *Variable
 }
 
 func (fa FunctionArgument) String() string {
@@ -404,7 +404,7 @@ func (fa FunctionArgument) String() string {
 
 func (fa FunctionArgument) Children() []Node {
 	n := []Node{
-		fa.Identifier,
+		fa.Variable,
 	}
 	if fa.Default != nil {
 		n = append(n, fa.Default)
@@ -440,12 +440,12 @@ func (c Class) Children() []Node {
 
 type Constant struct {
 	BaseNode
-	*Identifier
+	*Variable
 	Value interface{}
 }
 
 type ConstantExpression struct {
-	*Identifier
+	*Variable
 }
 
 type Interface struct {
@@ -716,7 +716,7 @@ type CatchStmt struct {
 	BaseNode
 	CatchBlock *Block
 	CatchType  string
-	CatchVar   *Identifier
+	CatchVar   *Variable
 }
 
 func (c CatchStmt) String() string {
@@ -743,8 +743,8 @@ func (l Literal) EvaluatesTo() Type {
 type ForeachStmt struct {
 	BaseNode
 	Source    Expression
-	Key       *Identifier
-	Value     *Identifier
+	Key       *Variable
+	Value     *Variable
 	LoopBlock Statement
 }
 

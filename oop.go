@@ -136,7 +136,7 @@ func (p *parser) parseClassFields(c ast.Class) ast.Class {
 		case itemConst:
 			constant := ast.Constant{}
 			p.expect(itemIdentifier)
-			constant.Identifier = ast.NewIdentifier(p.current.val)
+			constant.Variable = ast.NewIdentifier(p.current.val)
 			if p.peek().typ == itemAssignmentOperator {
 				p.expect(itemAssignmentOperator)
 				constant.Value = p.parseNextExpression()

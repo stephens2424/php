@@ -102,7 +102,7 @@ func TestFunction(t *testing.T) {
 				Name: "TestFn",
 				Arguments: []ast.FunctionArgument{
 					{
-						Identifier: ast.NewIdentifier("$arg"),
+						Variable: ast.NewIdentifier("$arg"),
 					},
 				},
 			},
@@ -112,7 +112,7 @@ func TestFunction(t *testing.T) {
 		},
 		ast.AssignmentStmt{
 			ast.AssignmentExpression{
-				Assignee: &ast.Identifier{Name: "$var", Type: ast.AnyType},
+				Assignee: &ast.Variable{Name: "$var", Type: ast.AnyType},
 				Value: &ast.FunctionCallExpression{
 					FunctionName: ast.FunctionNameExpression{Name: "TestFn"},
 					Arguments: []ast.Expression{
@@ -413,14 +413,14 @@ func TestForeachLoop(t *testing.T) {
 		t.Fatalf("While loop did not correctly parse")
 	}
 	tree := &ast.ForeachStmt{
-		Source: &ast.Identifier{Name: "$arr", Type: ast.AnyType},
-		Key:    &ast.Identifier{Name: "$key", Type: ast.AnyType},
-		Value:  &ast.Identifier{Name: "$val", Type: ast.AnyType},
+		Source: &ast.Variable{Name: "$arr", Type: ast.AnyType},
+		Key:    &ast.Variable{Name: "$key", Type: ast.AnyType},
+		Value:  &ast.Variable{Name: "$val", Type: ast.AnyType},
 		LoopBlock: &ast.Block{
 			Statements: []ast.Statement{ast.Echo(ast.OperatorExpression{
 				Operator: ".",
-				Operand1: &ast.Identifier{Name: "$key", Type: ast.AnyType},
-				Operand2: &ast.Identifier{Name: "$val", Type: ast.AnyType},
+				Operand1: &ast.Variable{Name: "$key", Type: ast.AnyType},
+				Operand2: &ast.Variable{Name: "$val", Type: ast.AnyType},
 				Type:     ast.String,
 			})},
 		},
@@ -442,7 +442,7 @@ func TestForLoop(t *testing.T) {
 	}
 	tree := &ast.ForStmt{
 		Initialization: ast.AssignmentExpression{
-			Assignee: &ast.Identifier{Type: ast.AnyType, Name: "$i"},
+			Assignee: &ast.Variable{Type: ast.AnyType, Name: "$i"},
 			Value:    &ast.Literal{Type: ast.Float},
 			Operator: "=",
 		},
@@ -512,10 +512,10 @@ func TestArrayLookup(t *testing.T) {
 		ast.EchoStmt{
 			Expressions: []ast.Expression{&ast.ArrayLookupExpression{
 				Array: &ast.ArrayLookupExpression{
-					Array: &ast.Identifier{Name: "$arr", Type: ast.AnyType},
+					Array: &ast.Variable{Name: "$arr", Type: ast.AnyType},
 					Index: &ast.Literal{Type: ast.String},
 				},
-				Index: &ast.Identifier{Name: "$two", Type: ast.AnyType},
+				Index: &ast.Variable{Name: "$two", Type: ast.AnyType},
 			}},
 		},
 		ast.AssignmentStmt{
@@ -556,7 +556,7 @@ func TestSwitch(t *testing.T) {
 		t.Fatalf("Array lookup did not correctly parse")
 	}
 	tree := ast.SwitchStmt{
-		Expression: &ast.Identifier{Name: "$var", Type: ast.AnyType},
+		Expression: &ast.Variable{Name: "$var", Type: ast.AnyType},
 		Cases: []*ast.SwitchCase{
 			{
 				Expression: &ast.Literal{Type: ast.Float},
@@ -659,7 +659,7 @@ func TestScopeResolutionOperator(t *testing.T) {
 				Expression: &ast.FunctionCallExpression{
 					FunctionName: ast.FunctionNameExpression{Name: "myfunc"},
 					Arguments: []ast.Expression{
-						&ast.Identifier{Name: "$var", Type: ast.AnyType},
+						&ast.Variable{Name: "$var", Type: ast.AnyType},
 					},
 				},
 			},
@@ -667,7 +667,7 @@ func TestScopeResolutionOperator(t *testing.T) {
 		ast.Echo(&ast.ClassExpression{
 			Receiver: "MyClass",
 			Expression: ast.ConstantExpression{
-				&ast.Identifier{Name: "myconst", Type: ast.AnyType},
+				&ast.Variable{Name: "myconst", Type: ast.AnyType},
 			},
 		}),
 		ast.Echo(&ast.ClassExpression{
@@ -696,7 +696,7 @@ func TestCastOperator(t *testing.T) {
 	a, _ := p.Parse()
 	tree := []ast.Node{
 		ast.AssignmentStmt{ast.AssignmentExpression{
-			Assignee: &ast.Identifier{Name: "$var", Type: ast.AnyType},
+			Assignee: &ast.Variable{Name: "$var", Type: ast.AnyType},
 			Value: ast.OperatorExpression{
 				Operand1: &ast.Literal{Type: ast.Float},
 				Operator: "(double)",
@@ -753,7 +753,7 @@ func TestGlobal(t *testing.T) {
 	p := NewParser(testStr)
 	a, _ := p.Parse()
 	tree := &ast.GlobalDeclaration{
-		Identifiers: []*ast.Identifier{
+		Identifiers: []*ast.Variable{
 			{Name: "$var", Type: ast.AnyType},
 			{Name: "$otherVar", Type: ast.AnyType},
 		},
