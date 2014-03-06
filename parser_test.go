@@ -655,7 +655,7 @@ func TestScopeResolutionOperator(t *testing.T) {
 	tree := []ast.Node{
 		ast.ExpressionStmt{
 			&ast.ClassExpression{
-				Receiver: "MyClass",
+				Receiver: ast.Identifier{Value: "MyClass"},
 				Expression: &ast.FunctionCallExpression{
 					FunctionName: ast.FunctionNameExpression{Name: "myfunc"},
 					Arguments: []ast.Expression{
@@ -665,13 +665,13 @@ func TestScopeResolutionOperator(t *testing.T) {
 			},
 		},
 		ast.Echo(&ast.ClassExpression{
-			Receiver: "MyClass",
+			Receiver: ast.Identifier{Value: "MyClass"},
 			Expression: ast.ConstantExpression{
 				ast.NewVariable("myconst"),
 			},
 		}),
 		ast.Echo(&ast.ClassExpression{
-			Receiver: "$var",
+			Receiver: ast.NewVariable("var"),
 			Expression: &ast.FunctionCallExpression{
 				FunctionName: ast.FunctionNameExpression{Name: "myfunc"},
 				Arguments:    []ast.Expression{},

@@ -271,15 +271,6 @@ func (c NewExpression) Children() []Node {
 	return n
 }
 
-type ClassIdentifier struct {
-	BaseNode
-	ClassName string
-}
-
-func (c ClassIdentifier) EvaluatesTo() Type {
-	return String
-}
-
 type AssignmentExpression struct {
 	BaseNode
 	Assignee Assignable
@@ -538,8 +529,15 @@ func (p PropertyIdentifier) EvaluatesTo() Type {
 
 type ClassExpression struct {
 	BaseNode
-	Receiver   string
+	Receiver   Expression
 	Expression Expression
+}
+
+func NewClassExpression(r string, e Expression) *ClassExpression {
+	return &ClassExpression{
+		Receiver:   Identifier{Value: r},
+		Expression: e,
+	}
 }
 
 func (c ClassExpression) EvaluatesTo() Type {

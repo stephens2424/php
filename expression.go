@@ -241,10 +241,7 @@ func (p *parser) expressionize() ast.Expression {
 		if p.peek().typ == itemScopeResolutionOperator {
 			r := p.current.val
 			p.expect(itemScopeResolutionOperator)
-			return &ast.ClassExpression{
-				Receiver:   r,
-				Expression: p.parseNextExpression(),
-			}
+			return ast.NewClassExpression(r, p.parseNextExpression())
 		}
 		return ast.ConstantExpression{
 			Variable: ast.NewVariable(p.current.val),
@@ -291,14 +288,9 @@ func (p *parser) parseIdentifier() (expr ast.Expression) {
 	expr = p.parseVariable()
 	switch pk := p.peek(); pk.typ {
 	case itemScopeResolutionOperator:
-		r := p.current.val
 		p.expect(itemScopeResolutionOperator)
 		p.next()
-		return &ast.ClassExpression{
-			// the $ literal is temporary until Receiver accepts expressions
-			Receiver:   "$" + r,
-			Expression: p.expressionize(),
-		}
+		return &ast.ClassExpression{Receiver: expr, Expression: p.expressionize()}
 	case itemObjectOperator:
 		for p.peek().typ == itemObjectOperator {
 			expr = p.parseObjectLookup(expr)

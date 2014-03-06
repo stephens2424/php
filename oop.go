@@ -12,7 +12,7 @@ func (p *parser) parseInstantiation() ast.Expression {
 		if p.peek().typ == itemScopeResolutionOperator {
 			expr.Class = p.parseExpression()
 		} else {
-			expr.Class = ast.ClassIdentifier{ClassName: p.current.val}
+			expr.Class = ast.Identifier{Value: p.current.val}
 		}
 	}
 
