@@ -68,7 +68,7 @@ func (i Variable) EvaluatesTo() Type {
 }
 
 // NewIdentifier intializes an identifier node with its type set to AnyType.
-func NewIdentifier(name string) *Variable {
+func NewVariable(name string) *Variable {
 	return &Variable{Name: name, Type: AnyType}
 }
 

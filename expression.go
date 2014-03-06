@@ -247,7 +247,7 @@ func (p *parser) expressionize() ast.Expression {
 			}
 		}
 		return ast.ConstantExpression{
-			Variable: ast.NewIdentifier(p.current.val),
+			Variable: ast.NewVariable(p.current.val),
 		}
 	case itemOpenParen:
 		return p.parseExpression()
@@ -280,7 +280,7 @@ func (p *parser) parseVariable() ast.Expression {
 		// keywords are all valid variable names
 		fallthrough
 	case p.current.typ == itemIdentifier:
-		expr := ast.NewIdentifier("$" + p.current.val)
+		expr := ast.NewVariable("$" + p.current.val)
 		return expr
 	default:
 		return p.parseExpression()

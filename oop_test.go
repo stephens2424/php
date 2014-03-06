@@ -34,7 +34,7 @@ func TestClass(t *testing.T) {
 		Name: "TestClass",
 		Constants: []ast.Constant{
 			{
-				Variable: ast.NewIdentifier("my_const"),
+				Variable: ast.NewVariable("my_const"),
 				Value:    &ast.Literal{Type: ast.String},
 			},
 		},
