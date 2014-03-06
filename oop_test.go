@@ -56,7 +56,7 @@ func TestClass(t *testing.T) {
 						Name: "method0",
 						Arguments: []ast.FunctionArgument{
 							{
-								Variable: &ast.Variable{Name: "$arg", Type: ast.AnyType},
+								Variable: ast.NewVariable("arg"),
 							},
 						},
 					},
@@ -69,13 +69,13 @@ func TestClass(t *testing.T) {
 						Name: "method1",
 						Arguments: []ast.FunctionArgument{
 							{
-								Variable: &ast.Variable{Name: "$arg", Type: ast.AnyType},
+								Variable: ast.NewVariable("arg"),
 							},
 						},
 					},
 					Body: &ast.Block{
 						Statements: []ast.Statement{
-							ast.Echo(&ast.Variable{Name: "$arg", Type: ast.AnyType}),
+							ast.Echo(ast.NewVariable("arg")),
 						},
 					},
 				},
@@ -88,18 +88,18 @@ func TestClass(t *testing.T) {
 						Arguments: []ast.FunctionArgument{
 							{
 								TypeHint: "TestClass",
-								Variable: &ast.Variable{Name: "$arg", Type: ast.AnyType},
+								Variable: ast.NewVariable("arg"),
 							},
 							{
-								Variable: &ast.Variable{Name: "$arg2", Type: ast.AnyType},
+								Variable: ast.NewVariable("arg2"),
 								Default:  &ast.Literal{Type: ast.Boolean},
 							},
 						},
 					},
 					Body: &ast.Block{
 						Statements: []ast.Statement{
-							ast.Echo(&ast.Variable{Name: "$arg", Type: ast.AnyType}),
-							ast.ReturnStmt{Expression: &ast.Variable{Name: "$arg", Type: ast.AnyType}},
+							ast.Echo(ast.NewVariable("arg")),
+							ast.ReturnStmt{Expression: ast.NewVariable("arg")},
 						},
 					},
 				},

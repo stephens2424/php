@@ -30,15 +30,32 @@ func (b BaseNode) String() string {
 	return ""
 }
 
-// An Identifier is specifically a variable in code.
+// An Identifier is a raw string that can be used to identify
+// a variable, function, class, constant, property, etc.
+type Identifier struct {
+	BaseNode
+	Value string
+}
+
+func (i Identifier) EvaluatesTo() Type {
+	return String
+}
+
+func (i Identifier) String() string {
+	return i.Value
+}
+
 type Variable struct {
 	BaseNode
-	Name string
+
+	// Name is the identifier for the variable, which may be
+	// a dynamic expression.
+	Name Expression
 	Type Type
 }
 
 func (i Variable) String() string {
-	return i.Name
+	return "$" + i.Name.String()
 }
 
 type GlobalDeclaration struct {
@@ -67,9 +84,11 @@ func (i Variable) EvaluatesTo() Type {
 	return i.Type
 }
 
-// NewIdentifier intializes an identifier node with its type set to AnyType.
+// NewVariable intializes a variable node with its name being a simple
+// identifier and its type set to AnyType. The name argument should not
+// include the $ operator.
 func NewVariable(name string) *Variable {
-	return &Variable{Name: name, Type: AnyType}
+	return &Variable{Name: Identifier{Value: name}, Type: AnyType}
 }
 
 // A statement is an executable piece of code. It may be as simple as

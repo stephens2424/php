@@ -280,7 +280,7 @@ func (p *parser) parseVariable() ast.Expression {
 		// keywords are all valid variable names
 		fallthrough
 	case p.current.typ == itemIdentifier:
-		expr := ast.NewVariable("$" + p.current.val)
+		expr := ast.NewVariable(p.current.val)
 		return expr
 	default:
 		return p.parseExpression()
@@ -291,11 +291,12 @@ func (p *parser) parseIdentifier() (expr ast.Expression) {
 	expr = p.parseVariable()
 	switch pk := p.peek(); pk.typ {
 	case itemScopeResolutionOperator:
-		r := "$" + p.current.val
+		r := p.current.val
 		p.expect(itemScopeResolutionOperator)
 		p.next()
 		return &ast.ClassExpression{
-			Receiver:   r,
+			// the $ literal is temporary until Receiver accepts expressions
+			Receiver:   "$" + r,
 			Expression: p.expressionize(),
 		}
 	case itemObjectOperator:

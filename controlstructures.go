@@ -46,7 +46,7 @@ func (p *parser) parseForeach() ast.Statement {
 	}
 	p.expect(itemVariableOperator)
 	p.next()
-	first := ast.NewVariable("$" + p.current.val)
+	first := ast.NewVariable(p.current.val)
 	if p.peek().typ == itemArrayKeyOperator {
 		stmt.Key = first
 		p.expect(itemArrayKeyOperator)
@@ -55,7 +55,7 @@ func (p *parser) parseForeach() ast.Statement {
 		}
 		p.expect(itemVariableOperator)
 		p.next()
-		stmt.Value = ast.NewVariable("$" + p.current.val)
+		stmt.Value = ast.NewVariable(p.current.val)
 	} else {
 		stmt.Value = first
 	}

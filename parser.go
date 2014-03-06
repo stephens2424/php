@@ -322,7 +322,7 @@ func (p *parser) parseStmt() ast.Statement {
 			caught.CatchType = p.current.val
 			p.expect(itemVariableOperator)
 			p.expect(itemIdentifier)
-			caught.CatchVar = ast.NewVariable("$" + p.current.val)
+			caught.CatchVar = ast.NewVariable(p.current.val)
 			p.expect(itemCloseParen)
 			caught.CatchBlock = p.parseBlock()
 			stmt.CatchStmts = append(stmt.CatchStmts, caught)
@@ -394,7 +394,7 @@ func (p *parser) parseFunctionArgument() ast.FunctionArgument {
 	}
 	p.expect(itemVariableOperator)
 	p.next()
-	arg.Variable = ast.NewVariable("$" + p.current.val)
+	arg.Variable = ast.NewVariable(p.current.val)
 	if p.peek().typ == itemAssignmentOperator {
 		p.expect(itemAssignmentOperator)
 		p.next()
