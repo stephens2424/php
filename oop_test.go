@@ -124,3 +124,26 @@ func TestExtraModifiers(t *testing.T) {
 		t.Fatalf("Did not correctly error that a function has two public modifiers")
 	}
 }
+
+func TestInstantiation(t *testing.T) {
+	testStr := `<?
+  $obj = new Obj::$classes['obj']($arg);`
+	p := NewParser(testStr)
+	a, _ := p.Parse()
+	tree := ast.AssignmentStmt{ast.AssignmentExpression{
+		Operator: "=",
+		Assignee: ast.NewVariable("obj"),
+		Value: &ast.NewExpression{
+			Class: ast.NewClassExpression("Obj", &ast.ArrayLookupExpression{
+				Array: ast.NewVariable("classes"),
+				Index: &ast.Literal{Type: ast.String},
+			}),
+			Arguments: []ast.Expression{
+				ast.NewVariable("arg"),
+			},
+		},
+	}}
+	if !assertEquals(a[0], tree) {
+		t.Fatalf("Instantiation did not parse correctly")
+	}
+}
