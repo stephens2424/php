@@ -217,7 +217,11 @@ func (p *parser) parseStmt() ast.Statement {
 			return expr
 		case itemAssignmentOperator, itemArrayLookupOperatorLeft:
 			n := ast.AssignmentStmt{}
-			n.Assignee = ident.(ast.Assignable)
+			var ok bool
+			n.Assignee, ok = ident.(ast.Assignable)
+			if !ok {
+				p.errorf("%s is not assignable", n.Assignee)
+			}
 			p.expect(itemAssignmentOperator)
 			n.Operator = p.current.val
 			p.next()
