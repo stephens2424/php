@@ -31,7 +31,7 @@ func NewParser(input string) *parser {
 	return p
 }
 
-func (p *parser) Parse() ([]ast.Node, []error) {
+func (p *parser) Parse() (nodes []ast.Node, errors []error) {
 	defer func() {
 		if r := recover(); r != nil {
 			if p.Debug {
@@ -40,11 +40,11 @@ func (p *parser) Parse() ([]ast.Node, []error) {
 				}
 				panic(r)
 			}
-			p.errors = append([]error{fmt.Errorf("%s", r)}, p.errors...)
+			errors = append([]error{fmt.Errorf("%s", r)}, p.errors...)
 		}
 	}()
 	// expecting either itemHTML or itemPHPBegin
-	nodes := make([]ast.Node, 0, 1)
+	nodes = make([]ast.Node, 0, 1)
 TokenLoop:
 	for {
 		p.next()
@@ -58,7 +58,8 @@ TokenLoop:
 			}
 		}
 	}
-	return nodes, p.errors
+	errors = p.errors
+	return nodes, errors
 }
 
 func (p *parser) parseNode() ast.Node {
