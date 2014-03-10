@@ -212,15 +212,6 @@ func (p *parser) parseStmt() ast.Statement {
 			expr := ast.ExpressionStmt{p.parseOperation(p.parenLevel, ident)}
 			p.expectStmtEnd()
 			return expr
-		case itemAssignmentOperator, itemArrayLookupOperatorLeft:
-			n := ast.AssignmentStmt{}
-			n.Assignee = ident.(ast.Assignable)
-			p.expect(itemAssignmentOperator)
-			n.Operator = p.current.val
-			n.Value = p.parseNextExpression()
-			fmt.Println(n.Value, p.current, p.peek())
-			p.expectStmtEnd()
-			return n
 		case itemOpenParen:
 			var expr ast.Expression
 			expr = p.parseFunctionArguments(&ast.FunctionCallExpression{
@@ -232,11 +223,7 @@ func (p *parser) parseStmt() ast.Statement {
 			p.expectStmtEnd()
 			return expr
 		default:
-			op := p.parseOperation(p.parenLevel, ident)
-			stmt, ok := op.(ast.Statement)
-			if !ok {
-				stmt = ast.ExpressionStmt{}
-			}
+			stmt := ast.ExpressionStmt{p.parseOperation(p.parenLevel, ident)}
 			p.expectStmtEnd()
 			return stmt
 		}

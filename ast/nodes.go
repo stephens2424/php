@@ -294,11 +294,6 @@ func (a AssignmentExpression) EvaluatesTo() Type {
 	return a.Value.EvaluatesTo()
 }
 
-// AssignmentStmt represents an assignment.
-type AssignmentStmt struct {
-	AssignmentExpression
-}
-
 type Assignable interface {
 	Node
 	AssignableType() Type
@@ -508,15 +503,6 @@ func (p PropertyExpression) Children() []Node {
 	return []Node{
 		p.Receiver,
 	}
-}
-
-type PropertyIdentifier struct {
-	BaseNode
-	Name string
-}
-
-func (p PropertyIdentifier) EvaluatesTo() Type {
-	return String
 }
 
 type ClassExpression struct {

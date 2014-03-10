@@ -110,7 +110,7 @@ func TestFunction(t *testing.T) {
 				Statements: []ast.Statement{ast.Echo(ast.NewVariable("arg"))},
 			},
 		},
-		ast.AssignmentStmt{
+		ast.ExpressionStmt{
 			ast.AssignmentExpression{
 				Assignee: ast.NewVariable("var"),
 				Value: &ast.FunctionCallExpression{
@@ -249,7 +249,7 @@ func TestArray(t *testing.T) {
 	if len(a) == 0 {
 		t.Fatalf("Array did not correctly parse")
 	}
-	tree := ast.AssignmentStmt{
+	tree := ast.ExpressionStmt{
 		ast.AssignmentExpression{
 			Assignee: ast.NewVariable("var"),
 			Operator: "=",
@@ -279,7 +279,7 @@ func TestArrayKeys(t *testing.T) {
 	if len(a) == 0 {
 		t.Fatalf("Array did not correctly parse")
 	}
-	tree := ast.AssignmentStmt{ast.AssignmentExpression{
+	tree := ast.ExpressionStmt{ast.AssignmentExpression{
 		Assignee: ast.NewVariable("var"),
 		Operator: "=",
 		Value: &ast.ArrayExpression{
@@ -307,7 +307,7 @@ func TestMethodCall(t *testing.T) {
 	if len(a) == 0 {
 		t.Fatalf("Method call did not correctly parse")
 	}
-	tree := ast.AssignmentStmt{ast.AssignmentExpression{
+	tree := ast.ExpressionStmt{ast.AssignmentExpression{
 		Assignee: ast.NewVariable("res"),
 		Operator: "=",
 		Value: &ast.MethodCallExpression{
@@ -334,7 +334,7 @@ func TestProperty(t *testing.T) {
 	if len(a) != 2 {
 		t.Fatalf("Property did not correctly parse")
 	}
-	tree := ast.AssignmentStmt{ast.AssignmentExpression{
+	tree := ast.ExpressionStmt{ast.AssignmentExpression{
 		Assignee: ast.NewVariable("res"),
 		Operator: "=",
 		Value: &ast.PropertyExpression{
@@ -346,10 +346,10 @@ func TestProperty(t *testing.T) {
 		t.Fatalf("Property did not correctly parse")
 	}
 
-	tree = ast.AssignmentStmt{ast.AssignmentExpression{
+	tree = ast.ExpressionStmt{ast.AssignmentExpression{
 		Assignee: &ast.PropertyExpression{
 			Receiver: ast.NewVariable("var"),
-			Name:     ast.PropertyIdentifier{Name: "go"},
+			Name:     ast.Identifier{Value: "go"},
 		},
 		Operator: "=",
 		Value:    ast.NewVariable("res"),
@@ -521,12 +521,12 @@ func TestArrayLookup(t *testing.T) {
 				Index: ast.NewVariable("two"),
 			}},
 		},
-		ast.AssignmentStmt{
+		ast.ExpressionStmt{
 			ast.AssignmentExpression{
 				Assignee: ast.ArrayAppendExpression{
 					Array: &ast.PropertyExpression{
 						Receiver: ast.NewVariable("var"),
-						Name:     ast.PropertyIdentifier{Name: "arr"},
+						Name:     ast.Identifier{Value: "arr"},
 					},
 				},
 				Operator: "=",
@@ -601,22 +601,22 @@ func TestLiterals(t *testing.T) {
 		t.Fatalf("Literals did not correctly parse")
 	}
 	tree := []ast.Node{
-		ast.AssignmentStmt{ast.AssignmentExpression{
+		ast.ExpressionStmt{ast.AssignmentExpression{
 			Assignee: ast.NewVariable("var"),
 			Value:    &ast.Literal{Type: ast.String},
 			Operator: "=",
 		}},
-		ast.AssignmentStmt{ast.AssignmentExpression{
+		ast.ExpressionStmt{ast.AssignmentExpression{
 			Assignee: ast.NewVariable("var"),
 			Value:    &ast.Literal{Type: ast.Float},
 			Operator: "=",
 		}},
-		ast.AssignmentStmt{ast.AssignmentExpression{
+		ast.ExpressionStmt{ast.AssignmentExpression{
 			Assignee: ast.NewVariable("var"),
 			Value:    &ast.Literal{Type: ast.Boolean},
 			Operator: "=",
 		}},
-		ast.AssignmentStmt{ast.AssignmentExpression{
+		ast.ExpressionStmt{ast.AssignmentExpression{
 			Assignee: ast.NewVariable("var"),
 			Value:    &ast.Literal{Type: ast.Null},
 			Operator: "=",
@@ -698,7 +698,7 @@ func TestCastOperator(t *testing.T) {
 	p := NewParser(testStr)
 	a, _ := p.Parse()
 	tree := []ast.Node{
-		ast.AssignmentStmt{ast.AssignmentExpression{
+		ast.ExpressionStmt{ast.AssignmentExpression{
 			Assignee: ast.NewVariable("var"),
 			Value: ast.OperatorExpression{
 				Operand1: &ast.Literal{Type: ast.Float},

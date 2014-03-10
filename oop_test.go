@@ -130,7 +130,7 @@ func TestInstantiation(t *testing.T) {
   $obj = new Obj::$classes['obj']($arg);`
 	p := NewParser(testStr)
 	a, _ := p.Parse()
-	tree := ast.AssignmentStmt{ast.AssignmentExpression{
+	tree := ast.ExpressionStmt{ast.AssignmentExpression{
 		Operator: "=",
 		Assignee: ast.NewVariable("obj"),
 		Value: &ast.NewExpression{
