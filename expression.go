@@ -1,6 +1,10 @@
 package php
 
-import "stephensearles.com/php/ast"
+import (
+	"fmt"
+
+	"stephensearles.com/php/ast"
+)
 
 /*
 
@@ -77,10 +81,13 @@ func (p *parser) parseExpression() (expr ast.Expression) {
 	case itemFunction:
 		return p.parseAnonymousFunction()
 	case itemNewOperator:
-		return p.parseInstantiation()
+		expr = p.parseInstantiation()
+		p.next()
+		expr = p.parseOperation(originalParenLev, expr)
+		return
 	case itemVariableOperator:
 		if p.peek().typ == itemAssignmentOperator {
-			assignee := p.parseIdentifier().(ast.Assignable)
+			assignee := p.expressionize().(ast.Assignable)
 			p.next()
 			return ast.AssignmentExpression{
 				Assignee: assignee,
@@ -131,6 +138,13 @@ func (p *parser) parseOperation(originalParenLevel int, lhs ast.Expression) (exp
 		}
 		p.parenLevel -= 1
 		return p.parseOperation(originalParenLevel, lhs)
+	case itemScopeResolutionOperator:
+		p.next()
+		expr = &ast.ClassExpression{Receiver: lhs, Expression: p.expressionize()}
+	case itemArrayLookupOperatorLeft:
+		expr = p.parseArrayLookup(lhs)
+	case itemObjectOperator:
+		expr = p.parseObjectLookup(lhs)
 	case itemAssignmentOperator:
 		assignee := lhs.(ast.Assignable)
 		expr = ast.AssignmentExpression{
@@ -138,6 +152,7 @@ func (p *parser) parseOperation(originalParenLevel int, lhs ast.Expression) (exp
 			Operator: p.current.val,
 			Value:    p.parseNextExpression(),
 		}
+		fmt.Println(p.current)
 	default:
 		p.backup()
 		return lhs
@@ -214,45 +229,45 @@ func (p *parser) parseUnaryExpressionLeft(operand ast.Expression, operator Item)
 // expressionize takes the current token and returns it as the simplest
 // expression for that token. That means an expression with no operators
 // except for the object operator.
-func (p *parser) expressionize() ast.Expression {
-	switch p.current.typ {
-	case itemIgnoreErrorOperator:
-		p.next()
-		return p.expressionize()
-	case itemUnaryOperator, itemNegationOperator, itemCastOperator, itemSubtractionOperator, itemAmpersandOperator:
-		op := p.current
-		p.next()
-		return p.parseUnaryExpressionRight(p.expressionize(), op)
-	case itemArray:
-		return p.parseArrayDeclaration()
-	case itemVariableOperator:
-		return p.parseIdentifier()
-	case itemStringLiteral, itemBooleanLiteral, itemNumberLiteral, itemNull:
-		return p.parseLiteral()
-	case itemIdentifier, itemSelf, itemStatic, itemParent:
-		if p.peek().typ == itemOpenParen {
-			var expr ast.Expression
-			expr = p.parseFunctionCall()
-			for p.peek().typ == itemObjectOperator {
-				expr = p.parseObjectLookup(expr)
+func (p *parser) expressionize() (expr ast.Expression) {
+	for {
+		switch p.current.typ {
+		case itemStringLiteral, itemBooleanLiteral, itemNumberLiteral, itemNull:
+			return p.parseLiteral()
+		case itemUnaryOperator, itemNegationOperator, itemCastOperator, itemSubtractionOperator, itemAmpersandOperator:
+			op := p.current
+			p.next()
+			return p.parseUnaryExpressionRight(p.expressionize(), op)
+
+		case itemArray:
+			expr = p.parseArrayDeclaration()
+		case itemVariableOperator:
+			expr = p.parseVariable()
+			p.next()
+		case itemIdentifier:
+			if p.peek().typ == itemOpenParen {
+				expr = p.parseFunctionCall(ast.Identifier{Value: p.current.val})
+				continue
 			}
-			return expr
+			fallthrough
+		case itemSelf, itemStatic, itemParent:
+			if p.peek().typ == itemScopeResolutionOperator {
+				r := p.current.val
+				p.expect(itemScopeResolutionOperator)
+				expr = ast.NewClassExpression(r, p.parseNextExpression())
+				return
+			}
+			expr = ast.ConstantExpression{
+				Variable: ast.NewVariable(p.current.val),
+			}
+			p.next()
+		case itemOpenParen:
+			expr = p.parseExpression()
+		default:
+			p.backup()
+			return
 		}
-		if p.peek().typ == itemScopeResolutionOperator {
-			r := p.current.val
-			p.expect(itemScopeResolutionOperator)
-			return ast.NewClassExpression(r, p.parseNextExpression())
-		}
-		return ast.ConstantExpression{
-			Variable: ast.NewVariable(p.current.val),
-		}
-	case itemOpenParen:
-		return p.parseExpression()
-	case itemInclude:
-		return ast.Include{Expression: p.parseNextExpression()}
 	}
-	// error?
-	return nil
 }
 
 func (p *parser) parseLiteral() *ast.Literal {
@@ -282,31 +297,6 @@ func (p *parser) parseVariable() ast.Expression {
 	default:
 		return p.parseExpression()
 	}
-}
-
-func (p *parser) parseIdentifier() (expr ast.Expression) {
-	expr = p.parseVariable()
-	switch pk := p.peek(); pk.typ {
-	case itemScopeResolutionOperator:
-		p.expect(itemScopeResolutionOperator)
-		p.next()
-		return &ast.ClassExpression{Receiver: expr, Expression: p.expressionize()}
-	case itemObjectOperator:
-		for p.peek().typ == itemObjectOperator {
-			expr = p.parseObjectLookup(expr)
-		}
-	case itemArrayLookupOperatorLeft:
-		return p.parseArrayLookup(expr)
-	case itemOpenParen:
-		var expr ast.Expression
-		expr = p.parseFunctionArguments(&ast.FunctionCallExpression{
-			FunctionName: expr,
-		})
-		if p.peek().typ == itemObjectOperator {
-			expr = p.parseObjectLookup(expr)
-		}
-	}
-	return expr
 }
 
 func (p *parser) parseAnonymousFunction() ast.Expression {

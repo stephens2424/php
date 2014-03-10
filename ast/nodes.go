@@ -260,13 +260,14 @@ func (n NewExpression) EvaluatesTo() Type {
 }
 
 func (n NewExpression) String() string {
-	return "new " + n.Class.String()
+	return "new"
 }
 
 func (c NewExpression) Children() []Node {
-	n := make([]Node, len(c.Arguments))
+	n := make([]Node, len(c.Arguments)+1)
+	n[0] = c.Class
 	for i, arg := range c.Arguments {
-		n[i] = arg
+		n[i+1] = arg
 	}
 	return n
 }
@@ -311,15 +312,6 @@ type FunctionCallExpression struct {
 	BaseNode
 	FunctionName Expression
 	Arguments    []Expression
-}
-
-type FunctionNameExpression struct {
-	BaseNode
-	Name string
-}
-
-func (f FunctionNameExpression) EvaluatesTo() Type {
-	return String
 }
 
 func (f FunctionCallExpression) EvaluatesTo() Type {

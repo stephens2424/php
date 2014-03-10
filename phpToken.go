@@ -21,12 +21,12 @@ type Location struct {
 type ItemType int
 
 const (
-	itemHTML ItemType = iota
+	itemEOF ItemType = iota
+	itemHTML
 	itemPHP
 	itemPHPBegin
 	itemPHPEnd
 	itemPHPToken
-	itemEOF
 	itemError
 	itemSpace
 	itemFunction

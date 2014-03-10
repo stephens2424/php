@@ -139,12 +139,9 @@ func (p *parser) parseNextExpression() ast.Expression {
 	return p.parseExpression()
 }
 
-func (p *parser) parseFunctionCall() *ast.FunctionCallExpression {
+func (p *parser) parseFunctionCall(callable ast.Expression) *ast.FunctionCallExpression {
 	expr := &ast.FunctionCallExpression{}
-	if p.current.typ != itemIdentifier {
-		p.expected(itemIdentifier)
-	}
-	expr.FunctionName = ast.FunctionNameExpression{Name: p.current.val}
+	expr.FunctionName = callable
 	return p.parseFunctionArguments(expr)
 }
 
@@ -209,7 +206,7 @@ func (p *parser) parseStmt() ast.Statement {
 		// We are ignoring this for now
 		return nil
 	case itemVariableOperator:
-		ident := p.parseIdentifier()
+		ident := p.expressionize()
 		switch p.peek().typ {
 		case itemUnaryOperator:
 			expr := ast.ExpressionStmt{p.parseOperation(p.parenLevel, ident)}
@@ -220,8 +217,8 @@ func (p *parser) parseStmt() ast.Statement {
 			n.Assignee = ident.(ast.Assignable)
 			p.expect(itemAssignmentOperator)
 			n.Operator = p.current.val
-			p.next()
-			n.Value = p.parseExpression()
+			n.Value = p.parseNextExpression()
+			fmt.Println(n.Value, p.current, p.peek())
 			p.expectStmtEnd()
 			return n
 		case itemOpenParen:
@@ -235,9 +232,13 @@ func (p *parser) parseStmt() ast.Statement {
 			p.expectStmtEnd()
 			return expr
 		default:
-			expr := ast.ExpressionStmt{ident}
+			op := p.parseOperation(p.parenLevel, ident)
+			stmt, ok := op.(ast.Statement)
+			if !ok {
+				stmt = ast.ExpressionStmt{}
+			}
 			p.expectStmtEnd()
-			return expr
+			return stmt
 		}
 	case itemUnaryOperator:
 		expr := ast.ExpressionStmt{p.parseExpression()}

@@ -5,16 +5,7 @@ import "stephensearles.com/php/ast"
 func (p *parser) parseInstantiation() ast.Expression {
 	p.expectCurrent(itemNewOperator)
 	expr := &ast.NewExpression{}
-	switch p.next(); p.current.typ {
-	case itemVariableOperator:
-		expr.Class = p.parseExpression()
-	case itemIdentifier:
-		if p.peek().typ == itemScopeResolutionOperator {
-			expr.Class = p.parseExpression()
-		} else {
-			expr.Class = ast.Identifier{Value: p.current.val}
-		}
-	}
+	expr.Class = p.parseNextExpression()
 
 	if p.peek().typ == itemOpenParen {
 		p.expect(itemOpenParen)
@@ -52,8 +43,8 @@ func (p *parser) parseClass() ast.Class {
 	return p.parseClassFields(ast.Class{Name: name})
 }
 
-func (p *parser) parseObjectLookup(r ast.Expression) ast.Expression {
-	p.expect(itemObjectOperator)
+func (p *parser) parseObjectLookup(r ast.Expression) (expr ast.Expression) {
+	p.expectCurrent(itemObjectOperator)
 	prop := &ast.PropertyExpression{
 		Receiver: r,
 	}
@@ -61,19 +52,18 @@ func (p *parser) parseObjectLookup(r ast.Expression) ast.Expression {
 	case itemVariableOperator:
 		prop.Name = p.parseVariable()
 	case itemIdentifier:
-		prop.Name = ast.PropertyIdentifier{Name: p.current.val}
+		prop.Name = ast.Identifier{Value: p.current.val}
 	}
+	expr = prop
 	switch pk := p.peek(); pk.typ {
 	case itemOpenParen:
-		expr := &ast.MethodCallExpression{
+		expr = &ast.MethodCallExpression{
 			Receiver:               r,
-			FunctionCallExpression: p.parseFunctionCall(),
+			FunctionCallExpression: p.parseFunctionCall(prop.Name),
 		}
-		return expr
-	case itemArrayLookupOperatorLeft:
-		return p.parseArrayLookup(prop)
 	}
-	return prop
+	expr = p.parseOperation(p.parenLevel, expr)
+	return
 }
 
 func (p *parser) parseVisibility() (vis ast.Visibility, found bool) {

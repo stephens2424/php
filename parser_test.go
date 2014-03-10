@@ -114,7 +114,7 @@ func TestFunction(t *testing.T) {
 			ast.AssignmentExpression{
 				Assignee: ast.NewVariable("var"),
 				Value: &ast.FunctionCallExpression{
-					FunctionName: ast.FunctionNameExpression{Name: "TestFn"},
+					FunctionName: ast.Identifier{Value: "TestFn"},
 					Arguments: []ast.Expression{
 						&ast.Literal{Type: ast.String},
 						&ast.Literal{Type: ast.Float},
@@ -302,6 +302,7 @@ func TestMethodCall(t *testing.T) {
   $res = $var->go();`
 	p := NewParser(testStr)
 	p.Debug = true
+	p.MaxErrors = 0
 	a, _ := p.Parse()
 	if len(a) == 0 {
 		t.Fatalf("Method call did not correctly parse")
@@ -312,7 +313,7 @@ func TestMethodCall(t *testing.T) {
 		Value: &ast.MethodCallExpression{
 			Receiver: ast.NewVariable("var"),
 			FunctionCallExpression: &ast.FunctionCallExpression{
-				FunctionName: ast.FunctionNameExpression{Name: "go"},
+				FunctionName: ast.Identifier{Value: "go"},
 				Arguments:    make([]ast.Expression, 0),
 			},
 		},
@@ -327,6 +328,8 @@ func TestProperty(t *testing.T) {
   $res = $var->go;
   $var->go = $res;`
 	p := NewParser(testStr)
+	p.Debug = true
+	p.MaxErrors = 0
 	a, _ := p.Parse()
 	if len(a) != 2 {
 		t.Fatalf("Property did not correctly parse")
@@ -336,7 +339,7 @@ func TestProperty(t *testing.T) {
 		Operator: "=",
 		Value: &ast.PropertyExpression{
 			Receiver: ast.NewVariable("var"),
-			Name:     ast.PropertyIdentifier{Name: "go"},
+			Name:     ast.Identifier{Value: "go"},
 		},
 	}}
 	if !assertEquals(a[0], tree) {
@@ -482,7 +485,7 @@ func TestWhileLoopWithAssignment(t *testing.T) {
 		Termination: ast.AssignmentExpression{
 			Assignee: ast.NewVariable("var"),
 			Value: &ast.FunctionCallExpression{
-				FunctionName: ast.FunctionNameExpression{Name: "mysql_assoc"},
+				FunctionName: ast.Identifier{Value: "mysql_assoc"},
 				Arguments:    make([]ast.Expression, 0),
 			},
 			Operator: "=",
@@ -657,7 +660,7 @@ func TestScopeResolutionOperator(t *testing.T) {
 			&ast.ClassExpression{
 				Receiver: ast.Identifier{Value: "MyClass"},
 				Expression: &ast.FunctionCallExpression{
-					FunctionName: ast.FunctionNameExpression{Name: "myfunc"},
+					FunctionName: ast.Identifier{Value: "myfunc"},
 					Arguments: []ast.Expression{
 						ast.NewVariable("var"),
 					},
@@ -673,7 +676,7 @@ func TestScopeResolutionOperator(t *testing.T) {
 		ast.Echo(&ast.ClassExpression{
 			Receiver: ast.NewVariable("var"),
 			Expression: &ast.FunctionCallExpression{
-				FunctionName: ast.FunctionNameExpression{Name: "myfunc"},
+				FunctionName: ast.Identifier{Value: "myfunc"},
 				Arguments:    []ast.Expression{},
 			},
 		}),
