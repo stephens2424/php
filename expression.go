@@ -87,7 +87,10 @@ func (p *parser) parseExpression() (expr ast.Expression) {
 		return
 	case itemVariableOperator:
 		if p.peek().typ == itemAssignmentOperator {
-			assignee := p.expressionize().(ast.Assignable)
+			assignee, ok := p.expressionize().(ast.Assignable)
+			if !ok {
+				p.errorf("%s is not assignable", assignee)
+			}
 			p.next()
 			return ast.AssignmentExpression{
 				Assignee: assignee,
@@ -146,7 +149,10 @@ func (p *parser) parseOperation(originalParenLevel int, lhs ast.Expression) (exp
 	case itemObjectOperator:
 		expr = p.parseObjectLookup(lhs)
 	case itemAssignmentOperator:
-		assignee := lhs.(ast.Assignable)
+		assignee, ok := lhs.(ast.Assignable)
+		if !ok {
+			p.errorf("%s is not assignable", assignee)
+		}
 		expr = ast.AssignmentExpression{
 			Assignee: assignee,
 			Operator: p.current.val,
