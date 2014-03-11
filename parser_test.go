@@ -47,10 +47,11 @@ func TestPHPParserHWPHP(t *testing.T) {
 
 func TestInclude(t *testing.T) {
 	testStr := `<?php
-  include test.php; ?>`
+  include "test.php"; ?>`
 	p := NewParser(testStr)
 	_, errs := p.Parse()
 	if len(errs) > 0 {
+		fmt.Println(errs)
 		t.Fatalf("Did not parse include correctly")
 	}
 }
@@ -439,9 +440,11 @@ func TestForLoop(t *testing.T) {
     echo $i;
   }`
 	p := NewParser(testStr)
+	p.Debug = true
+	p.MaxErrors = 0
 	a, _ := p.Parse()
 	if len(a) == 0 {
-		t.Fatalf("While loop did not correctly parse")
+		t.Fatalf("For loop did not correctly parse")
 	}
 	tree := &ast.ForStmt{
 		Initialization: ast.AssignmentExpression{
@@ -467,7 +470,7 @@ func TestForLoop(t *testing.T) {
 		},
 	}
 	if !assertEquals(a[0], tree) {
-		t.Fatalf("TestLoop did not correctly parse")
+		t.Fatalf("For did not correctly parse")
 	}
 }
 
@@ -477,6 +480,8 @@ func TestWhileLoopWithAssignment(t *testing.T) {
     echo $var;
   }`
 	p := NewParser(testStr)
+	p.Debug = true
+	p.MaxErrors = 0
 	a, _ := p.Parse()
 	if len(a) == 0 {
 		t.Fatalf("While loop did not correctly parse")
@@ -507,6 +512,8 @@ func TestArrayLookup(t *testing.T) {
   $var->arr[] = 2;
   echo $arr[2 + 1];`
 	p := NewParser(testStr)
+	p.Debug = true
+	p.MaxErrors = 0
 	a, _ := p.Parse()
 	if len(a) == 0 {
 		t.Fatalf("Array lookup did not correctly parse")

@@ -82,25 +82,23 @@ func (p *parser) parseExpression() (expr ast.Expression) {
 		expr = p.parseOperation(originalParenLev, expr)
 		return
 	case itemVariableOperator:
-		if p.peek().typ == itemAssignmentOperator {
-			assignee, ok := p.expressionize().(ast.Assignable)
-			if !ok {
-				p.errorf("%s is not assignable", assignee)
-			}
-			p.next()
-			return ast.AssignmentExpression{
-				Assignee: assignee,
-				Operator: p.current.val,
-				Value:    p.parseNextExpression(),
-			}
-		}
 		fallthrough
 	case itemArray:
 		fallthrough
 	case itemUnaryOperator, itemNegationOperator, itemAmpersandOperator, itemCastOperator, itemSubtractionOperator:
 		fallthrough
-	case itemIdentifier, itemStringLiteral, itemNumberLiteral, itemBooleanLiteral, itemInclude, itemNull, itemSelf, itemStatic, itemParent:
+	case itemIdentifier, itemStringLiteral, itemNumberLiteral, itemBooleanLiteral, itemNull, itemSelf, itemStatic, itemParent:
 		expr = p.parseOperation(originalParenLev, p.expressionize())
+	case itemInclude:
+		inc := ast.Include{Expressions: make([]ast.Expression, 0)}
+		for {
+			inc.Expressions = append(inc.Expressions, p.parseNextExpression())
+			if p.peek().typ != itemComma {
+				break
+			}
+			p.expect(itemComma)
+		}
+		expr = inc
 	case itemOpenParen:
 		p.parenLevel += 1
 		p.next()
@@ -154,6 +152,7 @@ func (p *parser) parseOperation(originalParenLevel int, lhs ast.Expression) (exp
 			Operator: p.current.val,
 			Value:    p.parseNextExpression(),
 		}
+		return expr
 	default:
 		p.backup()
 		return lhs
@@ -253,6 +252,7 @@ func (p *parser) expressionize() (expr ast.Expression) {
 		case itemIdentifier:
 			if p.peek().typ == itemOpenParen {
 				expr = p.parseFunctionCall(ast.Identifier{Value: p.current.val})
+				p.next()
 				continue
 			}
 			fallthrough

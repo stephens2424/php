@@ -238,7 +238,20 @@ type IncludeStmt struct {
 }
 
 type Include struct {
-	Expression
+	BaseNode
+	Expressions []Expression
+}
+
+func (i Include) Children() []Node {
+	n := make([]Node, len(i.Expressions))
+	for idx, expr := range i.Expressions {
+		n[idx] = expr
+	}
+	return n
+}
+
+func (i Include) String() string {
+	return "include"
 }
 
 func (i Include) EvaluatesTo() Type {
