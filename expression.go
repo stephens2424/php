@@ -1,10 +1,6 @@
 package php
 
-import (
-	"fmt"
-
-	"stephensearles.com/php/ast"
-)
+import "stephensearles.com/php/ast"
 
 /*
 
@@ -158,7 +154,6 @@ func (p *parser) parseOperation(originalParenLevel int, lhs ast.Expression) (exp
 			Operator: p.current.val,
 			Value:    p.parseNextExpression(),
 		}
-		fmt.Println(p.current)
 	default:
 		p.backup()
 		return lhs
@@ -236,15 +231,20 @@ func (p *parser) parseUnaryExpressionLeft(operand ast.Expression, operator Item)
 // expression for that token. That means an expression with no operators
 // except for the object operator.
 func (p *parser) expressionize() (expr ast.Expression) {
+	// This case must come first and not repeat
+	switch p.current.typ {
+	case itemUnaryOperator, itemNegationOperator, itemCastOperator, itemSubtractionOperator, itemAmpersandOperator:
+		op := p.current
+		p.next()
+		return p.parseUnaryExpressionRight(p.expressionize(), op)
+	}
 	for {
 		switch p.current.typ {
 		case itemStringLiteral, itemBooleanLiteral, itemNumberLiteral, itemNull:
 			return p.parseLiteral()
-		case itemUnaryOperator, itemNegationOperator, itemCastOperator, itemSubtractionOperator, itemAmpersandOperator:
-			op := p.current
+		case itemUnaryOperator:
+			expr = newUnaryOperation(p.current, expr)
 			p.next()
-			return p.parseUnaryExpressionRight(p.expressionize(), op)
-
 		case itemArray:
 			expr = p.parseArrayDeclaration()
 		case itemVariableOperator:
