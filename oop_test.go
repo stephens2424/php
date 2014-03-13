@@ -12,6 +12,7 @@ func TestClass(t *testing.T) {
       public $myProp;
       protected $myProp2;
       const my_const = "test";
+      private $arr = array("one", "two");
       abstract public function method0($arg);
       public function method1($arg) {
         echo $arg;
@@ -46,6 +47,16 @@ func TestClass(t *testing.T) {
 			{
 				Visibility: ast.Protected,
 				Name:       "$myProp2",
+			},
+			{
+				Visibility: ast.Private,
+				Name:       "$arr",
+				Initialization: &ast.ArrayExpression{
+					Pairs: []ast.ArrayPair{
+						{Value: &ast.Literal{Type: ast.String}},
+						{Value: &ast.Literal{Type: ast.String}},
+					},
+				},
 			},
 		},
 		Methods: []ast.Method{

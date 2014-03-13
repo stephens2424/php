@@ -246,6 +246,7 @@ func (p *parser) expressionize() (expr ast.Expression) {
 			p.next()
 		case itemArray:
 			expr = p.parseArrayDeclaration()
+			p.next()
 		case itemVariableOperator:
 			expr = p.parseVariable()
 			p.next()
