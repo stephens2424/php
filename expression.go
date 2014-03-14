@@ -315,24 +315,20 @@ func (p *parser) parseAnonymousFunction() ast.Expression {
 	f := &ast.AnonymousFunction{}
 	f.Arguments = make([]ast.FunctionArgument, 0)
 	p.expect(itemOpenParen)
-	if p.peek().typ == itemCloseParen {
-		p.expect(itemCloseParen)
-		return f
+	if p.peek().typ != itemCloseParen {
+		f.Arguments = append(f.Arguments, p.parseFunctionArgument())
 	}
-	f.Arguments = append(f.Arguments, p.parseFunctionArgument())
-	for {
+	for p.peek().typ != itemCloseParen {
 		switch p.peek().typ {
 		case itemComma:
 			p.expect(itemComma)
 			f.Arguments = append(f.Arguments, p.parseFunctionArgument())
-		case itemCloseParen:
-			p.expect(itemCloseParen)
-			return f
 		default:
 			p.errorf("unexpected argument separator:", p.current)
 			return f
 		}
 	}
+	p.expect(itemCloseParen)
 	f.Body = p.parseBlock()
 	return f
 }
