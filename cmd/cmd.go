@@ -14,6 +14,7 @@ func main() {
 	astonerror := flag.Bool("astonerror", false, "Print the AST on errors")
 	ast := flag.Bool("ast", false, "Print the AST")
 	showErrors := flag.Bool("showerrors", true, "show errors. If this is false, astonerror will be ignored")
+	debugMode := flag.Bool("debug", false, "if true, panic on finding any error")
 	flag.Parse()
 
 	var files, errors int
@@ -26,6 +27,10 @@ func main() {
 		}
 		walker := printing.Walker{}
 		parser := php.NewParser(string(fBytes))
+		if *debugMode {
+			parser.Debug = true
+			parser.MaxErrors = 0
+		}
 		nodes, errs := parser.Parse()
 		if *ast && len(nodes) != 0 && nodes[0] != nil {
 			for _, node := range nodes {
