@@ -397,7 +397,11 @@ func (p *parser) parseBlock() *ast.Block {
 	p.expect(itemBlockBegin)
 	for p.peek().typ != itemBlockEnd {
 		p.next()
-		block.Statements = append(block.Statements, p.parseStmt())
+		stmt := p.parseStmt()
+		if stmt == nil {
+			return block
+		}
+		block.Statements = append(block.Statements, stmt)
 	}
 	p.next()
 	return block
