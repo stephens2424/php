@@ -229,13 +229,19 @@ func (p *parser) parseUnaryExpressionLeft(operand ast.Expression, operator Item)
 // expression for that token. That means an expression with no operators
 // except for the object operator.
 func (p *parser) expressionize() (expr ast.Expression) {
-	// This case must come first and not repeat
+
+	// These cases must come first and not repeat
 	switch p.current.typ {
 	case itemUnaryOperator, itemNegationOperator, itemCastOperator, itemSubtractionOperator, itemAmpersandOperator:
 		op := p.current
 		p.next()
 		return p.parseUnaryExpressionRight(p.expressionize(), op)
+	case itemOpenParen:
+		// Only parse open parentheses as a front matter to expression terms
+		// so we don't get any dynamic function calls here.
+		return p.parseExpression()
 	}
+
 	for {
 		switch p.current.typ {
 		case itemStringLiteral, itemBooleanLiteral, itemNumberLiteral, itemNull:
@@ -251,6 +257,8 @@ func (p *parser) expressionize() (expr ast.Expression) {
 			p.next()
 		case itemIdentifier:
 			if p.peek().typ == itemOpenParen {
+				// Function calls are okay here because we know they came with
+				// a non-dynamic identifier.
 				expr = p.parseFunctionCall(ast.Identifier{Value: p.current.val})
 				p.next()
 				continue
@@ -267,8 +275,6 @@ func (p *parser) expressionize() (expr ast.Expression) {
 				Variable: ast.NewVariable(p.current.val),
 			}
 			p.next()
-		case itemOpenParen:
-			expr = p.parseExpression()
 		default:
 			p.backup()
 			return

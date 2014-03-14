@@ -237,7 +237,7 @@ func TestExpressionParsing(t *testing.T) {
 	p.Debug = true
 	a, _ = p.Parse()
 	if len(a) != 1 {
-		t.Fatalf("If did not correctly parse")
+		t.Fatalf("Expression did not correctly parse")
 	}
 }
 
