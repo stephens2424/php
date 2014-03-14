@@ -78,7 +78,6 @@ func (p *parser) parseExpression() (expr ast.Expression) {
 		return p.parseAnonymousFunction()
 	case itemNewOperator:
 		expr = p.parseInstantiation()
-		p.next()
 		expr = p.parseOperation(originalParenLev, expr)
 		return
 	case itemVariableOperator:
