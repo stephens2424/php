@@ -88,7 +88,7 @@ func lexPHP(l *lexer) stateFn {
 
 	for _, token := range tokenList {
 		item := tokenMap[token]
-		if strings.HasPrefix(l.input[l.pos:], token) {
+		if strings.HasPrefix(strings.ToLower(l.input[l.pos:]), token) {
 			l.pos += len(token)
 			if isKeyword(item) && l.accept(alphabet+underscore+digits) {
 				l.backup() // to account for the character consumed by accept
