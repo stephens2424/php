@@ -393,12 +393,24 @@ func (p *parser) parseFunctionArgument() ast.FunctionArgument {
 }
 
 func (p *parser) parseBlock() *ast.Block {
-	block := &ast.Block{}
 	p.expect(itemBlockBegin)
-	for p.peek().typ != itemBlockEnd {
+	b := p.parseStatementsUntil(itemBlockEnd)
+	p.expectCurrent(itemBlockEnd)
+	return b
+}
+
+func (p *parser) parseStatementsUntil(endTokens ...ItemType) *ast.Block {
+	block := &ast.Block{}
+	breakTypes := map[ItemType]bool{}
+	for _, typ := range endTokens {
+		breakTypes[typ] = true
+	}
+	for {
 		p.next()
+		if _, ok := breakTypes[p.current.typ]; ok {
+			break
+		}
 		block.Statements = append(block.Statements, p.parseStmt())
 	}
-	p.next()
 	return block
 }
