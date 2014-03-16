@@ -4,6 +4,9 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
+	"log"
+	"os"
+	"runtime/pprof"
 
 	"stephensearles.com/php"
 	//"stephensearles.com/php/passes/typechecking"
@@ -15,7 +18,18 @@ func main() {
 	ast := flag.Bool("ast", false, "Print the AST")
 	showErrors := flag.Bool("showerrors", true, "show errors. If this is false, astonerror will be ignored")
 	debugMode := flag.Bool("debug", false, "if true, panic on finding any error")
+	cpuprofile := flag.String("cpuprofile", "", "write cpu profile to file")
+
 	flag.Parse()
+
+	if *cpuprofile != "" {
+		f, err := os.Create(*cpuprofile)
+		if err != nil {
+			log.Fatal(err)
+		}
+		pprof.StartCPUProfile(f)
+		defer pprof.StopCPUProfile()
+	}
 
 	var files, errors int
 	for _, filename := range flag.Args() {
