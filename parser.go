@@ -234,6 +234,17 @@ func (p *parser) parseStmt() ast.Statement {
 		return expr
 	case itemFunction:
 		return p.parseFunctionStmt()
+	case itemPHPEnd:
+		if p.peek().typ == itemEOF {
+			return nil
+		}
+		p.expect(itemHTML)
+		expr := ast.Echo(&ast.Literal{Type: ast.String})
+		p.next()
+		if p.current.typ != itemEOF {
+			p.expectCurrent(itemPHPBegin)
+		}
+		return expr
 	case itemEcho:
 		exprs := []ast.Expression{
 			p.parseNextExpression(),
