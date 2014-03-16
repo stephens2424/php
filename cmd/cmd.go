@@ -56,7 +56,9 @@ func main() {
 			if *showErrors {
 				fmt.Println(filename)
 				if !*ast && *astonerror && len(nodes) != 0 && nodes[0] != nil {
-					walker.Walk(nodes[0])
+					for _, node := range nodes {
+						walker.Walk(node)
+					}
 				}
 				for _, err := range errs {
 					fmt.Println(err)
