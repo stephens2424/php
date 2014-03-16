@@ -339,7 +339,7 @@ func (p *parser) parseStmt() ast.Statement {
 			p.expectStmtEnd()
 			return ast.ExpressionStmt{expr}
 		}
-		p.errorf("Found %s, expected html or php begin", p.current)
+		p.errorf("Found %s, statement or expression", p.current)
 		return nil
 	}
 }
