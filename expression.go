@@ -80,11 +80,12 @@ func (p *parser) parseExpression() (expr ast.Expression) {
 		expr = p.parseInstantiation()
 		expr = p.parseOperation(originalParenLev, expr)
 		return
+	case itemUnaryOperator, itemNegationOperator, itemAmpersandOperator, itemCastOperator, itemSubtractionOperator:
+		op := p.current
+		return p.parseUnaryExpressionRight(p.parseNextExpression(), op)
 	case itemVariableOperator:
 		fallthrough
 	case itemArray:
-		fallthrough
-	case itemUnaryOperator, itemNegationOperator, itemAmpersandOperator, itemCastOperator, itemSubtractionOperator:
 		fallthrough
 	case itemIdentifier, itemStringLiteral, itemNumberLiteral, itemBooleanLiteral, itemNull, itemSelf, itemStatic, itemParent:
 		expr = p.parseOperation(originalParenLev, p.expressionize())
