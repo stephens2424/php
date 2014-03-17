@@ -145,7 +145,7 @@ func (p *parser) parseOperation(originalParenLevel int, lhs ast.Expression) (exp
 	case itemAssignmentOperator:
 		assignee, ok := lhs.(ast.Assignable)
 		if !ok {
-			p.errorf("%s is not assignable", assignee)
+			p.errorf("%s is not assignable", lhs)
 		}
 		expr = ast.AssignmentExpression{
 			Assignee: assignee,

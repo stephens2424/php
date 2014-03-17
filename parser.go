@@ -34,13 +34,13 @@ func NewParser(input string) *parser {
 func (p *parser) Parse() (nodes []ast.Node, errors []error) {
 	defer func() {
 		if r := recover(); r != nil {
+			errors = append([]error{fmt.Errorf("%s", r)}, p.errors...)
 			if p.Debug {
 				for _, err := range p.errors {
 					fmt.Println(err)
 				}
 				panic(r)
 			}
-			errors = append([]error{fmt.Errorf("%s", r)}, p.errors...)
 		}
 	}()
 	// expecting either itemHTML or itemPHPBegin
@@ -120,15 +120,15 @@ func (p *parser) expected(i ItemType) {
 
 func (p *parser) errorf(str string, args ...interface{}) {
 	p.errorCount += 1
+	errString := fmt.Sprintf(str, args...)
+	p.errorMap[p.current.pos.Line] = true
+	p.errors = append(p.errors, fmt.Errorf("%s: %s", p.errorPrefix(), errString))
 	if p.errorCount > p.MaxErrors {
 		panic("too many errors")
 	}
 	if _, ok := p.errorMap[p.current.pos.Line]; ok {
 		return
 	}
-	errString := fmt.Sprintf(str, args...)
-	p.errorMap[p.current.pos.Line] = true
-	p.errors = append(p.errors, fmt.Errorf("%s: %s", p.errorPrefix(), errString))
 }
 
 func (p *parser) errorPrefix() string {
