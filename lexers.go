@@ -1,6 +1,7 @@
 package php
 
 import (
+	"fmt"
 	"strings"
 	"unicode"
 )
@@ -55,6 +56,10 @@ func lexPHP(l *lexer) stateFn {
 		if unicode.IsDigit(secondR) {
 			return lexNumberLiteral
 		}
+	}
+
+	if strings.HasPrefix(l.input[l.pos:], "<<<") {
+		return lexDoc
 	}
 
 	if strings.HasPrefix(l.input[l.pos:], "?>") {
@@ -193,5 +198,27 @@ func lexBlockComment(l *lexer) stateFn {
 	}
 	l.pos += commentLength
 	l.ignore()
+	return lexPHP
+}
+
+func lexDoc(l *lexer) stateFn {
+	var nowDoc bool
+	l.pos += len("<<<")
+	if strings.HasPrefix(l.input[l.pos:], "'") {
+		nowDoc = true
+	}
+	labelPos := l.pos
+	l.accept(underscore + alphabet)
+	l.acceptRun(underscore + alphabet + digits)
+	endMarker := fmt.Sprintf("\n%s", l.input[labelPos:l.pos])
+	if nowDoc {
+		l.accept("'")
+	}
+	l.accept("\n")
+	for !strings.HasPrefix(l.input[l.pos:], endMarker) {
+		l.next()
+	}
+	l.pos += len(endMarker)
+	l.emit(itemStringLiteral)
 	return lexPHP
 }
