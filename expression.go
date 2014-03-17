@@ -321,6 +321,7 @@ func (p *parser) parseAnonymousFunction() ast.Expression {
 		return f
 	}
 	f.Arguments = append(f.Arguments, p.parseFunctionArgument())
+Loop:
 	for {
 		switch p.peek().typ {
 		case itemComma:
@@ -328,7 +329,7 @@ func (p *parser) parseAnonymousFunction() ast.Expression {
 			f.Arguments = append(f.Arguments, p.parseFunctionArgument())
 		case itemCloseParen:
 			p.expect(itemCloseParen)
-			return f
+			break Loop
 		default:
 			p.errorf("unexpected argument separator:", p.current)
 			return f
