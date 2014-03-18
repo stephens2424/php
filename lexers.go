@@ -1,6 +1,7 @@
 package php
 
 import (
+	"fmt"
 	"strings"
 	"unicode"
 )
@@ -57,6 +58,10 @@ func lexPHP(l *lexer) stateFn {
 		}
 	}
 
+	if strings.HasPrefix(l.input[l.pos:], "<<<") {
+		return lexDoc
+	}
+
 	if strings.HasPrefix(l.input[l.pos:], "?>") {
 		return lexPHPEnd
 	}
@@ -88,7 +93,11 @@ func lexPHP(l *lexer) stateFn {
 
 	for _, token := range tokenList {
 		item := tokenMap[token]
-		if strings.HasPrefix(l.input[l.pos:], token) {
+		potentialToken := l.input[l.pos:]
+		if len(potentialToken) > len(token) {
+			potentialToken = potentialToken[:len(token)]
+		}
+		if strings.HasPrefix(strings.ToLower(potentialToken), token) {
 			l.pos += len(token)
 			if isKeyword(item) && l.accept(alphabet+underscore+digits) {
 				l.backup() // to account for the character consumed by accept
@@ -189,5 +198,27 @@ func lexBlockComment(l *lexer) stateFn {
 	}
 	l.pos += commentLength
 	l.ignore()
+	return lexPHP
+}
+
+func lexDoc(l *lexer) stateFn {
+	var nowDoc bool
+	l.pos += len("<<<")
+	if strings.HasPrefix(l.input[l.pos:], "'") {
+		nowDoc = true
+	}
+	labelPos := l.pos
+	l.accept(underscore + alphabet)
+	l.acceptRun(underscore + alphabet + digits)
+	endMarker := fmt.Sprintf("\n%s", l.input[labelPos:l.pos])
+	if nowDoc {
+		l.accept("'")
+	}
+	l.accept("\n")
+	for !strings.HasPrefix(l.input[l.pos:], endMarker) {
+		l.next()
+	}
+	l.pos += len(endMarker)
+	l.emit(itemStringLiteral)
 	return lexPHP
 }

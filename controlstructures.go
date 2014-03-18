@@ -8,18 +8,27 @@ func (p *parser) parseIf() *ast.IfStmt {
 	p.next()
 	n.Condition = p.parseExpression()
 	p.expect(itemCloseParen)
-	p.next()
-	n.TrueBranch = p.parseStmt()
-	p.next()
-	switch p.current.typ {
+	if p.peek().typ == itemTernaryOperator2 {
+		p.expect(itemTernaryOperator2)
+		n.TrueBranch = p.parseStatementsUntil(itemEndIf, itemElseIf, itemElse)
+	} else {
+		p.next()
+		n.TrueBranch = p.parseStmt()
+	}
+	switch p.peek().typ {
 	case itemElseIf:
+		p.expect(itemElseIf)
 		n.FalseBranch = p.parseIf()
 	case itemElse:
+		p.expect(itemElse)
 		p.next()
-		n.FalseBranch = p.parseStmt()
+		if p.current.typ == itemTernaryOperator2 {
+			n.FalseBranch = p.parseStatementsUntil(itemEndIf, itemBlockEnd)
+		} else {
+			n.FalseBranch = p.parseStmt()
+		}
 	default:
 		n.FalseBranch = ast.Block{}
-		p.backup()
 	}
 	return n
 }

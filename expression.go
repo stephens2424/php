@@ -80,11 +80,12 @@ func (p *parser) parseExpression() (expr ast.Expression) {
 		expr = p.parseInstantiation()
 		expr = p.parseOperation(originalParenLev, expr)
 		return
+	case itemUnaryOperator, itemNegationOperator, itemAmpersandOperator, itemCastOperator, itemSubtractionOperator:
+		op := p.current
+		return p.parseUnaryExpressionRight(p.parseNextExpression(), op)
 	case itemVariableOperator:
 		fallthrough
 	case itemArray:
-		fallthrough
-	case itemUnaryOperator, itemNegationOperator, itemAmpersandOperator, itemCastOperator, itemSubtractionOperator:
 		fallthrough
 	case itemIdentifier, itemStringLiteral, itemNumberLiteral, itemBooleanLiteral, itemNull, itemSelf, itemStatic, itemParent:
 		expr = p.parseOperation(originalParenLev, p.expressionize())
@@ -144,7 +145,7 @@ func (p *parser) parseOperation(originalParenLevel int, lhs ast.Expression) (exp
 	case itemAssignmentOperator:
 		assignee, ok := lhs.(ast.Assignable)
 		if !ok {
-			p.errorf("%s is not assignable", assignee)
+			p.errorf("%s is not assignable", lhs)
 		}
 		expr = ast.AssignmentExpression{
 			Assignee: assignee,
@@ -318,11 +319,14 @@ func (p *parser) parseAnonymousFunction() ast.Expression {
 	if p.peek().typ != itemCloseParen {
 		f.Arguments = append(f.Arguments, p.parseFunctionArgument())
 	}
-	for p.peek().typ != itemCloseParen {
+Loop:
+	for {
 		switch p.peek().typ {
 		case itemComma:
 			p.expect(itemComma)
 			f.Arguments = append(f.Arguments, p.parseFunctionArgument())
+		case itemCloseParen:
+			break Loop
 		default:
 			p.errorf("unexpected argument separator:", p.current)
 			return f

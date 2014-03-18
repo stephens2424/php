@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+	"unicode"
 	"unicode/utf8"
 )
 
@@ -143,7 +144,7 @@ func (l *lexer) incrementLines() {
 
 // isSpace reports whether r is a space character.
 func isSpace(r rune) bool {
-	return r == ' ' || r == '\t' || r == '\n'
+	return unicode.IsSpace(r)
 }
 
 func isKeyword(i ItemType) bool {

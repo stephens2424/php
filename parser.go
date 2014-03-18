@@ -34,13 +34,13 @@ func NewParser(input string) *parser {
 func (p *parser) Parse() (nodes []ast.Node, errors []error) {
 	defer func() {
 		if r := recover(); r != nil {
+			errors = append([]error{fmt.Errorf("%s", r)}, p.errors...)
 			if p.Debug {
 				for _, err := range p.errors {
 					fmt.Println(err)
 				}
 				panic(r)
 			}
-			errors = append([]error{fmt.Errorf("%s", r)}, p.errors...)
 		}
 	}()
 	// expecting either itemHTML or itemPHPBegin
@@ -120,15 +120,15 @@ func (p *parser) expected(i ItemType) {
 
 func (p *parser) errorf(str string, args ...interface{}) {
 	p.errorCount += 1
+	errString := fmt.Sprintf(str, args...)
+	p.errorMap[p.current.pos.Line] = true
+	p.errors = append(p.errors, fmt.Errorf("%s: %s", p.errorPrefix(), errString))
 	if p.errorCount > p.MaxErrors {
 		panic("too many errors")
 	}
 	if _, ok := p.errorMap[p.current.pos.Line]; ok {
 		return
 	}
-	errString := fmt.Sprintf(str, args...)
-	p.errorMap[p.current.pos.Line] = true
-	p.errors = append(p.errors, fmt.Errorf("%s: %s", p.errorPrefix(), errString))
 }
 
 func (p *parser) errorPrefix() string {
@@ -234,6 +234,17 @@ func (p *parser) parseStmt() ast.Statement {
 		return expr
 	case itemFunction:
 		return p.parseFunctionStmt()
+	case itemPHPEnd:
+		if p.peek().typ == itemEOF {
+			return nil
+		}
+		p.expect(itemHTML)
+		expr := ast.Echo(&ast.Literal{Type: ast.String})
+		p.next()
+		if p.current.typ != itemEOF {
+			p.expectCurrent(itemPHPBegin)
+		}
+		return expr
 	case itemEcho:
 		exprs := []ast.Expression{
 			p.parseNextExpression(),
@@ -328,7 +339,7 @@ func (p *parser) parseStmt() ast.Statement {
 			p.expectStmtEnd()
 			return ast.ExpressionStmt{expr}
 		}
-		p.errorf("Found %s, expected html or php begin", p.current)
+		p.errorf("Found %s, statement or expression", p.current)
 		return nil
 	}
 }
@@ -393,16 +404,28 @@ func (p *parser) parseFunctionArgument() ast.FunctionArgument {
 }
 
 func (p *parser) parseBlock() *ast.Block {
-	block := &ast.Block{}
 	p.expect(itemBlockBegin)
-	for p.peek().typ != itemBlockEnd {
+	b := p.parseStatementsUntil(itemBlockEnd)
+	p.expectCurrent(itemBlockEnd)
+	return b
+}
+
+func (p *parser) parseStatementsUntil(endTokens ...ItemType) *ast.Block {
+	block := &ast.Block{}
+	breakTypes := map[ItemType]bool{}
+	for _, typ := range endTokens {
+		breakTypes[typ] = true
+	}
+	for {
 		p.next()
+		if _, ok := breakTypes[p.current.typ]; ok {
+			break
+		}
 		stmt := p.parseStmt()
 		if stmt == nil {
 			return block
 		}
 		block.Statements = append(block.Statements, stmt)
 	}
-	p.next()
 	return block
 }
