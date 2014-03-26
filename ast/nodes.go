@@ -379,8 +379,9 @@ func (f FunctionStmt) Children() []Node {
 
 type AnonymousFunction struct {
 	BaseNode
-	Arguments []FunctionArgument
-	Body      *Block
+	ClosureVariables []FunctionArgument
+	Arguments        []FunctionArgument
+	Body             *Block
 }
 
 func (a AnonymousFunction) EvaluatesTo() Type {
