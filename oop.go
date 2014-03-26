@@ -49,6 +49,9 @@ func (p *parser) parseObjectLookup(r ast.Expression) (expr ast.Expression) {
 		Receiver: r,
 	}
 	switch p.next(); p.current.typ {
+	case itemBlockBegin:
+		prop.Name = p.parseNextExpression()
+		p.expect(itemBlockEnd)
 	case itemVariableOperator:
 		prop.Name = p.parseExpression()
 	case itemIdentifier:
