@@ -50,7 +50,7 @@ func (p *parser) parseObjectLookup(r ast.Expression) (expr ast.Expression) {
 	}
 	switch p.next(); p.current.typ {
 	case itemVariableOperator:
-		prop.Name = p.parseVariable()
+		prop.Name = p.parseExpression()
 	case itemIdentifier:
 		prop.Name = ast.Identifier{Value: p.current.val}
 	}
