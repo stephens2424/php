@@ -124,6 +124,7 @@ const (
 
 	itemCastOperator
 
+	itemVar
 	itemArray
 	itemArrayKeyOperator
 	itemArrayLookupOperatorLeft
@@ -329,6 +330,7 @@ var tokenMap = map[string]ItemType{
 	"@":              itemIgnoreErrorOperator,
 	"null":           itemNull,
 	"NULL":           itemNull,
+	"var":            itemVar,
 
 	"use":       itemUse,
 	"namespace": itemNamespace,

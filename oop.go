@@ -114,6 +114,9 @@ func (p *parser) parseClassFields(c ast.Class) ast.Class {
 					FunctionStmt: p.parseFunctionStmt(),
 				})
 			}
+		case itemVar:
+			p.next()
+			fallthrough
 		case itemVariableOperator:
 			p.next()
 			prop := ast.Property{
