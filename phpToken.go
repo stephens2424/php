@@ -128,6 +128,7 @@ const (
 	itemArrayKeyOperator
 	itemArrayLookupOperatorLeft
 	itemArrayLookupOperatorRight
+	itemList
 	itemBitwiseShiftOperator
 	itemEqualityOperator
 	itemAmpersandOperator
@@ -237,6 +238,7 @@ var itemTypeMap = map[ItemType]string{
 	itemWrittenOrOperator:  "logical-or",
 	itemCastOperator:       "(type)",
 
+	itemList:                     "list",
 	itemArray:                    "array",
 	itemArrayKeyOperator:         "=>",
 	itemArrayLookupOperatorLeft:  "[",
@@ -317,6 +319,7 @@ var tokenMap = map[string]ItemType{
 	"false":          itemBooleanLiteral,
 	"instanceof":     itemInstanceofOperator,
 	"global":         itemGlobal,
+	"list":           itemList,
 	"array":          itemArray,
 	"exit":           itemExit,
 	"include":        itemInclude,

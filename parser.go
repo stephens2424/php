@@ -210,6 +210,26 @@ func (p *parser) parseStmt() ast.Statement {
 		p.expectStmtEnd()
 		// We are ignoring this for now
 		return nil
+	case itemList:
+		l := &ast.ListStatement{
+			Assignees: make([]*ast.Variable, 0),
+		}
+		p.expect(itemOpenParen)
+		for {
+			p.expect(itemVariableOperator)
+			p.expect(itemIdentifier)
+			l.Assignees = append(l.Assignees, ast.NewVariable(p.current.val))
+			if p.peek().typ != itemComma {
+				break
+			}
+			p.expect(itemComma)
+		}
+		p.expect(itemCloseParen)
+		p.expect(itemAssignmentOperator)
+		l.Operator = p.current.val
+		l.Value = p.parseNextExpression()
+		p.expectStmtEnd()
+		return l
 	case itemVariableOperator:
 		ident := p.expressionize()
 		switch p.peek().typ {

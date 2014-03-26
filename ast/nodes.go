@@ -859,3 +859,18 @@ func (s ShellCommand) String() string {
 func (s ShellCommand) EvaluatesTo() Type {
 	return String
 }
+
+type ListStatement struct {
+	BaseNode
+	Assignees []*Variable
+	Value     Expression
+	Operator  string
+}
+
+func (l ListStatement) String() string {
+	return fmt.Sprintf("list(%s)", l.Assignees)
+}
+
+func (l ListStatement) Children() []Node {
+	return []Node{l.Value}
+}
