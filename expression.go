@@ -87,7 +87,7 @@ func (p *parser) parseExpression() (expr ast.Expression) {
 		fallthrough
 	case itemArray:
 		fallthrough
-	case itemIdentifier, itemStringLiteral, itemNumberLiteral, itemBooleanLiteral, itemNull, itemSelf, itemStatic, itemParent:
+	case itemIdentifier, itemStringLiteral, itemNumberLiteral, itemBooleanLiteral, itemNull, itemSelf, itemStatic, itemParent, itemShellCommand:
 		expr = p.parseOperation(originalParenLev, p.expressionize())
 	case itemInclude:
 		inc := ast.Include{Expressions: make([]ast.Expression, 0)}
@@ -245,6 +245,8 @@ func (p *parser) expressionize() (expr ast.Expression) {
 
 	for {
 		switch p.current.typ {
+		case itemShellCommand:
+			return &ast.ShellCommand{Command: p.current.val}
 		case itemStringLiteral, itemBooleanLiteral, itemNumberLiteral, itemNull:
 			return p.parseLiteral()
 		case itemUnaryOperator:

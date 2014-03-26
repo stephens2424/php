@@ -83,6 +83,10 @@ func lexPHP(l *lexer) stateFn {
 		return nil
 	}
 
+	if l.peek() == '`' {
+		return lexShellCommand
+	}
+
 	if l.peek() == '\'' {
 		return lexSingleQuotedStringLiteral
 	}
@@ -123,6 +127,20 @@ func lexNumberLiteral(l *lexer) stateFn {
 
 	l.emit(itemNumberLiteral)
 	return lexPHP
+}
+
+func lexShellCommand(l *lexer) stateFn {
+	l.next()
+	for {
+		switch l.next() {
+		case '`':
+			l.emit(itemShellCommand)
+			return lexPHP
+		case eof:
+			l.emit(itemShellCommand)
+			return nil
+		}
+	}
 }
 
 func lexSingleQuotedStringLiteral(l *lexer) stateFn {

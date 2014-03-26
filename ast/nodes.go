@@ -846,3 +846,16 @@ func (a ArrayAppendExpression) AssignableType() Type {
 func (a ArrayAppendExpression) String() string {
 	return a.Array.String() + "[]"
 }
+
+type ShellCommand struct {
+	Command string
+	BaseNode
+}
+
+func (s ShellCommand) String() string {
+	return fmt.Sprintf("`%s`", s.Command)
+}
+
+func (s ShellCommand) EvaluatesTo() Type {
+	return String
+}

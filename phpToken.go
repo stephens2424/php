@@ -99,6 +99,8 @@ const (
 	itemNumberLiteral
 	itemBooleanLiteral
 
+	itemShellCommand
+
 	itemIdentifier
 
 	itemAssignmentOperator
@@ -209,6 +211,7 @@ var itemTypeMap = map[ItemType]string{
 	itemExtends:     "extends",
 	itemNewOperator: "new",
 
+	itemShellCommand:   "`",
 	itemStringLiteral:  "sting-literal",
 	itemNumberLiteral:  "number-literal",
 	itemBooleanLiteral: "bool-literal",
