@@ -100,25 +100,31 @@ func (p *parser) peek() (i Item) {
 	return
 }
 
-func (p *parser) expectCurrent(i ItemType) {
-	if p.current.typ != i {
-		p.expected(i)
+func (p *parser) expectCurrent(i ...ItemType) {
+	for _, typ := range i {
+		if p.current.typ == typ {
+			return
+		}
 	}
+	p.expected(i...)
 }
 
-func (p *parser) expectAndNext(i ItemType) {
-	if p.current.typ != i {
-		p.expected(i)
+func (p *parser) expectAndNext(i ...ItemType) {
+	defer p.next()
+	for _, typ := range i {
+		if p.current.typ == typ {
+			return
+		}
 	}
-	p.next()
+	p.expected(i...)
 }
 
-func (p *parser) expect(i ItemType) {
+func (p *parser) expect(i ...ItemType) {
 	p.next()
-	p.expectCurrent(i)
+	p.expectCurrent(i...)
 }
 
-func (p *parser) expected(i ItemType) {
+func (p *parser) expected(i ...ItemType) {
 	p.errorf("Found %s, expected %s", p.current, i)
 }
 
