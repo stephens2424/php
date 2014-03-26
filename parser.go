@@ -17,8 +17,9 @@ type parser struct {
 	errorMap   map[int]bool
 	errorCount int
 
-	Debug     bool
-	MaxErrors int
+	Debug       bool
+	PrintTokens bool
+	MaxErrors   int
 }
 
 func NewParser(input string) *parser {
@@ -78,6 +79,9 @@ func (p *parser) next() {
 	p.idx += 1
 	if len(p.previous) <= p.idx {
 		p.current = p.lexer.nextItem()
+		if p.PrintTokens {
+			fmt.Println(p.current)
+		}
 		p.previous = append(p.previous, p.current)
 	} else {
 		p.current = p.previous[p.idx]

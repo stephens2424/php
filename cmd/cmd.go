@@ -48,6 +48,7 @@ func main() {
 		if *debugMode {
 			parser.Debug = true
 			parser.MaxErrors = 0
+			parser.PrintTokens = true
 		}
 		nodes, errs := parser.Parse()
 		if *ast && len(nodes) != 0 && nodes[0] != nil {
