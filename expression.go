@@ -258,6 +258,12 @@ func (p *parser) expressionize() (expr ast.Expression) {
 		case itemVariableOperator:
 			expr = p.parseVariable()
 			p.next()
+			// Array lookup with curly braces is a special case that is only supported by PHP in
+			// simple contexts.
+			if p.current.typ == itemBlockBegin {
+				expr = p.parseArrayLookup(expr)
+				p.next()
+			}
 		case itemIdentifier:
 			if p.peek().typ == itemOpenParen {
 				// Function calls are okay here because we know they came with

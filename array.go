@@ -3,9 +3,10 @@ package php
 import "stephensearles.com/php/ast"
 
 func (p *parser) parseArrayLookup(e ast.Expression) ast.Expression {
-	p.expectCurrent(itemArrayLookupOperatorLeft)
-	if p.peek().typ == itemArrayLookupOperatorRight {
-		p.expect(itemArrayLookupOperatorRight)
+	p.expectCurrent(itemArrayLookupOperatorLeft, itemBlockBegin)
+	switch typ := p.peek().typ; typ {
+	case itemArrayLookupOperatorRight, itemBlockBegin:
+		p.expect(itemArrayLookupOperatorRight, itemBlockEnd)
 		return ast.ArrayAppendExpression{Array: e}
 	}
 	p.next()
@@ -13,7 +14,7 @@ func (p *parser) parseArrayLookup(e ast.Expression) ast.Expression {
 		Array: e,
 		Index: p.parseExpression(),
 	}
-	p.expect(itemArrayLookupOperatorRight)
+	p.expect(itemArrayLookupOperatorRight, itemBlockEnd)
 	return expr
 }
 
