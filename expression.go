@@ -80,6 +80,28 @@ func (p *parser) parseExpression() (expr ast.Expression) {
 		expr = p.parseInstantiation()
 		expr = p.parseOperation(originalParenLev, expr)
 		return
+
+	case itemList:
+		l := &ast.ListStatement{
+			Assignees: make([]*ast.Variable, 0),
+		}
+		p.expect(itemOpenParen)
+		for {
+			p.expect(itemVariableOperator)
+			p.expect(itemIdentifier)
+			l.Assignees = append(l.Assignees, ast.NewVariable(p.current.val))
+			if p.peek().typ != itemComma {
+				break
+			}
+			p.expect(itemComma)
+		}
+		p.expect(itemCloseParen)
+		p.expect(itemAssignmentOperator)
+		l.Operator = p.current.val
+		l.Value = p.parseNextExpression()
+		p.expectStmtEnd()
+		return l
+
 	case itemUnaryOperator, itemNegationOperator, itemAmpersandOperator, itemCastOperator, itemSubtractionOperator:
 		op := p.current
 		return p.parseUnaryExpressionRight(p.parseNextExpression(), op)

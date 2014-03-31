@@ -868,6 +868,10 @@ type ListStatement struct {
 	Operator  string
 }
 
+func (l ListStatement) EvaluatesTo() Type {
+	return Array
+}
+
 func (l ListStatement) String() string {
 	return fmt.Sprintf("list(%s)", l.Assignees)
 }
