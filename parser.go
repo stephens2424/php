@@ -368,6 +368,10 @@ func (p *parser) parseFunctionStmt() *ast.FunctionStmt {
 
 func (p *parser) parseFunctionDefinition() *ast.FunctionDefinition {
 	def := &ast.FunctionDefinition{}
+	if p.peek().typ == itemAmpersandOperator {
+		// This is a function returning a reference ... ignore this for now
+		p.next()
+	}
 	p.expect(itemIdentifier)
 	def.Name = p.current.val
 	def.Arguments = make([]ast.FunctionArgument, 0)
