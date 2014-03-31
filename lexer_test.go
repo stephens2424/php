@@ -20,7 +20,7 @@ class MyClass {
   }
 }
 
-$var = $this->myMethod();
+$myvar = $this->myMethod();
 
 ?>
 <html>
