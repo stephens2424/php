@@ -135,6 +135,7 @@ const (
 	itemAmpersandOperator
 	itemBitwiseXorOperator
 	itemBitwiseOrOperator
+	itemBitwiseNotOperator
 	itemTernaryOperator1
 	itemTernaryOperator2
 
@@ -249,6 +250,7 @@ var itemTypeMap = map[ItemType]string{
 	itemAmpersandOperator:        "&",
 	itemBitwiseXorOperator:       "^",
 	itemBitwiseOrOperator:        "|",
+	itemBitwiseNotOperator:       "~",
 	itemTernaryOperator1:         "?",
 	itemTernaryOperator2:         ":",
 
@@ -392,6 +394,7 @@ var tokenMap = map[string]ItemType{
 	"||":  itemOrOperator,
 	"&":   itemAmpersandOperator,
 	"^":   itemBitwiseXorOperator,
+	"~":   itemBitwiseNotOperator,
 	"|":   itemBitwiseOrOperator,
 	"<<":  itemBitwiseShiftOperator,
 	">>":  itemBitwiseShiftOperator,

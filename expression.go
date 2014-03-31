@@ -42,6 +42,7 @@ left  , many uses
 var operatorPrecedence = map[ItemType]int{
 	itemArrayLookupOperatorLeft: 19,
 	itemUnaryOperator:           18,
+	itemBitwiseNotOperator:      18,
 	itemCastOperator:            18,
 	itemInstanceofOperator:      17,
 	itemNegationOperator:        16,
@@ -102,7 +103,7 @@ func (p *parser) parseExpression() (expr ast.Expression) {
 		p.expectStmtEnd()
 		return l
 
-	case itemUnaryOperator, itemNegationOperator, itemAmpersandOperator, itemCastOperator, itemSubtractionOperator:
+	case itemUnaryOperator, itemNegationOperator, itemAmpersandOperator, itemCastOperator, itemSubtractionOperator, itemBitwiseNotOperator:
 		op := p.current
 		return p.parseUnaryExpressionRight(p.parseNextExpression(), op)
 	case itemVariableOperator:
@@ -144,7 +145,7 @@ func (p *parser) parseOperation(originalParenLevel int, lhs ast.Expression) (exp
 	switch p.current.typ {
 	case itemIgnoreErrorOperator:
 		return p.parseOperation(originalParenLevel, lhs)
-	case itemUnaryOperator:
+	case itemUnaryOperator, itemBitwiseNotOperator:
 		expr = p.parseUnaryExpressionLeft(lhs, p.current)
 	case itemAdditionOperator, itemSubtractionOperator, itemConcatenationOperator, itemComparisonOperator, itemMultOperator, itemAndOperator, itemOrOperator, itemAmpersandOperator, itemBitwiseXorOperator, itemBitwiseOrOperator, itemBitwiseShiftOperator, itemWrittenAndOperator, itemWrittenXorOperator, itemWrittenOrOperator, itemInstanceofOperator:
 		expr = p.parseBinaryOperation(lhs, p.current, originalParenLevel)
@@ -255,7 +256,7 @@ func (p *parser) expressionize() (expr ast.Expression) {
 
 	// These cases must come first and not repeat
 	switch p.current.typ {
-	case itemUnaryOperator, itemNegationOperator, itemCastOperator, itemSubtractionOperator, itemAmpersandOperator:
+	case itemUnaryOperator, itemNegationOperator, itemCastOperator, itemSubtractionOperator, itemAmpersandOperator, itemBitwiseNotOperator:
 		op := p.current
 		p.next()
 		return p.parseUnaryExpressionRight(p.expressionize(), op)
