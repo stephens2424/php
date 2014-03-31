@@ -3,6 +3,7 @@ package php
 import (
 	"io/ioutil"
 	"path"
+	"strings"
 	"testing"
 )
 
@@ -13,6 +14,10 @@ func TestFiles(t *testing.T) {
 	}
 
 	for _, file := range files {
+		filename := file.Name()
+		if strings.HasPrefix(filename, ".") || strings.HasSuffix(filename, ".php") {
+			continue
+		}
 		src, err := ioutil.ReadFile(path.Join("testfiles", file.Name()))
 		if err != nil {
 			t.Error(err)
