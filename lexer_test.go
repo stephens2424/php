@@ -1,6 +1,10 @@
 package php
 
-import "testing"
+import (
+	"testing"
+
+	"stephensearles.com/php/token"
+)
 
 var testFile = `<?php
 
@@ -27,7 +31,7 @@ $myvar = $this->myMethod();
 <? echo something(); ?>
 </html>`
 
-func assertNext(t *testing.T, l *lexer, typ ItemType) Item {
+func assertNext(t *testing.T, l *lexer, typ token.Token) Item {
 	i := l.nextItem()
 	if i.typ != typ {
 		t.Fatal("Incorrect lexing. Expected:", typ, "Found:", i)
@@ -37,7 +41,7 @@ func assertNext(t *testing.T, l *lexer, typ ItemType) Item {
 
 func assertItem(t *testing.T, i Item, expected string) {
 	if i.val != expected {
-		t.Fatal("Did not correctly parse item", i)
+		t.Fatal("Did not correctly parse token.", i)
 	}
 }
 
@@ -45,90 +49,90 @@ func TestPHPLexer(t *testing.T) {
 	l := newLexer(testFile)
 
 	var i Item
-	i = assertNext(t, l, itemPHPBegin)
+	i = assertNext(t, l, token.PHPBegin)
 
-	i = assertNext(t, l, itemVariableOperator)
-	i = assertNext(t, l, itemIdentifier)
-	i = assertNext(t, l, itemAssignmentOperator)
-	i = assertNext(t, l, itemStringLiteral)
-	i = assertNext(t, l, itemStatementEnd)
+	i = assertNext(t, l, token.VariableOperator)
+	i = assertNext(t, l, token.Identifier)
+	i = assertNext(t, l, token.AssignmentOperator)
+	i = assertNext(t, l, token.StringLiteral)
+	i = assertNext(t, l, token.StatementEnd)
 
-	i = assertNext(t, l, itemVariableOperator)
-	i = assertNext(t, l, itemIdentifier)
-	i = assertNext(t, l, itemAssignmentOperator)
-	i = assertNext(t, l, itemSubtractionOperator)
-	i = assertNext(t, l, itemNumberLiteral)
-	i = assertNext(t, l, itemStatementEnd)
+	i = assertNext(t, l, token.VariableOperator)
+	i = assertNext(t, l, token.Identifier)
+	i = assertNext(t, l, token.AssignmentOperator)
+	i = assertNext(t, l, token.SubtractionOperator)
+	i = assertNext(t, l, token.NumberLiteral)
+	i = assertNext(t, l, token.StatementEnd)
 
-	i = assertNext(t, l, itemIdentifier)
-	i = assertNext(t, l, itemOpenParen)
-	i = assertNext(t, l, itemCloseParen)
-	i = assertNext(t, l, itemStatementEnd)
+	i = assertNext(t, l, token.Identifier)
+	i = assertNext(t, l, token.OpenParen)
+	i = assertNext(t, l, token.CloseParen)
+	i = assertNext(t, l, token.StatementEnd)
 
-	i = assertNext(t, l, itemFunction)
-	i = assertNext(t, l, itemIdentifier)
-	i = assertNext(t, l, itemOpenParen)
-	i = assertNext(t, l, itemIdentifier)
-	i = assertNext(t, l, itemVariableOperator)
-	i = assertNext(t, l, itemIdentifier)
-	i = assertNext(t, l, itemComma)
-	i = assertNext(t, l, itemVariableOperator)
-	i = assertNext(t, l, itemIdentifier)
-	i = assertNext(t, l, itemCloseParen)
-	i = assertNext(t, l, itemBlockBegin)
+	i = assertNext(t, l, token.Function)
+	i = assertNext(t, l, token.Identifier)
+	i = assertNext(t, l, token.OpenParen)
+	i = assertNext(t, l, token.Identifier)
+	i = assertNext(t, l, token.VariableOperator)
+	i = assertNext(t, l, token.Identifier)
+	i = assertNext(t, l, token.Comma)
+	i = assertNext(t, l, token.VariableOperator)
+	i = assertNext(t, l, token.Identifier)
+	i = assertNext(t, l, token.CloseParen)
+	i = assertNext(t, l, token.BlockBegin)
 
-	i = assertNext(t, l, itemIf)
-	i = assertNext(t, l, itemOpenParen)
-	i = assertNext(t, l, itemIdentifier)
-	i = assertNext(t, l, itemOpenParen)
-	i = assertNext(t, l, itemCloseParen)
-	i = assertNext(t, l, itemCloseParen)
+	i = assertNext(t, l, token.If)
+	i = assertNext(t, l, token.OpenParen)
+	i = assertNext(t, l, token.Identifier)
+	i = assertNext(t, l, token.OpenParen)
+	i = assertNext(t, l, token.CloseParen)
+	i = assertNext(t, l, token.CloseParen)
 
-	i = assertNext(t, l, itemBlockBegin)
-	i = assertNext(t, l, itemIdentifier)
-	i = assertNext(t, l, itemOpenParen)
-	i = assertNext(t, l, itemCloseParen)
-	i = assertNext(t, l, itemStatementEnd)
-	i = assertNext(t, l, itemBlockEnd)
+	i = assertNext(t, l, token.BlockBegin)
+	i = assertNext(t, l, token.Identifier)
+	i = assertNext(t, l, token.OpenParen)
+	i = assertNext(t, l, token.CloseParen)
+	i = assertNext(t, l, token.StatementEnd)
+	i = assertNext(t, l, token.BlockEnd)
 
-	i = assertNext(t, l, itemBlockEnd)
+	i = assertNext(t, l, token.BlockEnd)
 
-	i = assertNext(t, l, itemClass)
-	i = assertNext(t, l, itemIdentifier)
-	i = assertNext(t, l, itemBlockBegin)
-	i = assertNext(t, l, itemPublic)
-	i = assertNext(t, l, itemIdentifier)
-	i = assertNext(t, l, itemOpenParen)
-	i = assertNext(t, l, itemCloseParen)
-	i = assertNext(t, l, itemBlockBegin)
-	i = assertNext(t, l, itemBlockEnd)
-	i = assertNext(t, l, itemBlockEnd)
+	i = assertNext(t, l, token.Class)
+	i = assertNext(t, l, token.Identifier)
+	i = assertNext(t, l, token.BlockBegin)
+	i = assertNext(t, l, token.Public)
+	i = assertNext(t, l, token.Identifier)
+	i = assertNext(t, l, token.OpenParen)
+	i = assertNext(t, l, token.CloseParen)
+	i = assertNext(t, l, token.BlockBegin)
+	i = assertNext(t, l, token.BlockEnd)
+	i = assertNext(t, l, token.BlockEnd)
 
-	i = assertNext(t, l, itemVariableOperator)
-	i = assertNext(t, l, itemIdentifier)
-	i = assertNext(t, l, itemAssignmentOperator)
-	i = assertNext(t, l, itemVariableOperator)
-	i = assertNext(t, l, itemIdentifier)
-	i = assertNext(t, l, itemObjectOperator)
-	i = assertNext(t, l, itemIdentifier)
-	i = assertNext(t, l, itemOpenParen)
-	i = assertNext(t, l, itemCloseParen)
-	i = assertNext(t, l, itemStatementEnd)
+	i = assertNext(t, l, token.VariableOperator)
+	i = assertNext(t, l, token.Identifier)
+	i = assertNext(t, l, token.AssignmentOperator)
+	i = assertNext(t, l, token.VariableOperator)
+	i = assertNext(t, l, token.Identifier)
+	i = assertNext(t, l, token.ObjectOperator)
+	i = assertNext(t, l, token.Identifier)
+	i = assertNext(t, l, token.OpenParen)
+	i = assertNext(t, l, token.CloseParen)
+	i = assertNext(t, l, token.StatementEnd)
 
-	i = assertNext(t, l, itemPHPEnd)
-	i = assertNext(t, l, itemHTML)
+	i = assertNext(t, l, token.PHPEnd)
+	i = assertNext(t, l, token.HTML)
 	assertItem(t, i, "\n<html>\n")
 
-	i = assertNext(t, l, itemPHPBegin)
-	i = assertNext(t, l, itemEcho)
-	i = assertNext(t, l, itemIdentifier)
-	i = assertNext(t, l, itemOpenParen)
-	i = assertNext(t, l, itemCloseParen)
-	i = assertNext(t, l, itemStatementEnd)
+	i = assertNext(t, l, token.PHPBegin)
+	i = assertNext(t, l, token.Echo)
+	i = assertNext(t, l, token.Identifier)
+	i = assertNext(t, l, token.OpenParen)
+	i = assertNext(t, l, token.CloseParen)
+	i = assertNext(t, l, token.StatementEnd)
 
-	i = assertNext(t, l, itemPHPEnd)
-	i = assertNext(t, l, itemHTML)
+	i = assertNext(t, l, token.PHPEnd)
+	i = assertNext(t, l, token.HTML)
 	assertItem(t, i, "\n</html>")
 
-	i = assertNext(t, l, itemEOF)
+	i = assertNext(t, l, token.EOF)
 }

@@ -1,29 +1,32 @@
 package php
 
-import "stephensearles.com/php/ast"
+import (
+	"stephensearles.com/php/ast"
+	"stephensearles.com/php/token"
+)
 
 func (p *parser) parseIf() *ast.IfStmt {
-	p.expect(itemOpenParen)
+	p.expect(token.OpenParen)
 	n := &ast.IfStmt{}
 	p.next()
 	n.Condition = p.parseExpression()
-	p.expect(itemCloseParen)
-	if p.peek().typ == itemTernaryOperator2 {
-		p.expect(itemTernaryOperator2)
-		n.TrueBranch = p.parseStatementsUntil(itemEndIf, itemElseIf, itemElse)
+	p.expect(token.CloseParen)
+	if p.peek().typ == token.TernaryOperator2 {
+		p.expect(token.TernaryOperator2)
+		n.TrueBranch = p.parseStatementsUntil(token.EndIf, token.ElseIf, token.Else)
 	} else {
 		p.next()
 		n.TrueBranch = p.parseStmt()
 	}
 	switch p.peek().typ {
-	case itemElseIf:
-		p.expect(itemElseIf)
+	case token.ElseIf:
+		p.expect(token.ElseIf)
 		n.FalseBranch = p.parseIf()
-	case itemElse:
-		p.expect(itemElse)
+	case token.Else:
+		p.expect(token.Else)
 		p.next()
-		if p.current.typ == itemTernaryOperator2 {
-			n.FalseBranch = p.parseStatementsUntil(itemEndIf, itemBlockEnd)
+		if p.current.typ == token.TernaryOperator2 {
+			n.FalseBranch = p.parseStatementsUntil(token.EndIf, token.BlockEnd)
 		} else {
 			n.FalseBranch = p.parseStmt()
 		}
@@ -34,9 +37,9 @@ func (p *parser) parseIf() *ast.IfStmt {
 }
 
 func (p *parser) parseWhile() ast.Statement {
-	p.expect(itemOpenParen)
+	p.expect(token.OpenParen)
 	term := p.parseNextExpression()
-	p.expect(itemCloseParen)
+	p.expect(token.CloseParen)
 	p.next()
 	block := p.parseStmt()
 	return &ast.WhileStmt{
@@ -47,28 +50,28 @@ func (p *parser) parseWhile() ast.Statement {
 
 func (p *parser) parseForeach() ast.Statement {
 	stmt := &ast.ForeachStmt{}
-	p.expect(itemOpenParen)
+	p.expect(token.OpenParen)
 	stmt.Source = p.parseNextExpression()
-	p.expect(itemAsOperator)
-	if p.peek().typ == itemAmpersandOperator {
-		p.expect(itemAmpersandOperator)
+	p.expect(token.AsOperator)
+	if p.peek().typ == token.AmpersandOperator {
+		p.expect(token.AmpersandOperator)
 	}
-	p.expect(itemVariableOperator)
+	p.expect(token.VariableOperator)
 	p.next()
 	first := ast.NewVariable(p.current.val)
-	if p.peek().typ == itemArrayKeyOperator {
+	if p.peek().typ == token.ArrayKeyOperator {
 		stmt.Key = first
-		p.expect(itemArrayKeyOperator)
-		if p.peek().typ == itemAmpersandOperator {
-			p.expect(itemAmpersandOperator)
+		p.expect(token.ArrayKeyOperator)
+		if p.peek().typ == token.AmpersandOperator {
+			p.expect(token.AmpersandOperator)
 		}
-		p.expect(itemVariableOperator)
+		p.expect(token.VariableOperator)
 		p.next()
 		stmt.Value = ast.NewVariable(p.current.val)
 	} else {
 		stmt.Value = first
 	}
-	p.expect(itemCloseParen)
+	p.expect(token.CloseParen)
 	p.next()
 	stmt.LoopBlock = p.parseStmt()
 	return stmt
@@ -76,13 +79,13 @@ func (p *parser) parseForeach() ast.Statement {
 
 func (p *parser) parseFor() ast.Statement {
 	stmt := &ast.ForStmt{}
-	p.expect(itemOpenParen)
+	p.expect(token.OpenParen)
 	stmt.Initialization = p.parseNextExpression()
-	p.expect(itemStatementEnd)
+	p.expect(token.StatementEnd)
 	stmt.Termination = p.parseNextExpression()
-	p.expect(itemStatementEnd)
+	p.expect(token.StatementEnd)
 	stmt.Iteration = p.parseNextExpression()
-	p.expect(itemCloseParen)
+	p.expect(token.CloseParen)
 	p.next()
 	stmt.LoopBlock = p.parseStmt()
 	return stmt
@@ -90,10 +93,10 @@ func (p *parser) parseFor() ast.Statement {
 
 func (p *parser) parseDo() ast.Statement {
 	block := p.parseBlock()
-	p.expect(itemWhile)
-	p.expect(itemOpenParen)
+	p.expect(token.While)
+	p.expect(token.OpenParen)
 	term := p.parseNextExpression()
-	p.expect(itemCloseParen)
+	p.expect(token.CloseParen)
 	p.expectStmtEnd()
 	return &ast.DoWhileStmt{
 		Termination: term,
@@ -103,29 +106,29 @@ func (p *parser) parseDo() ast.Statement {
 
 func (p *parser) parseSwitch() ast.Statement {
 	stmt := ast.SwitchStmt{}
-	p.expect(itemOpenParen)
+	p.expect(token.OpenParen)
 	stmt.Expression = p.parseExpression()
-	p.expectCurrent(itemCloseParen)
-	p.expect(itemBlockBegin)
+	p.expectCurrent(token.CloseParen)
+	p.expect(token.BlockBegin)
 	p.next()
 	for {
 		switch p.current.typ {
-		case itemCase:
+		case token.Case:
 			expr := p.parseNextExpression()
-			p.expect(itemTernaryOperator2)
+			p.expect(token.TernaryOperator2)
 			p.next()
 			stmt.Cases = append(stmt.Cases, &ast.SwitchCase{
 				Expression: expr,
 				Block:      *(p.parseSwitchBlock()),
 			})
-		case itemDefault:
-			p.expect(itemTernaryOperator2)
+		case token.Default:
+			p.expect(token.TernaryOperator2)
 			p.next()
 			stmt.DefaultCase = p.parseSwitchBlock()
-		case itemBlockEnd:
+		case token.BlockEnd:
 			return stmt
 		default:
-			p.errorf("Unexpected item in switch statement:", p.current)
+			p.errorf("Unexpected token. in switch statement:", p.current)
 			return nil
 		}
 	}
@@ -133,7 +136,7 @@ func (p *parser) parseSwitch() ast.Statement {
 
 func (p *parser) parseSwitchBlock() *ast.Block {
 	needBlockEnd := false
-	if p.current.typ == itemBlockBegin {
+	if p.current.typ == token.BlockBegin {
 		needBlockEnd = true
 		p.next()
 	}
@@ -143,13 +146,13 @@ func (p *parser) parseSwitchBlock() *ast.Block {
 stmtLoop:
 	for {
 		switch p.current.typ {
-		case itemBlockEnd:
+		case token.BlockEnd:
 			if needBlockEnd {
 				needBlockEnd = false
 				p.next()
 			}
 			fallthrough
-		case itemCase, itemDefault:
+		case token.Case, token.Default:
 			break stmtLoop
 		default:
 			stmt := p.parseStmt()

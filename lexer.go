@@ -6,15 +6,17 @@ import (
 	"strings"
 	"unicode"
 	"unicode/utf8"
+
+	"stephensearles.com/php/token"
 )
 
 // Lexer represents the state of "lexing" items from a source string.
 // The idea is derived from a Rob Pike talk:
 // http://www.youtube.com/watch?v=HxaD_trXwRE
 type lexer struct {
-	// start stores the start position of the currently lexing item.
+	// start stores the start position of the currently lexing token..
 	start int
-	// lastStart stores the start position of the previously lexed item.
+	// lastStart stores the start position of the previously lexed token..
 	lastStart int
 	// lastPos stores the position of the previous lexed element.
 	lastPos int
@@ -57,9 +59,9 @@ func (l *lexer) run() {
 	close(l.items) // No more tokens will be delivered.
 }
 
-// emit gets the current item, sends it on the item channel
-// and prepares for lexing the next item
-func (l *lexer) emit(t ItemType) {
+// emit gets the current token., sends it on the token. channel
+// and prepares for lexing the next token.
+func (l *lexer) emit(t token.Token) {
 	i := Item{t, l.currentLocation(), l.input[l.start:l.pos]}
 	l.incrementLines()
 	l.items <- i
@@ -70,7 +72,7 @@ func (l *lexer) currentLocation() Location {
 	return Location{Pos: l.start, Line: l.line, File: l.file}
 }
 
-// nextItem returns the next item from the input.
+// nextItem returns the next token. from the input.
 func (l *lexer) nextItem() Item {
 	Item := <-l.items
 	l.lastPos = Item.pos.Pos
@@ -131,7 +133,7 @@ func (l *lexer) skipSpace() {
 }
 
 func (l *lexer) errorf(format string, args ...interface{}) stateFn {
-	i := Item{itemError, l.currentLocation(), fmt.Sprintf(format, args...)}
+	i := Item{token.Error, l.currentLocation(), fmt.Sprintf(format, args...)}
 	l.incrementLines()
 	l.items <- i
 	return nil
@@ -147,19 +149,44 @@ func isSpace(r rune) bool {
 	return unicode.IsSpace(r)
 }
 
-func isKeyword(i ItemType) bool {
+func isKeyword(i token.Token) bool {
 	return keywordMap[i]
 }
 
 // keywordMap lists all keywords that should be ignored as a prefix to a longer
 // identifier.
-var keywordMap = map[ItemType]bool{}
+var keywordMap = map[token.Token]bool{}
 
 func init() {
 	re := regexp.MustCompile("^[a-zA-Z]+")
-	for keyword, item := range tokenMap {
+	for keyword, t := range token.TokenMap {
 		if re.MatchString(keyword) {
-			keywordMap[item] = true
+			keywordMap[t] = true
 		}
 	}
+}
+
+type Item struct {
+	typ token.Token
+	pos Location
+	val string
+}
+
+type Location struct {
+	Pos  int
+	Line int
+	File string
+}
+
+func (i Item) String() string {
+	switch i.typ {
+	case token.EOF:
+		return "EOF"
+	case token.Error:
+		return i.val
+	}
+	if len(i.val) > 10 {
+		return fmt.Sprintf("%v:%.10q...", i.typ, i.val)
+	}
+	return fmt.Sprintf("%v:%q", i.typ, i.val)
 }

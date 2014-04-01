@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"stephensearles.com/php/ast"
+	"stephensearles.com/php/token"
 )
 
 type parser struct {
@@ -44,13 +45,13 @@ func (p *parser) Parse() (nodes []ast.Node, errors []error) {
 			}
 		}
 	}()
-	// expecting either itemHTML or itemPHPBegin
+	// expecting either token.HTML or token.PHPBegin
 	nodes = make([]ast.Node, 0, 1)
 TokenLoop:
 	for {
 		p.next()
 		switch p.current.typ {
-		case itemEOF:
+		case token.EOF:
 			break TokenLoop
 		default:
 			n := p.parseNode()
@@ -65,11 +66,11 @@ TokenLoop:
 
 func (p *parser) parseNode() ast.Node {
 	switch p.current.typ {
-	case itemHTML:
+	case token.HTML:
 		return ast.Echo(ast.Literal{Type: ast.String})
-	case itemPHPBegin:
+	case token.PHPBegin:
 		return nil
-	case itemPHPEnd:
+	case token.PHPEnd:
 		return nil
 	}
 	return p.parseStmt()
@@ -100,7 +101,7 @@ func (p *parser) peek() (i Item) {
 	return
 }
 
-func (p *parser) expectCurrent(i ...ItemType) {
+func (p *parser) expectCurrent(i ...token.Token) {
 	for _, typ := range i {
 		if p.current.typ == typ {
 			return
@@ -109,7 +110,7 @@ func (p *parser) expectCurrent(i ...ItemType) {
 	p.expected(i...)
 }
 
-func (p *parser) expectAndNext(i ...ItemType) {
+func (p *parser) expectAndNext(i ...token.Token) {
 	defer p.next()
 	for _, typ := range i {
 		if p.current.typ == typ {
@@ -119,12 +120,12 @@ func (p *parser) expectAndNext(i ...ItemType) {
 	p.expected(i...)
 }
 
-func (p *parser) expect(i ...ItemType) {
+func (p *parser) expect(i ...token.Token) {
 	p.next()
 	p.expectCurrent(i...)
 }
 
-func (p *parser) expected(i ...ItemType) {
+func (p *parser) expected(i ...token.Token) {
 	p.errorf("Found %s, expected %s", p.current, i)
 }
 
@@ -158,77 +159,77 @@ func (p *parser) parseFunctionCall(callable ast.Expression) *ast.FunctionCallExp
 
 func (p *parser) parseFunctionArguments(expr *ast.FunctionCallExpression) *ast.FunctionCallExpression {
 	expr.Arguments = make([]ast.Expression, 0)
-	p.expect(itemOpenParen)
-	if p.peek().typ == itemCloseParen {
-		p.expect(itemCloseParen)
+	p.expect(token.OpenParen)
+	if p.peek().typ == token.CloseParen {
+		p.expect(token.CloseParen)
 		return expr
 	}
 	expr.Arguments = append(expr.Arguments, p.parseNextExpression())
-	for p.peek().typ != itemCloseParen {
-		p.expect(itemComma)
+	for p.peek().typ != token.CloseParen {
+		p.expect(token.Comma)
 		arg := p.parseNextExpression()
 		if arg == nil {
 			break
 		}
 		expr.Arguments = append(expr.Arguments, arg)
 	}
-	p.expect(itemCloseParen)
+	p.expect(token.CloseParen)
 	return expr
 
 }
 
 func (p *parser) parseStmt() ast.Statement {
 	switch p.current.typ {
-	case itemBlockBegin:
+	case token.BlockBegin:
 		p.backup()
 		return p.parseBlock()
-	case itemGlobal:
+	case token.Global:
 		p.next()
 		g := &ast.GlobalDeclaration{
 			Identifiers: make([]*ast.Variable, 0, 1),
 		}
-		for p.current.typ == itemVariableOperator {
+		for p.current.typ == token.VariableOperator {
 			variable, ok := p.parseVariable().(*ast.Variable)
 			if !ok {
 				p.errorf("global declarations must be of standard variables")
 				break
 			}
 			g.Identifiers = append(g.Identifiers, variable)
-			if p.peek().typ != itemComma {
+			if p.peek().typ != token.Comma {
 				break
 			}
-			p.expect(itemComma)
+			p.expect(token.Comma)
 			p.next()
 		}
 		p.expectStmtEnd()
 		return g
-	case itemNamespace:
-		p.expect(itemIdentifier)
+	case token.Namespace:
+		p.expect(token.Identifier)
 		p.expectStmtEnd()
 		// We are ignoring this for now
 		return nil
-	case itemUse:
-		p.expect(itemIdentifier)
-		if p.peek().typ == itemAsOperator {
-			p.expect(itemAsOperator)
-			p.expect(itemIdentifier)
+	case token.Use:
+		p.expect(token.Identifier)
+		if p.peek().typ == token.AsOperator {
+			p.expect(token.AsOperator)
+			p.expect(token.Identifier)
 		}
 		p.expectStmtEnd()
 		// We are ignoring this for now
 		return nil
-	case itemVariableOperator:
+	case token.VariableOperator:
 		ident := p.expressionize()
 		switch p.peek().typ {
-		case itemUnaryOperator:
+		case token.UnaryOperator:
 			expr := ast.ExpressionStmt{p.parseOperation(p.parenLevel, ident)}
 			p.expectStmtEnd()
 			return expr
-		case itemOpenParen:
+		case token.OpenParen:
 			var expr ast.Expression
 			expr = p.parseFunctionArguments(&ast.FunctionCallExpression{
 				FunctionName: ident,
 			})
-			if p.peek().typ == itemObjectOperator {
+			if p.peek().typ == token.ObjectOperator {
 				expr = p.parseObjectLookup(expr)
 			}
 			p.expectStmtEnd()
@@ -238,108 +239,108 @@ func (p *parser) parseStmt() ast.Statement {
 			p.expectStmtEnd()
 			return stmt
 		}
-	case itemUnaryOperator:
+	case token.UnaryOperator:
 		expr := ast.ExpressionStmt{p.parseExpression()}
 		p.expectStmtEnd()
 		return expr
-	case itemFunction:
+	case token.Function:
 		return p.parseFunctionStmt()
-	case itemPHPEnd:
-		if p.peek().typ == itemEOF {
+	case token.PHPEnd:
+		if p.peek().typ == token.EOF {
 			return nil
 		}
-		p.expect(itemHTML)
+		p.expect(token.HTML)
 		expr := ast.Echo(&ast.Literal{Type: ast.String})
 		p.next()
-		if p.current.typ != itemEOF {
-			p.expectCurrent(itemPHPBegin)
+		if p.current.typ != token.EOF {
+			p.expectCurrent(token.PHPBegin)
 		}
 		return expr
-	case itemEcho:
+	case token.Echo:
 		exprs := []ast.Expression{
 			p.parseNextExpression(),
 		}
-		for p.peek().typ == itemComma {
-			p.expect(itemComma)
+		for p.peek().typ == token.Comma {
+			p.expect(token.Comma)
 			exprs = append(exprs, p.parseNextExpression())
 		}
 		p.expectStmtEnd()
 		return ast.Echo(exprs...)
-	case itemIf:
+	case token.If:
 		return p.parseIf()
-	case itemWhile:
+	case token.While:
 		return p.parseWhile()
-	case itemDo:
+	case token.Do:
 		return p.parseDo()
-	case itemFor:
+	case token.For:
 		return p.parseFor()
-	case itemForeach:
+	case token.Foreach:
 		return p.parseForeach()
-	case itemSwitch:
+	case token.Switch:
 		return p.parseSwitch()
-	case itemAbstract:
+	case token.Abstract:
 		fallthrough
-	case itemClass:
+	case token.Class:
 		return p.parseClass()
-	case itemInterface:
+	case token.Interface:
 		return p.parseInterface()
-	case itemReturn:
+	case token.Return:
 		p.next()
 		stmt := ast.ReturnStmt{}
-		if p.current.typ != itemStatementEnd {
+		if p.current.typ != token.StatementEnd {
 			stmt.Expression = p.parseExpression()
 			p.expectStmtEnd()
 		}
 		return stmt
-	case itemBreak:
+	case token.Break:
 		p.next()
 		stmt := ast.BreakStmt{}
-		if p.current.typ != itemStatementEnd {
+		if p.current.typ != token.StatementEnd {
 			stmt.Expression = p.parseExpression()
 			p.expectStmtEnd()
 		}
 		return stmt
-	case itemContinue:
+	case token.Continue:
 		p.next()
 		stmt := ast.ContinueStmt{}
-		if p.current.typ != itemStatementEnd {
+		if p.current.typ != token.StatementEnd {
 			stmt.Expression = p.parseExpression()
 			p.expectStmtEnd()
 		}
 		return stmt
-	case itemThrow:
+	case token.Throw:
 		stmt := ast.ThrowStmt{Expression: p.parseNextExpression()}
 		p.expectStmtEnd()
 		return stmt
-	case itemExit:
+	case token.Exit:
 		stmt := ast.ExitStmt{}
-		if p.peek().typ == itemOpenParen {
-			p.expect(itemOpenParen)
-			if p.peek().typ != itemCloseParen {
+		if p.peek().typ == token.OpenParen {
+			p.expect(token.OpenParen)
+			if p.peek().typ != token.CloseParen {
 				stmt.Expression = p.parseNextExpression()
 			}
-			p.expect(itemCloseParen)
+			p.expect(token.CloseParen)
 		}
 		p.expectStmtEnd()
 		return stmt
-	case itemTry:
+	case token.Try:
 		stmt := &ast.TryStmt{}
 		stmt.TryBlock = p.parseBlock()
-		for p.expect(itemCatch); p.current.typ == itemCatch; p.next() {
+		for p.expect(token.Catch); p.current.typ == token.Catch; p.next() {
 			caught := &ast.CatchStmt{}
-			p.expect(itemOpenParen)
-			p.expect(itemIdentifier)
+			p.expect(token.OpenParen)
+			p.expect(token.Identifier)
 			caught.CatchType = p.current.val
-			p.expect(itemVariableOperator)
-			p.expect(itemIdentifier)
+			p.expect(token.VariableOperator)
+			p.expect(token.Identifier)
 			caught.CatchVar = ast.NewVariable(p.current.val)
-			p.expect(itemCloseParen)
+			p.expect(token.CloseParen)
 			caught.CatchBlock = p.parseBlock()
 			stmt.CatchStmts = append(stmt.CatchStmts, caught)
 		}
 		p.backup()
 		return stmt
-	case itemIgnoreErrorOperator:
+	case token.IgnoreErrorOperator:
 		// Ignore this operator
 		p.next()
 		return p.parseStmt()
@@ -355,8 +356,8 @@ func (p *parser) parseStmt() ast.Statement {
 }
 
 func (p *parser) expectStmtEnd() {
-	if p.peek().typ != itemPHPEnd {
-		p.expect(itemStatementEnd)
+	if p.peek().typ != token.PHPEnd {
+		p.expect(token.StatementEnd)
 	}
 }
 func (p *parser) parseFunctionStmt() *ast.FunctionStmt {
@@ -368,26 +369,26 @@ func (p *parser) parseFunctionStmt() *ast.FunctionStmt {
 
 func (p *parser) parseFunctionDefinition() *ast.FunctionDefinition {
 	def := &ast.FunctionDefinition{}
-	if p.peek().typ == itemAmpersandOperator {
+	if p.peek().typ == token.AmpersandOperator {
 		// This is a function returning a reference ... ignore this for now
 		p.next()
 	}
-	p.expect(itemIdentifier)
+	p.expect(token.Identifier)
 	def.Name = p.current.val
 	def.Arguments = make([]ast.FunctionArgument, 0)
-	p.expect(itemOpenParen)
-	if p.peek().typ == itemCloseParen {
-		p.expect(itemCloseParen)
+	p.expect(token.OpenParen)
+	if p.peek().typ == token.CloseParen {
+		p.expect(token.CloseParen)
 		return def
 	}
 	def.Arguments = append(def.Arguments, p.parseFunctionArgument())
 	for {
 		switch p.peek().typ {
-		case itemComma:
-			p.expect(itemComma)
+		case token.Comma:
+			p.expect(token.Comma)
 			def.Arguments = append(def.Arguments, p.parseFunctionArgument())
-		case itemCloseParen:
-			p.expect(itemCloseParen)
+		case token.CloseParen:
+			p.expect(token.CloseParen)
 			return def
 		default:
 			p.errorf("unexpected argument separator:", p.current)
@@ -399,18 +400,18 @@ func (p *parser) parseFunctionDefinition() *ast.FunctionDefinition {
 func (p *parser) parseFunctionArgument() ast.FunctionArgument {
 	arg := ast.FunctionArgument{}
 	switch p.peek().typ {
-	case itemIdentifier, itemArray:
+	case token.Identifier, token.Array:
 		p.next()
 		arg.TypeHint = p.current.val
 	}
-	if p.peek().typ == itemAmpersandOperator {
+	if p.peek().typ == token.AmpersandOperator {
 		p.next()
 	}
-	p.expect(itemVariableOperator)
+	p.expect(token.VariableOperator)
 	p.next()
 	arg.Variable = ast.NewVariable(p.current.val)
-	if p.peek().typ == itemAssignmentOperator {
-		p.expect(itemAssignmentOperator)
+	if p.peek().typ == token.AssignmentOperator {
+		p.expect(token.AssignmentOperator)
 		p.next()
 		arg.Default = p.parseExpression()
 	}
@@ -418,15 +419,15 @@ func (p *parser) parseFunctionArgument() ast.FunctionArgument {
 }
 
 func (p *parser) parseBlock() *ast.Block {
-	p.expect(itemBlockBegin)
-	b := p.parseStatementsUntil(itemBlockEnd)
-	p.expectCurrent(itemBlockEnd)
+	p.expect(token.BlockBegin)
+	b := p.parseStatementsUntil(token.BlockEnd)
+	p.expectCurrent(token.BlockEnd)
 	return b
 }
 
-func (p *parser) parseStatementsUntil(endTokens ...ItemType) *ast.Block {
+func (p *parser) parseStatementsUntil(endTokens ...token.Token) *ast.Block {
 	block := &ast.Block{}
-	breakTypes := map[ItemType]bool{}
+	breakTypes := map[token.Token]bool{}
 	for _, typ := range endTokens {
 		breakTypes[typ] = true
 	}

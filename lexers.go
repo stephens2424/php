@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strings"
 	"unicode"
+
+	"stephensearles.com/php/token"
 )
 
 const shortPHPBegin = "<?"
@@ -12,13 +14,13 @@ const phpEnd = "?>"
 
 const eof = -1
 
-// lexHTML consumes and emits an html item until it
+// lexHTML consumes and emits an html t until it
 // finds a php begin
 func lexHTML(l *lexer) stateFn {
 	for {
 		if strings.HasPrefix(l.input[l.pos:], shortPHPBegin) {
 			if l.pos > l.start {
-				l.emit(itemHTML)
+				l.emit(token.HTML)
 			}
 			return lexPHPBegin
 		}
@@ -27,9 +29,9 @@ func lexHTML(l *lexer) stateFn {
 		}
 	}
 	if l.pos > l.start {
-		l.emit(itemHTML)
+		l.emit(token.HTML)
 	}
-	l.emit(itemEOF)
+	l.emit(token.EOF)
 	return nil
 }
 
@@ -40,7 +42,7 @@ func lexPHPBegin(l *lexer) stateFn {
 	if strings.HasPrefix(l.input[l.pos:], shortPHPBegin) {
 		l.pos += len(shortPHPBegin)
 	}
-	l.emit(itemPHPBegin)
+	l.emit(token.PHPBegin)
 	return lexPHP
 }
 
@@ -79,7 +81,7 @@ func lexPHP(l *lexer) stateFn {
 	}
 
 	if l.peek() == eof {
-		l.emit(itemEOF)
+		l.emit(token.EOF)
 		return nil
 	}
 
@@ -95,26 +97,26 @@ func lexPHP(l *lexer) stateFn {
 		return lexDoubleQuotedStringLiteral
 	}
 
-	for _, token := range tokenList {
-		item := tokenMap[token]
+	for _, tokenString := range token.TokenList {
+		t := token.TokenMap[tokenString]
 		potentialToken := l.input[l.pos:]
-		if len(potentialToken) > len(token) {
-			potentialToken = potentialToken[:len(token)]
+		if len(potentialToken) > len(tokenString) {
+			potentialToken = potentialToken[:len(tokenString)]
 		}
-		if strings.HasPrefix(strings.ToLower(potentialToken), token) {
-			l.pos += len(token)
-			if isKeyword(item) && l.accept(alphabet+underscore+digits) {
+		if strings.HasPrefix(strings.ToLower(potentialToken), tokenString) {
+			l.pos += len(tokenString)
+			if isKeyword(t) && l.accept(alphabet+underscore+digits) {
 				l.backup() // to account for the character consumed by accept
-				l.pos -= len(token)
+				l.pos -= len(tokenString)
 				break
 			}
-			l.emit(item)
+			l.emit(t)
 			return lexPHP
 		}
 	}
 
 	l.acceptRun(alphabet + underscore + digits + "\\")
-	l.emit(itemIdentifier)
+	l.emit(token.Identifier)
 	return lexPHP
 }
 
@@ -123,7 +125,7 @@ func lexNumberLiteral(l *lexer) stateFn {
 		if l.accept("x") {
 			// hexadecimal
 			l.acceptRun(digits + "abcdef")
-			l.emit(itemNumberLiteral)
+			l.emit(token.NumberLiteral)
 			return lexPHP
 		}
 	}
@@ -133,7 +135,7 @@ func lexNumberLiteral(l *lexer) stateFn {
 		l.acceptRun(digits)
 	}
 
-	l.emit(itemNumberLiteral)
+	l.emit(token.NumberLiteral)
 	return lexPHP
 }
 
@@ -142,10 +144,10 @@ func lexShellCommand(l *lexer) stateFn {
 	for {
 		switch l.next() {
 		case '`':
-			l.emit(itemShellCommand)
+			l.emit(token.ShellCommand)
 			return lexPHP
 		case eof:
-			l.emit(itemShellCommand)
+			l.emit(token.ShellCommand)
 			return nil
 		}
 	}
@@ -159,7 +161,7 @@ func lexSingleQuotedStringLiteral(l *lexer) stateFn {
 			l.next()
 			continue
 		case '\'':
-			l.emit(itemStringLiteral)
+			l.emit(token.StringLiteral)
 			return lexPHP
 		}
 	}
@@ -173,7 +175,7 @@ func lexDoubleQuotedStringLiteral(l *lexer) stateFn {
 			l.next()
 			continue
 		case '"':
-			l.emit(itemStringLiteral)
+			l.emit(token.StringLiteral)
 			return lexPHP
 		}
 	}
@@ -187,14 +189,14 @@ func lexIdentifier(l *lexer) stateFn {
 	l.accept("$")
 	l.accept(underscore + alphabet)
 	l.acceptRun(underscore + alphabet + digits)
-	l.emit(itemVariableOperator)
+	l.emit(token.VariableOperator)
 	return lexPHP
 }
 
 // lexPHPEnd lexes the end of a PHP section returning the context to HTML
 func lexPHPEnd(l *lexer) stateFn {
 	l.pos += len(phpEnd)
-	l.emit(itemPHPEnd)
+	l.emit(token.PHPEnd)
 	return lexHTML
 }
 
@@ -245,6 +247,6 @@ func lexDoc(l *lexer) stateFn {
 		l.next()
 	}
 	l.pos += len(endMarker)
-	l.emit(itemStringLiteral)
+	l.emit(token.StringLiteral)
 	return lexPHP
 }
