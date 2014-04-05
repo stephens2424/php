@@ -2,6 +2,8 @@ package printing
 
 import (
 	"fmt"
+	"io"
+	"os"
 	"strings"
 
 	"stephensearles.com/php/ast"
@@ -10,6 +12,11 @@ import (
 type Walker struct {
 	tabLevel int
 	ast.DefaultWalker
+	W io.Writer
+}
+
+func NewWalker(w io.Writer) *Walker {
+	return &Walker{W: os.Stdout}
 }
 
 func (w *Walker) Walk(node ast.Node) {
@@ -20,7 +27,7 @@ func (w *Walker) Walk(node ast.Node) {
 			panic(r)
 		}
 	}()
-	fmt.Printf("%s(%T)%s\n", strings.Repeat("\t", w.tabLevel), node, node.String())
+	fmt.Fprintf(w.W, "%s(%T)%s\n", strings.Repeat("\t", w.tabLevel), node, node.String())
 	switch children := node.Children(); children {
 	case nil:
 	default:
