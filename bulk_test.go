@@ -15,10 +15,10 @@ func TestFiles(t *testing.T) {
 
 	for _, file := range files {
 		filename := file.Name()
-		if strings.HasPrefix(filename, ".") || strings.HasSuffix(filename, ".php") {
+		if strings.HasPrefix(filename, ".") || !strings.HasSuffix(filename, ".php") {
 			continue
 		}
-		src, err := ioutil.ReadFile(path.Join("testfiles", file.Name()))
+		src, err := ioutil.ReadFile(path.Join("testfiles", filename))
 		if err != nil {
 			t.Error(err)
 			continue
@@ -27,7 +27,7 @@ func TestFiles(t *testing.T) {
 		p := NewParser(string(src))
 		_, errs := p.Parse()
 		for _, err := range errs {
-			t.Error(err)
+			t.Error(filename, err)
 		}
 	}
 }
