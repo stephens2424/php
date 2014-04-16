@@ -11,22 +11,23 @@ func (p *parser) parseIf() *ast.IfStmt {
 	p.next()
 	n.Condition = p.parseExpression()
 	p.expect(token.CloseParen)
+
 	if p.peek().typ == token.TernaryOperator2 {
 		p.expect(token.TernaryOperator2)
 		n.TrueBranch = p.parseStatementsUntil(token.EndIf, token.ElseIf, token.Else)
 	} else {
 		p.next()
 		n.TrueBranch = p.parseStmt()
+		p.next()
 	}
-	switch p.peek().typ {
+
+	switch p.current.typ {
 	case token.ElseIf:
-		p.expect(token.ElseIf)
 		n.FalseBranch = p.parseIf()
 	case token.Else:
-		p.expect(token.Else)
 		p.next()
 		if p.current.typ == token.TernaryOperator2 {
-			n.FalseBranch = p.parseStatementsUntil(token.EndIf, token.BlockEnd)
+			n.FalseBranch = p.parseStatementsUntil(token.EndIf)
 		} else {
 			n.FalseBranch = p.parseStmt()
 		}

@@ -96,6 +96,7 @@ func (p *parser) parseAbstract() bool {
 }
 
 func (p *parser) parseClassFields(c ast.Class) ast.Class {
+	// Starting on BlockBegin
 	c.Methods = make([]ast.Method, 0)
 	c.Properties = make([]ast.Property, 0)
 	for p.peek().typ != token.BlockEnd {
@@ -118,10 +119,10 @@ func (p *parser) parseClassFields(c ast.Class) ast.Class {
 				})
 			}
 		case token.Var:
-			p.next()
+			p.expect(token.VariableOperator)
 			fallthrough
 		case token.VariableOperator:
-			p.next()
+			p.expect(token.Identifier)
 			prop := ast.Property{
 				Visibility: vis,
 				Name:       "$" + p.current.val,
