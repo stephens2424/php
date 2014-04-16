@@ -9,8 +9,8 @@ import (
 )
 
 func (f *formatWalker) Walk(node ast.Node) error {
-	switch node.(type) {
-	case ast.IfStmt, *ast.IfStmt:
+	switch n := node.(type) {
+	case *ast.IfStmt:
 		f.printTab()
 		f.printToken(token.If)
 		f.print(" ")
@@ -22,10 +22,23 @@ func (f *formatWalker) Walk(node ast.Node) error {
 		f.print("\n")
 		f.tabLevel += 1
 		f.printTab()
-		f.print("<statements>")
+		f.Walk(n.TrueBranch)
 		f.print("\n")
 		f.tabLevel -= 1
 		f.printToken(token.BlockEnd)
+		if n.FalseBranch != nil {
+			f.print(" ")
+			f.printToken(token.Else)
+			f.print(" ")
+			f.printToken(token.BlockBegin)
+			f.print("\n")
+			f.tabLevel += 1
+			f.Walk(n.FalseBranch)
+			f.tabLevel -= 1
+			f.print("\n")
+			f.printToken(token.BlockEnd)
+			f.print("\n")
+		}
 	}
 	return nil
 }
