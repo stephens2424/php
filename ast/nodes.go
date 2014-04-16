@@ -738,7 +738,8 @@ func (c CatchStmt) Children() []Node {
 
 type Literal struct {
 	BaseNode
-	Type Type
+	Type  Type
+	Value string
 }
 
 func (l Literal) String() string {

@@ -320,13 +320,13 @@ func (p *parser) expressionize() (expr ast.Expression) {
 func (p *parser) parseLiteral() *ast.Literal {
 	switch p.current.typ {
 	case token.StringLiteral:
-		return &ast.Literal{Type: ast.String}
+		return &ast.Literal{Type: ast.String, Value: p.current.val}
 	case token.BooleanLiteral:
-		return &ast.Literal{Type: ast.Boolean}
+		return &ast.Literal{Type: ast.Boolean, Value: p.current.val}
 	case token.NumberLiteral:
-		return &ast.Literal{Type: ast.Float}
+		return &ast.Literal{Type: ast.Float, Value: p.current.val}
 	case token.Null:
-		return &ast.Literal{Type: ast.Null}
+		return &ast.Literal{Type: ast.Null, Value: p.current.val}
 	}
 	p.errorf("Unknown literal type")
 	return nil
