@@ -5,43 +5,6 @@ import (
 	"stephensearles.com/php/token"
 )
 
-/*
-
-Valid Expression Patterns
-Expr [Binary Op] Expr
-[Unary Op] Expr
-Expr [Unary Op]
-Expr [Tertiary Op 1] Expr [Tertiary Op 2] Expr
-Identifier
-Literal
-Function Call
-
-Parentesis always triggers sub-expression
-
-non-associative clone new clone and new
-left  [ array()
-right ++ -- ~ (int) (float) (string) (array) (object) (bool) @  types and increment/decrement
-non-associative instanceof  types
-right ! logical
-left  * / % arithmetic
-left  + - . arithmetic and string
-left  << >> bitwise
-non-associative < <= > >= comparison
-non-associative == != === !== <>  comparison
-left  & bitwise and references
-left  ^ bitwise
-left  | bitwise
-left  &&  logical
-left  ||  logical
-left  ? : ternary
-right = += -= *= /= .= %= &= |= ^= <<= >>= => assignment
-left  and logical
-left  xor logical
-left  or  logical
-left  , many uses
-
-*/
-
 var operatorPrecedence = map[token.Token]int{
 	token.ArrayLookupOperatorLeft: 19,
 	token.UnaryOperator:           18,
@@ -72,59 +35,41 @@ var operatorPrecedence = map[token.Token]int{
 }
 
 func (p *parser) parseExpression() (expr ast.Expression) {
-	// consume expression
 	originalParenLev := p.parenLevel
+
 	switch p.current.typ {
 	case token.IgnoreErrorOperator:
-		p.next()
-		return p.parseExpression()
+		expr = p.parseIgnoreError()
 	case token.Function:
-		return p.parseAnonymousFunction()
+		expr = p.parseAnonymousFunction()
 	case token.NewOperator:
-		expr = p.parseInstantiation()
-		expr = p.parseOperation(originalParenLev, expr)
-		return
-
+		expr = p.parseNew(originalParenLev)
 	case token.List:
-		l := &ast.ListStatement{
-			Assignees: make([]*ast.Variable, 0),
-		}
-		p.expect(token.OpenParen)
-		for {
-			p.expect(token.VariableOperator)
-			p.expect(token.Identifier)
-			l.Assignees = append(l.Assignees, ast.NewVariable(p.current.val))
-			if p.peek().typ != token.Comma {
-				break
-			}
-			p.expect(token.Comma)
-		}
-		p.expect(token.CloseParen)
-		p.expect(token.AssignmentOperator)
-		l.Operator = p.current.val
-		l.Value = p.parseNextExpression()
-		p.expectStmtEnd()
-		return l
-
-	case token.UnaryOperator, token.NegationOperator, token.AmpersandOperator, token.CastOperator, token.SubtractionOperator, token.BitwiseNotOperator:
+		expr = p.parseList()
+	case
+		token.UnaryOperator,
+		token.NegationOperator,
+		token.AmpersandOperator,
+		token.CastOperator,
+		token.SubtractionOperator,
+		token.BitwiseNotOperator:
 		op := p.current
-		return p.parseUnaryExpressionRight(p.parseNextExpression(), op)
-	case token.VariableOperator:
-		fallthrough
-	case token.Array:
-		fallthrough
-	case token.Identifier, token.StringLiteral, token.NumberLiteral, token.BooleanLiteral, token.Null, token.Self, token.Static, token.Parent, token.ShellCommand:
-		expr = p.parseOperation(originalParenLev, p.expressionize())
+		expr = p.parseUnaryExpressionRight(p.parseNextExpression(), op)
+	case
+		token.VariableOperator,
+		token.Array,
+		token.Identifier,
+		token.StringLiteral,
+		token.NumberLiteral,
+		token.BooleanLiteral,
+		token.Null,
+		token.Self,
+		token.Static,
+		token.Parent,
+		token.ShellCommand:
+		expr = p.parseOperation(originalParenLev, p.parseOperand())
 	case token.Include:
-		inc := ast.Include{Expressions: make([]ast.Expression, 0)}
-		for {
-			inc.Expressions = append(inc.Expressions, p.parseNextExpression())
-			if p.peek().typ != token.Comma {
-				break
-			}
-			p.expect(token.Comma)
-		}
-		expr = inc
+		expr = p.parseInclude()
 	case token.OpenParen:
 		p.parenLevel += 1
 		p.next()
@@ -134,7 +79,6 @@ func (p *parser) parseExpression() (expr ast.Expression) {
 		expr = p.parseOperation(originalParenLev, expr)
 	default:
 		p.errorf("Expected expression. Found %s", p.current)
-		return
 	}
 	if p.parenLevel != originalParenLev {
 		p.errorf("unbalanced parens: %d prev: %d", p.parenLevel, originalParenLev)
@@ -144,41 +88,15 @@ func (p *parser) parseExpression() (expr ast.Expression) {
 }
 
 func (p *parser) parseOperation(originalParenLevel int, lhs ast.Expression) (expr ast.Expression) {
-	p.next()
-	switch p.current.typ {
-	case token.IgnoreErrorOperator:
-		return p.parseOperation(originalParenLevel, lhs)
-	case token.UnaryOperator, token.BitwiseNotOperator:
+	switch p.next(); operationTypeForToken(p.current.typ) {
+	case unaryOperation:
 		expr = p.parseUnaryExpressionLeft(lhs, p.current)
-	case token.AdditionOperator, token.SubtractionOperator, token.ConcatenationOperator, token.ComparisonOperator, token.MultOperator, token.AndOperator, token.OrOperator, token.AmpersandOperator, token.BitwiseXorOperator, token.BitwiseOrOperator, token.BitwiseShiftOperator, token.WrittenAndOperator, token.WrittenXorOperator, token.WrittenOrOperator, token.InstanceofOperator:
+	case binaryOperation:
 		expr = p.parseBinaryOperation(lhs, p.current, originalParenLevel)
-	case token.TernaryOperator1:
+	case ternaryOperation:
 		expr = p.parseTernaryOperation(lhs)
-	case token.CloseParen:
-		if p.parenLevel <= originalParenLevel {
-			p.backup()
-			return lhs
-		}
-		p.parenLevel -= 1
-		return p.parseOperation(originalParenLevel, lhs)
-	case token.ScopeResolutionOperator:
-		p.next()
-		expr = &ast.ClassExpression{Receiver: lhs, Expression: p.expressionize()}
-	case token.ArrayLookupOperatorLeft:
-		expr = p.parseArrayLookup(lhs)
-	case token.ObjectOperator:
-		expr = p.parseObjectLookup(lhs)
-	case token.AssignmentOperator:
-		assignee, ok := lhs.(ast.Assignable)
-		if !ok {
-			p.errorf("%s is not assignable", lhs)
-		}
-		expr = ast.AssignmentExpression{
-			Assignee: assignee,
-			Operator: p.current.val,
-			Value:    p.parseNextExpression(),
-		}
-		return expr
+	case assignmentOperation:
+		expr = p.parseAssignmentOperation(lhs)
 	default:
 		p.backup()
 		return lhs
@@ -186,94 +104,48 @@ func (p *parser) parseOperation(originalParenLevel int, lhs ast.Expression) (exp
 	return p.parseOperation(originalParenLevel, expr)
 }
 
-func newUnaryOperation(operator Item, expr ast.Expression) ast.OperatorExpression {
-	t := ast.Numeric
-	if operator.val == "!" {
-		t = ast.Boolean
+func (p *parser) parseAssignmentOperation(lhs ast.Expression) (expr ast.Expression) {
+	assignee, ok := lhs.(ast.Assignable)
+	if !ok {
+		p.errorf("%s is not assignable", lhs)
 	}
-	return ast.OperatorExpression{
-		Type:     t,
-		Operand1: expr,
-		Operator: operator.val,
+	op := p.current.val
+	expr = ast.AssignmentExpression{
+		Assignee: assignee,
+		Operator: op,
+		Value:    p.parseNextExpression(),
 	}
+	return expr
 }
 
-func newBinaryOperation(operator Item, expr1, expr2 ast.Expression) ast.OperatorExpression {
-	t := ast.Numeric
-	switch operator.typ {
-	case token.ComparisonOperator, token.AndOperator, token.OrOperator, token.WrittenAndOperator, token.WrittenOrOperator, token.WrittenXorOperator:
-		t = ast.Boolean
-	case token.ConcatenationOperator:
-		t = ast.String
-	case token.AmpersandOperator, token.BitwiseXorOperator, token.BitwiseOrOperator, token.BitwiseShiftOperator:
-		t = ast.AnyType
-	}
-	return ast.OperatorExpression{
-		Type:     t,
-		Operand1: expr1,
-		Operand2: expr2,
-		Operator: operator.val,
-	}
-}
-
-func (p *parser) parseBinaryOperation(lhs ast.Expression, operator Item, originalParenLevel int) ast.Expression {
-	p.next()
-	rhs := p.expressionize()
-	for {
-		nextOperator := p.peek()
-		nextOperatorPrecedence, ok := operatorPrecedence[nextOperator.typ]
-		if ok && nextOperatorPrecedence > operatorPrecedence[operator.typ] {
-			rhs = p.parseOperation(originalParenLevel, rhs)
-		} else {
-			break
-		}
-	}
-	return newBinaryOperation(operator, lhs, rhs)
-}
-
-func (p *parser) parseTernaryOperation(lhs ast.Expression) ast.Expression {
-	truthy := p.parseNextExpression()
-	p.expect(token.TernaryOperator2)
-	falsy := p.parseNextExpression()
-	return &ast.OperatorExpression{
-		Operand1: lhs,
-		Operand2: truthy,
-		Operand3: falsy,
-		Type:     truthy.EvaluatesTo() | falsy.EvaluatesTo(),
-		Operator: "?:",
-	}
-}
-
-func (p *parser) parseUnaryExpressionRight(operand ast.Expression, operator Item) ast.Expression {
-	return newUnaryOperation(operator, operand)
-}
-
-func (p *parser) parseUnaryExpressionLeft(operand ast.Expression, operator Item) ast.Expression {
-	return newUnaryOperation(operator, operand)
-}
-
-// expressionize takes the current token and returns it as the simplest
+// parseOperand takes the current token and returns it as the simplest
 // expression for that token. That means an expression with no operators
 // except for the object operator.
-func (p *parser) expressionize() (expr ast.Expression) {
+func (p *parser) parseOperand() (expr ast.Expression) {
 
 	// These cases must come first and not repeat
 	switch p.current.typ {
-	case token.UnaryOperator, token.NegationOperator, token.CastOperator, token.SubtractionOperator, token.AmpersandOperator, token.BitwiseNotOperator:
+	case
+		token.UnaryOperator,
+		token.NegationOperator,
+		token.CastOperator,
+		token.SubtractionOperator,
+		token.AmpersandOperator,
+		token.BitwiseNotOperator:
 		op := p.current
 		p.next()
-		return p.parseUnaryExpressionRight(p.expressionize(), op)
-	case token.OpenParen:
-		// Only parse open parentheses as a front matter to expression terms
-		// so we don't get any dynamic function calls here.
-		return p.parseExpression()
+		return p.parseUnaryExpressionRight(p.parseOperand(), op)
 	}
 
 	for {
 		switch p.current.typ {
 		case token.ShellCommand:
 			return &ast.ShellCommand{Command: p.current.val}
-		case token.StringLiteral, token.BooleanLiteral, token.NumberLiteral, token.Null:
+		case
+			token.StringLiteral,
+			token.BooleanLiteral,
+			token.NumberLiteral,
+			token.Null:
 			return p.parseLiteral()
 		case token.UnaryOperator:
 			expr = newUnaryOperation(p.current, expr)
@@ -290,24 +162,33 @@ func (p *parser) expressionize() (expr ast.Expression) {
 				expr = p.parseArrayLookup(expr)
 				p.next()
 			}
+			if p.current.typ == token.ObjectOperator {
+				expr = p.parseObjectLookup(expr)
+				p.next()
+			}
 		case token.Identifier:
-			if p.peek().typ == token.OpenParen {
+			switch p.peek().typ {
+			case token.OpenParen:
 				// Function calls are okay here because we know they came with
 				// a non-dynamic identifier.
 				expr = p.parseFunctionCall(ast.Identifier{Value: p.current.val})
 				p.next()
 				continue
+			case token.ScopeResolutionOperator:
+				expr = ast.NewClassExpression(p.current.val, p.parseNextExpression())
+				p.next()
+			default:
+				expr = ast.ConstantExpression{
+					Variable: ast.NewVariable(p.current.val),
+				}
+				p.next()
 			}
-			fallthrough
 		case token.Self, token.Static, token.Parent:
 			if p.peek().typ == token.ScopeResolutionOperator {
 				r := p.current.val
 				p.expect(token.ScopeResolutionOperator)
 				expr = ast.NewClassExpression(r, p.parseNextExpression())
 				return
-			}
-			expr = ast.ConstantExpression{
-				Variable: ast.NewVariable(p.current.val),
 			}
 			p.next()
 		default:
@@ -346,51 +227,25 @@ func (p *parser) parseVariable() ast.Expression {
 	}
 }
 
-func (p *parser) parseAnonymousFunction() ast.Expression {
-	f := &ast.AnonymousFunction{}
-	f.Arguments = make([]ast.FunctionArgument, 0)
-	f.ClosureVariables = make([]ast.FunctionArgument, 0)
-	p.expect(token.OpenParen)
-	if p.peek().typ != token.CloseParen {
-		f.Arguments = append(f.Arguments, p.parseFunctionArgument())
-	}
-
-Loop:
+func (p *parser) parseInclude() ast.Expression {
+	inc := ast.Include{Expressions: make([]ast.Expression, 0)}
 	for {
-		switch p.peek().typ {
-		case token.Comma:
-			p.expect(token.Comma)
-			f.Arguments = append(f.Arguments, p.parseFunctionArgument())
-		case token.CloseParen:
-			break Loop
-		default:
-			p.errorf("unexpected argument separator:", p.current)
-			return f
+		inc.Expressions = append(inc.Expressions, p.parseNextExpression())
+		if p.peek().typ != token.Comma {
+			break
 		}
+		p.expect(token.Comma)
 	}
-	p.expect(token.CloseParen)
+	return inc
+}
 
-	// Closure variables
-	if p.peek().typ == token.Use {
-		p.expect(token.Use)
-		p.expect(token.OpenParen)
-		f.ClosureVariables = append(f.ClosureVariables, p.parseFunctionArgument())
-	ClosureLoop:
-		for {
-			switch p.peek().typ {
-			case token.Comma:
-				p.expect(token.Comma)
-				f.ClosureVariables = append(f.ClosureVariables, p.parseFunctionArgument())
-			case token.CloseParen:
-				break ClosureLoop
-			default:
-				p.errorf("unexpected argument separator:", p.current)
-				return f
-			}
-		}
-		p.expect(token.CloseParen)
-	}
+func (p *parser) parseIgnoreError() ast.Expression {
+	p.next()
+	return p.parseExpression()
+}
 
-	f.Body = p.parseBlock()
-	return f
+func (p *parser) parseNew(originalParenLev int) ast.Expression {
+	expr := p.parseInstantiation()
+	expr = p.parseOperation(originalParenLev, expr)
+	return expr
 }

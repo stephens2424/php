@@ -151,33 +151,6 @@ func (p *parser) parseNextExpression() ast.Expression {
 	return p.parseExpression()
 }
 
-func (p *parser) parseFunctionCall(callable ast.Expression) *ast.FunctionCallExpression {
-	expr := &ast.FunctionCallExpression{}
-	expr.FunctionName = callable
-	return p.parseFunctionArguments(expr)
-}
-
-func (p *parser) parseFunctionArguments(expr *ast.FunctionCallExpression) *ast.FunctionCallExpression {
-	expr.Arguments = make([]ast.Expression, 0)
-	p.expect(token.OpenParen)
-	if p.peek().typ == token.CloseParen {
-		p.expect(token.CloseParen)
-		return expr
-	}
-	expr.Arguments = append(expr.Arguments, p.parseNextExpression())
-	for p.peek().typ != token.CloseParen {
-		p.expect(token.Comma)
-		arg := p.parseNextExpression()
-		if arg == nil {
-			break
-		}
-		expr.Arguments = append(expr.Arguments, arg)
-	}
-	p.expect(token.CloseParen)
-	return expr
-
-}
-
 func (p *parser) parseStmt() ast.Statement {
 	switch p.current.typ {
 	case token.BlockBegin:
@@ -217,29 +190,7 @@ func (p *parser) parseStmt() ast.Statement {
 		p.expectStmtEnd()
 		// We are ignoring this for now
 		return nil
-	case token.VariableOperator:
-		ident := p.expressionize()
-		switch p.peek().typ {
-		case token.UnaryOperator:
-			expr := ast.ExpressionStmt{p.parseOperation(p.parenLevel, ident)}
-			p.expectStmtEnd()
-			return expr
-		case token.OpenParen:
-			var expr ast.Expression
-			expr = p.parseFunctionArguments(&ast.FunctionCallExpression{
-				FunctionName: ident,
-			})
-			if p.peek().typ == token.ObjectOperator {
-				expr = p.parseObjectLookup(expr)
-			}
-			p.expectStmtEnd()
-			return expr
-		default:
-			stmt := ast.ExpressionStmt{p.parseOperation(p.parenLevel, ident)}
-			p.expectStmtEnd()
-			return stmt
-		}
-	case token.UnaryOperator:
+	case token.VariableOperator, token.UnaryOperator:
 		expr := ast.ExpressionStmt{p.parseExpression()}
 		p.expectStmtEnd()
 		return expr
@@ -359,63 +310,6 @@ func (p *parser) expectStmtEnd() {
 	if p.peek().typ != token.PHPEnd {
 		p.expect(token.StatementEnd)
 	}
-}
-func (p *parser) parseFunctionStmt() *ast.FunctionStmt {
-	stmt := &ast.FunctionStmt{}
-	stmt.FunctionDefinition = p.parseFunctionDefinition()
-	stmt.Body = p.parseBlock()
-	return stmt
-}
-
-func (p *parser) parseFunctionDefinition() *ast.FunctionDefinition {
-	def := &ast.FunctionDefinition{}
-	if p.peek().typ == token.AmpersandOperator {
-		// This is a function returning a reference ... ignore this for now
-		p.next()
-	}
-	p.expect(token.Identifier)
-	def.Name = p.current.val
-	def.Arguments = make([]ast.FunctionArgument, 0)
-	p.expect(token.OpenParen)
-	if p.peek().typ == token.CloseParen {
-		p.expect(token.CloseParen)
-		return def
-	}
-	def.Arguments = append(def.Arguments, p.parseFunctionArgument())
-	for {
-		switch p.peek().typ {
-		case token.Comma:
-			p.expect(token.Comma)
-			def.Arguments = append(def.Arguments, p.parseFunctionArgument())
-		case token.CloseParen:
-			p.expect(token.CloseParen)
-			return def
-		default:
-			p.errorf("unexpected argument separator:", p.current)
-			return def
-		}
-	}
-}
-
-func (p *parser) parseFunctionArgument() ast.FunctionArgument {
-	arg := ast.FunctionArgument{}
-	switch p.peek().typ {
-	case token.Identifier, token.Array:
-		p.next()
-		arg.TypeHint = p.current.val
-	}
-	if p.peek().typ == token.AmpersandOperator {
-		p.next()
-	}
-	p.expect(token.VariableOperator)
-	p.next()
-	arg.Variable = ast.NewVariable(p.current.val)
-	if p.peek().typ == token.AssignmentOperator {
-		p.expect(token.AssignmentOperator)
-		p.next()
-		arg.Default = p.parseExpression()
-	}
-	return arg
 }
 
 func (p *parser) parseBlock() *ast.Block {

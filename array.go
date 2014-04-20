@@ -57,3 +57,26 @@ ArrayLoop:
 	p.expect(token.CloseParen)
 	return &ast.ArrayExpression{Pairs: pairs}
 }
+
+func (p *parser) parseList() ast.Expression {
+	l := &ast.ListStatement{
+		Assignees: make([]*ast.Variable, 0),
+	}
+	p.expect(token.OpenParen)
+	for {
+		p.expect(token.VariableOperator)
+		p.expect(token.Identifier)
+		l.Assignees = append(l.Assignees, ast.NewVariable(p.current.val))
+		if p.peek().typ != token.Comma {
+			break
+		}
+		p.expect(token.Comma)
+	}
+	p.expect(token.CloseParen)
+	p.expect(token.AssignmentOperator)
+	l.Operator = p.current.val
+	l.Value = p.parseNextExpression()
+	p.expectStmtEnd()
+	return l
+
+}
