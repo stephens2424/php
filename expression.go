@@ -5,43 +5,6 @@ import (
 	"stephensearles.com/php/token"
 )
 
-/*
-
-Valid Expression Patterns
-Expr [Binary Op] Expr
-[Unary Op] Expr
-Expr [Unary Op]
-Expr [Tertiary Op 1] Expr [Tertiary Op 2] Expr
-Identifier
-Literal
-Function Call
-
-Parentesis always triggers sub-expression
-
-non-associative clone new clone and new
-left  [ array()
-right ++ -- ~ (int) (float) (string) (array) (object) (bool) @  types and increment/decrement
-non-associative instanceof  types
-right ! logical
-left  * / % arithmetic
-left  + - . arithmetic and string
-left  << >> bitwise
-non-associative < <= > >= comparison
-non-associative == != === !== <>  comparison
-left  & bitwise and references
-left  ^ bitwise
-left  | bitwise
-left  &&  logical
-left  ||  logical
-left  ? : ternary
-right = += -= *= /= .= %= &= |= ^= <<= >>= => assignment
-left  and logical
-left  xor logical
-left  or  logical
-left  , many uses
-
-*/
-
 var operatorPrecedence = map[token.Token]int{
 	token.ArrayLookupOperatorLeft: 19,
 	token.UnaryOperator:           18,
