@@ -72,59 +72,41 @@ var operatorPrecedence = map[token.Token]int{
 }
 
 func (p *parser) parseExpression() (expr ast.Expression) {
-	// consume expression
 	originalParenLev := p.parenLevel
+
 	switch p.current.typ {
 	case token.IgnoreErrorOperator:
-		p.next()
-		return p.parseExpression()
+		expr = p.parseIgnoreError()
 	case token.Function:
-		return p.parseAnonymousFunction()
+		expr = p.parseAnonymousFunction()
 	case token.NewOperator:
-		expr = p.parseInstantiation()
-		expr = p.parseOperation(originalParenLev, expr)
-		return
-
+		expr = p.parseNew(originalParenLev)
 	case token.List:
-		l := &ast.ListStatement{
-			Assignees: make([]*ast.Variable, 0),
-		}
-		p.expect(token.OpenParen)
-		for {
-			p.expect(token.VariableOperator)
-			p.expect(token.Identifier)
-			l.Assignees = append(l.Assignees, ast.NewVariable(p.current.val))
-			if p.peek().typ != token.Comma {
-				break
-			}
-			p.expect(token.Comma)
-		}
-		p.expect(token.CloseParen)
-		p.expect(token.AssignmentOperator)
-		l.Operator = p.current.val
-		l.Value = p.parseNextExpression()
-		p.expectStmtEnd()
-		return l
-
-	case token.UnaryOperator, token.NegationOperator, token.AmpersandOperator, token.CastOperator, token.SubtractionOperator, token.BitwiseNotOperator:
+		expr = p.parseList()
+	case
+		token.UnaryOperator,
+		token.NegationOperator,
+		token.AmpersandOperator,
+		token.CastOperator,
+		token.SubtractionOperator,
+		token.BitwiseNotOperator:
 		op := p.current
-		return p.parseUnaryExpressionRight(p.parseNextExpression(), op)
-	case token.VariableOperator:
-		fallthrough
-	case token.Array:
-		fallthrough
-	case token.Identifier, token.StringLiteral, token.NumberLiteral, token.BooleanLiteral, token.Null, token.Self, token.Static, token.Parent, token.ShellCommand:
+		expr = p.parseUnaryExpressionRight(p.parseNextExpression(), op)
+	case
+		token.VariableOperator,
+		token.Array,
+		token.Identifier,
+		token.StringLiteral,
+		token.NumberLiteral,
+		token.BooleanLiteral,
+		token.Null,
+		token.Self,
+		token.Static,
+		token.Parent,
+		token.ShellCommand:
 		expr = p.parseOperation(originalParenLev, p.expressionize())
 	case token.Include:
-		inc := ast.Include{Expressions: make([]ast.Expression, 0)}
-		for {
-			inc.Expressions = append(inc.Expressions, p.parseNextExpression())
-			if p.peek().typ != token.Comma {
-				break
-			}
-			p.expect(token.Comma)
-		}
-		expr = inc
+		expr = p.parseInclude()
 	case token.OpenParen:
 		p.parenLevel += 1
 		p.next()
@@ -134,7 +116,6 @@ func (p *parser) parseExpression() (expr ast.Expression) {
 		expr = p.parseOperation(originalParenLev, expr)
 	default:
 		p.errorf("Expected expression. Found %s", p.current)
-		return
 	}
 	if p.parenLevel != originalParenLev {
 		p.errorf("unbalanced parens: %d prev: %d", p.parenLevel, originalParenLev)
@@ -393,4 +374,27 @@ Loop:
 
 	f.Body = p.parseBlock()
 	return f
+}
+
+func (p *parser) parseInclude() ast.Expression {
+	inc := ast.Include{Expressions: make([]ast.Expression, 0)}
+	for {
+		inc.Expressions = append(inc.Expressions, p.parseNextExpression())
+		if p.peek().typ != token.Comma {
+			break
+		}
+		p.expect(token.Comma)
+	}
+	return inc
+}
+
+func (p *parser) parseIgnoreError() ast.Expression {
+	p.next()
+	return p.parseExpression()
+}
+
+func (p *parser) parseNew(originalParenLev int) ast.Expression {
+	expr := p.parseInstantiation()
+	expr = p.parseOperation(originalParenLev, expr)
+	return expr
 }
