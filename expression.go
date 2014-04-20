@@ -109,9 +109,10 @@ func (p *parser) parseAssignmentOperation(lhs ast.Expression) (expr ast.Expressi
 	if !ok {
 		p.errorf("%s is not assignable", lhs)
 	}
+	op := p.current.val
 	expr = ast.AssignmentExpression{
 		Assignee: assignee,
-		Operator: p.current.val,
+		Operator: op,
 		Value:    p.parseNextExpression(),
 	}
 	return expr
@@ -159,6 +160,10 @@ func (p *parser) parseOperand() (expr ast.Expression) {
 			// simple contexts.
 			if p.current.typ == token.BlockBegin {
 				expr = p.parseArrayLookup(expr)
+				p.next()
+			}
+			if p.current.typ == token.ObjectOperator {
+				expr = p.parseObjectLookup(expr)
 				p.next()
 			}
 		case token.Identifier:
