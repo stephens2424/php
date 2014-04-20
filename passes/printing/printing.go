@@ -15,7 +15,7 @@ type Walker struct {
 	W io.Writer
 }
 
-func NewWalker(w io.Writer) *Walker {
+func NewWalker() *Walker {
 	return &Walker{W: os.Stdout}
 }
 
@@ -27,16 +27,22 @@ func (w *Walker) Walk(node ast.Node) {
 			panic(r)
 		}
 	}()
-	fmt.Fprintf(w.W, "%s(%T)%s\n", strings.Repeat("\t", w.tabLevel), node, node.String())
-	switch children := node.Children(); children {
-	case nil:
-	default:
-		w.tabLevel += 1
-		for _, child := range children {
-			if child != nil {
-				w.Walk(child)
+
+	if node == nil {
+		fmt.Fprintf(w.W, "%s(<nil>)\n", strings.Repeat("\t", w.tabLevel))
+	} else {
+		fmt.Fprintf(w.W, "%s(%T)%s\n", strings.Repeat("\t", w.tabLevel), node, node.String())
+
+		switch children := node.Children(); children {
+		case nil:
+		default:
+			w.tabLevel += 1
+			for _, child := range children {
+				if child != nil {
+					w.Walk(child)
+				}
 			}
+			w.tabLevel -= 1
 		}
-		w.tabLevel -= 1
 	}
 }

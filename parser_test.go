@@ -6,11 +6,11 @@ import (
 	"testing"
 
 	"stephensearles.com/php/ast"
-	. "stephensearles.com/php/passes/printing"
+	"stephensearles.com/php/passes/printing"
 )
 
 func assertEquals(found, expected ast.Node) bool {
-	w := &Walker{}
+	w := printing.NewWalker()
 	if !reflect.DeepEqual(found, expected) {
 		fmt.Printf("Found:    %s\n", found)
 		w.Walk(found)
