@@ -88,7 +88,8 @@ func (p *parser) parseExpression() (expr ast.Expression) {
 }
 
 func (p *parser) parseOperation(originalParenLevel int, lhs ast.Expression) (expr ast.Expression) {
-	switch p.next(); operationTypeForToken(p.current.typ) {
+	p.next()
+	switch operationTypeForToken(p.current.typ) {
 	case unaryOperation:
 		expr = p.parseUnaryExpressionLeft(lhs, p.current)
 	case binaryOperation:
@@ -97,6 +98,16 @@ func (p *parser) parseOperation(originalParenLevel int, lhs ast.Expression) (exp
 		expr = p.parseTernaryOperation(lhs)
 	case assignmentOperation:
 		expr = p.parseAssignmentOperation(lhs)
+	case subexpressionBeginOperation:
+		p.parenLevel += 1
+		expr = p.parseNextExpression()
+	case subexpressionEndOperation:
+		if p.parenLevel == originalParenLevel {
+			p.backup()
+			return lhs
+		}
+		p.parenLevel -= 1
+		expr = lhs
 	default:
 		p.backup()
 		return lhs

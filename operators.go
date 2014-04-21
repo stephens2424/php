@@ -13,6 +13,8 @@ const (
 	binaryOperation
 	ternaryOperation
 	assignmentOperation
+	subexpressionBeginOperation
+	subexpressionEndOperation
 )
 
 func operationTypeForToken(t token.Token) operationType {
@@ -39,6 +41,10 @@ func operationTypeForToken(t token.Token) operationType {
 		return ternaryOperation
 	case token.AssignmentOperator:
 		return assignmentOperation
+	case token.OpenParen:
+		return subexpressionBeginOperation
+	case token.CloseParen:
+		return subexpressionEndOperation
 	}
 	return nilOperation
 }
