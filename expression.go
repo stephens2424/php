@@ -194,7 +194,8 @@ func (p *parser) parseOperand() (expr ast.Expression) {
 			case token.ScopeResolutionOperator:
 				classIdent := p.current.val
 				p.next() // get onto ::, then we get to the next expr
-				expr = ast.NewClassExpression(classIdent, p.parseNextExpression())
+				p.next()
+				expr = ast.NewClassExpression(classIdent, p.parseOperand())
 				p.next()
 			default:
 				expr = ast.ConstantExpression{
@@ -206,7 +207,8 @@ func (p *parser) parseOperand() (expr ast.Expression) {
 			if p.peek().typ == token.ScopeResolutionOperator {
 				r := p.current.val
 				p.expect(token.ScopeResolutionOperator)
-				expr = ast.NewClassExpression(r, p.parseNextExpression())
+				p.next()
+				expr = ast.NewClassExpression(r, p.parseOperand())
 				return
 			}
 			p.next()
