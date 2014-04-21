@@ -67,7 +67,7 @@ TokenLoop:
 func (p *parser) parseNode() ast.Node {
 	switch p.current.typ {
 	case token.HTML:
-		return ast.Echo(ast.Literal{Type: ast.String})
+		return ast.Echo(ast.Literal{Type: ast.String, Value: p.current.val})
 	case token.PHPBegin:
 		return nil
 	case token.PHPEnd:
@@ -201,7 +201,7 @@ func (p *parser) parseStmt() ast.Statement {
 			return nil
 		}
 		p.expect(token.HTML)
-		expr := ast.Echo(&ast.Literal{Type: ast.String})
+		expr := ast.Echo(&ast.Literal{Type: ast.String, Value: p.current.val})
 		p.next()
 		if p.current.typ != token.EOF {
 			p.expectCurrent(token.PHPBegin)

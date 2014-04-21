@@ -743,7 +743,7 @@ type Literal struct {
 }
 
 func (l Literal) String() string {
-	return fmt.Sprintf("Literal-%s", l.Type)
+	return fmt.Sprintf("Literal-%s: %s", l.Type, l.Value)
 }
 
 func (l Literal) EvaluatesTo() Type {

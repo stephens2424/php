@@ -36,7 +36,7 @@ func TestClass(t *testing.T) {
 		Constants: []ast.Constant{
 			{
 				Variable: ast.NewVariable("my_const"),
-				Value:    &ast.Literal{Type: ast.String},
+				Value:    &ast.Literal{Type: ast.String, Value: `"test"`},
 			},
 		},
 		Properties: []ast.Property{
@@ -53,8 +53,8 @@ func TestClass(t *testing.T) {
 				Name:       "$arr",
 				Initialization: &ast.ArrayExpression{
 					Pairs: []ast.ArrayPair{
-						{Value: &ast.Literal{Type: ast.String}},
-						{Value: &ast.Literal{Type: ast.String}},
+						{Value: &ast.Literal{Type: ast.String, Value: `"one"`}},
+						{Value: &ast.Literal{Type: ast.String, Value: `"two"`}},
 					},
 				},
 			},
@@ -103,7 +103,7 @@ func TestClass(t *testing.T) {
 							},
 							{
 								Variable: ast.NewVariable("arg2"),
-								Default:  &ast.Literal{Type: ast.Boolean},
+								Default:  &ast.Literal{Type: ast.Boolean, Value: "false"},
 							},
 						},
 					},
@@ -147,7 +147,7 @@ func TestInstantiation(t *testing.T) {
 		Value: &ast.NewExpression{
 			Class: ast.NewClassExpression("Obj", &ast.ArrayLookupExpression{
 				Array: ast.NewVariable("classes"),
-				Index: &ast.Literal{Type: ast.String},
+				Index: &ast.Literal{Type: ast.String, Value: `'obj'`},
 			}),
 			Arguments: []ast.Expression{
 				ast.NewVariable("arg"),

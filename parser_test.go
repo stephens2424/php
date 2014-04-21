@@ -16,16 +16,40 @@ func assertEquals(found, expected ast.Node) bool {
 		w.Walk(found)
 		fmt.Printf("Expected: %+s\n", expected)
 		w.Walk(expected)
+		findDifference(found, expected)
 		return false
 	}
 	return true
+}
+
+func findDifference(found, expected ast.Node) {
+	w := printing.NewWalker()
+	foundChildren := found.Children()
+	expectedChildren := expected.Children()
+	if len(foundChildren) != len(expectedChildren) {
+		fmt.Printf("Found Subtree:    %s\n", found)
+		w.Walk(found)
+		fmt.Printf("Expected Subtree: %+s\n", expected)
+		w.Walk(expected)
+	} else if len(foundChildren) != 0 && len(foundChildren) == len(expectedChildren) {
+		for i := 0; i < len(foundChildren); i++ {
+			if !reflect.DeepEqual(foundChildren[i], expectedChildren[i]) {
+				findDifference(foundChildren[i], expectedChildren[i])
+			}
+		}
+	} else {
+		fmt.Printf("Found Subtree:    %s\n", found)
+		w.Walk(found)
+		fmt.Printf("Expected Subtree: %+s\n", expected)
+		w.Walk(expected)
+	}
 }
 
 func TestPHPParserHW(t *testing.T) {
 	testStr := `hello world`
 	p := NewParser(testStr)
 	a, _ := p.Parse()
-	tree := ast.Echo(ast.Literal{Type: ast.String})
+	tree := ast.Echo(ast.Literal{Type: ast.String, Value: `hello world`})
 	if !assertEquals(a[0], tree) {
 		t.Fatalf("Hello world did not correctly parse")
 	}
@@ -37,8 +61,8 @@ func TestPHPParserHWPHP(t *testing.T) {
 	p := NewParser(testStr)
 	a, _ := p.Parse()
 	tree := ast.Echo(
-		&ast.Literal{Type: ast.String},
-		&ast.Literal{Type: ast.String},
+		&ast.Literal{Type: ast.String, Value: `"hello world"`},
+		&ast.Literal{Type: ast.String, Value: `"!"`},
 	)
 	if !assertEquals(a[0], tree) {
 		t.Fatalf("Hello world did not correctly parse")
@@ -65,11 +89,11 @@ func TestIf(t *testing.T) {
 	p := NewParser(testStr)
 	a, _ := p.Parse()
 	tree := &ast.IfStmt{
-		Condition:  &ast.Literal{Type: ast.Boolean},
-		TrueBranch: ast.Echo(&ast.Literal{Type: ast.String}),
+		Condition:  &ast.Literal{Type: ast.Boolean, Value: "true"},
+		TrueBranch: ast.Echo(&ast.Literal{Type: ast.String, Value: `"hello world"`}),
 		FalseBranch: &ast.IfStmt{
-			Condition:   &ast.Literal{Type: ast.Boolean},
-			TrueBranch:  ast.Echo(&ast.Literal{Type: ast.String}),
+			Condition:   &ast.Literal{Type: ast.Boolean, Value: "false"},
+			TrueBranch:  ast.Echo(&ast.Literal{Type: ast.String, Value: `"no hello world"`}),
 			FalseBranch: ast.Block{},
 		},
 	}
@@ -117,8 +141,8 @@ func TestFunction(t *testing.T) {
 				Value: &ast.FunctionCallExpression{
 					FunctionName: ast.Identifier{Value: "TestFn"},
 					Arguments: []ast.Expression{
-						&ast.Literal{Type: ast.String},
-						&ast.Literal{Type: ast.Float},
+						&ast.Literal{Type: ast.String, Value: `"world"`},
+						&ast.Literal{Type: ast.Float, Value: "0"},
 					},
 				},
 				Operator: "=",
@@ -143,16 +167,16 @@ func TestExpressionParsing(t *testing.T) {
 	ifStmt := ast.IfStmt{
 		Condition: ast.OperatorExpression{
 			Operand1: ast.OperatorExpression{
-				Operand1: &ast.Literal{Type: ast.Float},
-				Operand2: &ast.Literal{Type: ast.Float},
+				Operand1: &ast.Literal{Type: ast.Float, Value: "1"},
+				Operand2: &ast.Literal{Type: ast.Float, Value: "2"},
 				Type:     ast.Numeric,
 				Operator: "+",
 			},
-			Operand2: &ast.Literal{Type: ast.Float},
+			Operand2: &ast.Literal{Type: ast.Float, Value: "3"},
 			Type:     ast.Boolean,
 			Operator: ">",
 		},
-		TrueBranch:  ast.Echo(&ast.Literal{Type: ast.String}),
+		TrueBranch:  ast.Echo(&ast.Literal{Type: ast.String, Value: `"good"`}),
 		FalseBranch: ast.Block{},
 	}
 	if len(a) != 1 {
@@ -173,16 +197,16 @@ func TestExpressionParsing(t *testing.T) {
 	ifStmt = ast.IfStmt{
 		Condition: ast.OperatorExpression{
 			Operand2: ast.OperatorExpression{
-				Operand1: &ast.Literal{Type: ast.Float},
-				Operand2: &ast.Literal{Type: ast.Float},
+				Operand1: &ast.Literal{Type: ast.Float, Value: "5"},
+				Operand2: &ast.Literal{Type: ast.Float, Value: "6"},
 				Type:     ast.Numeric,
 				Operator: "*",
 			},
-			Operand1: &ast.Literal{Type: ast.Float},
+			Operand1: &ast.Literal{Type: ast.Float, Value: "4"},
 			Type:     ast.Numeric,
 			Operator: "+",
 		},
-		TrueBranch:  ast.Echo(&ast.Literal{Type: ast.String}),
+		TrueBranch:  ast.Echo(&ast.Literal{Type: ast.String, Value: `"bad"`}),
 		FalseBranch: ast.Block{},
 	}
 	if len(a) != 1 {
@@ -202,22 +226,22 @@ func TestExpressionParsing(t *testing.T) {
 	a, _ = p.Parse()
 	ifStmt = ast.IfStmt{
 		Condition: ast.OperatorExpression{
-			Operand1: &ast.Literal{Type: ast.Float},
+			Operand1: &ast.Literal{Type: ast.Float, Value: `1`},
 			Operand2: ast.OperatorExpression{
 				Operand1: ast.OperatorExpression{
-					Operand1: &ast.Literal{Type: ast.Float},
-					Operand2: &ast.Literal{Type: ast.Float},
+					Operand1: &ast.Literal{Type: ast.Float, Value: `2`},
+					Operand2: &ast.Literal{Type: ast.Float, Value: `3`},
 					Type:     ast.Numeric,
 					Operator: "*",
 				},
-				Operand2: &ast.Literal{Type: ast.Float},
+				Operand2: &ast.Literal{Type: ast.Float, Value: `4`},
 				Operator: "+",
 				Type:     ast.Numeric,
 			},
 			Type:     ast.Boolean,
 			Operator: ">",
 		},
-		TrueBranch:  ast.Echo(&ast.Literal{Type: ast.String}),
+		TrueBranch:  ast.Echo(&ast.Literal{Type: ast.String, Value: `"good"`}),
 		FalseBranch: ast.Block{},
 	}
 	if len(a) != 1 {
@@ -258,9 +282,9 @@ func TestArray(t *testing.T) {
 				ast.BaseNode{},
 				ast.ArrayType{},
 				[]ast.ArrayPair{
-					{Value: &ast.Literal{Type: ast.String}},
-					{Value: &ast.Literal{Type: ast.String}},
-					{Value: &ast.Literal{Type: ast.String}},
+					{Value: &ast.Literal{Type: ast.String, Value: `"one"`}},
+					{Value: &ast.Literal{Type: ast.String, Value: `"two"`}},
+					{Value: &ast.Literal{Type: ast.String, Value: `"three"`}},
 				},
 			},
 		},
@@ -287,9 +311,9 @@ func TestArrayKeys(t *testing.T) {
 			ast.BaseNode{},
 			ast.ArrayType{},
 			[]ast.ArrayPair{
-				{Key: &ast.Literal{Type: ast.Float}, Value: &ast.Literal{Type: ast.String}},
-				{Key: &ast.Literal{Type: ast.Float}, Value: &ast.Literal{Type: ast.String}},
-				{Key: &ast.Literal{Type: ast.Float}, Value: &ast.Literal{Type: ast.String}},
+				{Key: &ast.Literal{Type: ast.Float, Value: "1"}, Value: &ast.Literal{Type: ast.String, Value: `"one"`}},
+				{Key: &ast.Literal{Type: ast.Float, Value: "2"}, Value: &ast.Literal{Type: ast.String, Value: `"two"`}},
+				{Key: &ast.Literal{Type: ast.Float, Value: "3"}, Value: &ast.Literal{Type: ast.String, Value: `"three"`}},
 			},
 		},
 	}}
@@ -449,12 +473,12 @@ func TestForLoop(t *testing.T) {
 	tree := &ast.ForStmt{
 		Initialization: ast.AssignmentExpression{
 			Assignee: ast.NewVariable("i"),
-			Value:    &ast.Literal{Type: ast.Float},
+			Value:    &ast.Literal{Type: ast.Float, Value: "0"},
 			Operator: "=",
 		},
 		Termination: ast.OperatorExpression{
 			Operand1: ast.NewVariable("i"),
-			Operand2: &ast.Literal{Type: ast.Float},
+			Operand2: &ast.Literal{Type: ast.Float, Value: "10"},
 			Operator: "<",
 			Type:     ast.Boolean,
 		},
@@ -523,7 +547,7 @@ func TestArrayLookup(t *testing.T) {
 			Expressions: []ast.Expression{&ast.ArrayLookupExpression{
 				Array: &ast.ArrayLookupExpression{
 					Array: ast.NewVariable("arr"),
-					Index: &ast.Literal{Type: ast.String},
+					Index: &ast.Literal{Type: ast.String, Value: `'one'`},
 				},
 				Index: ast.NewVariable("two"),
 			}},
@@ -572,7 +596,7 @@ func TestSwitch(t *testing.T) {
 				Expression: &ast.Literal{Type: ast.Float},
 				Block: ast.Block{
 					Statements: []ast.Statement{
-						ast.Echo(&ast.Literal{Type: ast.String}),
+						ast.Echo(&ast.Literal{Type: ast.String, Value: `"one"`}),
 					},
 				},
 			},
@@ -580,14 +604,14 @@ func TestSwitch(t *testing.T) {
 				Expression: &ast.Literal{Type: ast.Float},
 				Block: ast.Block{
 					Statements: []ast.Statement{
-						ast.Echo(&ast.Literal{Type: ast.String}),
+						ast.Echo(&ast.Literal{Type: ast.String, Value: `"two"`}),
 					},
 				},
 			},
 		},
 		DefaultCase: &ast.Block{
 			Statements: []ast.Statement{
-				ast.Echo(&ast.Literal{Type: ast.String}),
+				ast.Echo(&ast.Literal{Type: ast.String, Value: `"def"`}),
 			},
 		},
 	}
@@ -610,7 +634,7 @@ func TestLiterals(t *testing.T) {
 	tree := []ast.Node{
 		ast.ExpressionStmt{ast.AssignmentExpression{
 			Assignee: ast.NewVariable("var"),
-			Value:    &ast.Literal{Type: ast.String},
+			Value:    &ast.Literal{Type: ast.String, Value: `"one"`},
 			Operator: "=",
 		}},
 		ast.ExpressionStmt{ast.AssignmentExpression{
@@ -644,7 +668,7 @@ func TestComments(t *testing.T) {
   */
   #line ?>html`
 	tree := []ast.Node{
-		ast.Echo(ast.Literal{Type: ast.String}),
+		ast.Echo(ast.Literal{Type: ast.String, Value: "html"}),
 	}
 	p := NewParser(testStr)
 	a, _ := p.Parse()
