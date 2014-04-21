@@ -7,8 +7,10 @@ import (
 
 func (p *parser) parseInstantiation() ast.Expression {
 	p.expectCurrent(token.NewOperator)
+	p.next()
+
 	expr := &ast.NewExpression{}
-	expr.Class = p.parseNextExpression()
+	expr.Class = p.parseOperand()
 
 	if p.peek().typ == token.OpenParen {
 		p.expect(token.OpenParen)
