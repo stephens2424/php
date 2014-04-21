@@ -102,6 +102,33 @@ func TestIf(t *testing.T) {
 	}
 }
 
+func TestIfBraces(t *testing.T) {
+	testStr := `<?php
+    if (true) {
+      echo "hello world";
+    } else if (false) {
+      echo "no hello world";
+    }`
+	p := NewParser(testStr)
+	a, _ := p.Parse()
+	tree := &ast.IfStmt{
+		Condition: &ast.Literal{Type: ast.Boolean, Value: "true"},
+		TrueBranch: &ast.Block{
+			Statements: []ast.Statement{ast.Echo(&ast.Literal{Type: ast.String, Value: `"hello world"`})},
+		},
+		FalseBranch: &ast.IfStmt{
+			Condition: &ast.Literal{Type: ast.Boolean, Value: "false"},
+			TrueBranch: &ast.Block{
+				Statements: []ast.Statement{ast.Echo(&ast.Literal{Type: ast.String, Value: `"no hello world"`})},
+			},
+			FalseBranch: ast.Block{},
+		},
+	}
+	if !assertEquals(a[0], tree) {
+		t.Fatalf("If with braces did not correctly parse")
+	}
+}
+
 func TestAssignment(t *testing.T) {
 	testStr := `<?php
     $test = "hello world";
