@@ -162,10 +162,12 @@ func (p *parser) parseOperand() (expr ast.Expression) {
 				expr = p.parseArrayLookup(expr)
 				p.next()
 			}
-			if p.current.typ == token.ObjectOperator {
-				expr = p.parseObjectLookup(expr)
-				p.next()
-			}
+		case token.ObjectOperator:
+			expr = p.parseObjectLookup(expr)
+			p.next()
+		case token.ArrayLookupOperatorLeft:
+			expr = p.parseArrayLookup(expr)
+			p.next()
 		case token.Identifier:
 			switch p.peek().typ {
 			case token.OpenParen:
