@@ -165,18 +165,7 @@ func (p *parser) parseOperand() (expr ast.Expression) {
 			expr = p.parseArrayDeclaration()
 			p.next()
 		case token.VariableOperator:
-			expr = p.parseVariable()
-			p.next()
-			// Array lookup with curly braces is a special case that is only supported by PHP in
-			// simple contexts.
-			switch p.current.typ {
-			case token.BlockBegin:
-				expr = p.parseArrayLookup(expr)
-				p.next()
-			case token.ScopeResolutionOperator:
-				expr = &ast.ClassExpression{Receiver: expr, Expression: p.parseNextExpression()}
-				p.next()
-			}
+			expr = p.parseVariableOperand()
 		case token.ObjectOperator:
 			expr = p.parseObjectLookup(expr)
 			p.next()
@@ -184,34 +173,9 @@ func (p *parser) parseOperand() (expr ast.Expression) {
 			expr = p.parseArrayLookup(expr)
 			p.next()
 		case token.Identifier:
-			switch p.peek().typ {
-			case token.OpenParen:
-				// Function calls are okay here because we know they came with
-				// a non-dynamic identifier.
-				expr = p.parseFunctionCall(ast.Identifier{Value: p.current.val})
-				p.next()
-				continue
-			case token.ScopeResolutionOperator:
-				classIdent := p.current.val
-				p.next() // get onto ::, then we get to the next expr
-				p.next()
-				expr = ast.NewClassExpression(classIdent, p.parseOperand())
-				p.next()
-			default:
-				expr = ast.ConstantExpression{
-					Variable: ast.NewVariable(p.current.val),
-				}
-				p.next()
-			}
+			expr = p.parseIdentifier()
 		case token.Self, token.Static, token.Parent:
-			if p.peek().typ == token.ScopeResolutionOperator {
-				r := p.current.val
-				p.expect(token.ScopeResolutionOperator)
-				p.next()
-				expr = ast.NewClassExpression(r, p.parseOperand())
-				return
-			}
-			p.next()
+			expr = p.parseScopeResolutionFromKeyword()
 		default:
 			p.backup()
 			return
@@ -268,5 +232,56 @@ func (p *parser) parseIgnoreError() ast.Expression {
 func (p *parser) parseNew(originalParenLev int) ast.Expression {
 	expr := p.parseInstantiation()
 	expr = p.parseOperation(originalParenLev, expr)
+	return expr
+}
+
+func (p *parser) parseIdentifier() (expr ast.Expression) {
+	switch p.peek().typ {
+	case token.OpenParen:
+		// Function calls are okay here because we know they came with
+		// a non-dynamic identifier.
+		expr = p.parseFunctionCall(ast.Identifier{Value: p.current.val})
+		p.next()
+	case token.ScopeResolutionOperator:
+		classIdent := p.current.val
+		p.next() // get onto ::, then we get to the next expr
+		p.next()
+		expr = ast.NewClassExpression(classIdent, p.parseOperand())
+		p.next()
+	default:
+		expr = ast.ConstantExpression{
+			Variable: ast.NewVariable(p.current.val),
+		}
+		p.next()
+	}
+	return expr
+}
+
+// parseScopeResolutionFromKeyword specifically parses self::, static::, and parent::
+func (p *parser) parseScopeResolutionFromKeyword() ast.Expression {
+	if p.peek().typ == token.ScopeResolutionOperator {
+		r := p.current.val
+		p.expect(token.ScopeResolutionOperator)
+		p.next()
+		return ast.NewClassExpression(r, p.parseOperand())
+	}
+	p.next()
+	return nil
+}
+
+func (p *parser) parseVariableOperand() ast.Expression {
+	expr := p.parseVariable()
+	p.next()
+	// Array lookup with curly braces is a special case that is only supported by PHP in
+	// simple contexts.
+	switch p.current.typ {
+	case token.BlockBegin:
+		expr = p.parseArrayLookup(expr)
+		p.next()
+	case token.ScopeResolutionOperator:
+		expr = &ast.ClassExpression{Receiver: expr, Expression: p.parseNextExpression()}
+		p.next()
+	}
+
 	return expr
 }
