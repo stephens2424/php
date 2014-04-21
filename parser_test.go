@@ -561,7 +561,7 @@ func TestArrayLookup(t *testing.T) {
 					},
 				},
 				Operator: "=",
-				Value:    &ast.Literal{Type: ast.Float},
+				Value:    &ast.Literal{Type: ast.Float, Value: "2"},
 			},
 		},
 	}
@@ -593,7 +593,7 @@ func TestSwitch(t *testing.T) {
 		Expression: ast.NewVariable("var"),
 		Cases: []*ast.SwitchCase{
 			{
-				Expression: &ast.Literal{Type: ast.Float},
+				Expression: &ast.Literal{Type: ast.Float, Value: "1"},
 				Block: ast.Block{
 					Statements: []ast.Statement{
 						ast.Echo(&ast.Literal{Type: ast.String, Value: `"one"`}),
@@ -601,7 +601,7 @@ func TestSwitch(t *testing.T) {
 				},
 			},
 			{
-				Expression: &ast.Literal{Type: ast.Float},
+				Expression: &ast.Literal{Type: ast.Float, Value: "2"},
 				Block: ast.Block{
 					Statements: []ast.Statement{
 						ast.Echo(&ast.Literal{Type: ast.String, Value: `"two"`}),
@@ -639,17 +639,17 @@ func TestLiterals(t *testing.T) {
 		}},
 		ast.ExpressionStmt{ast.AssignmentExpression{
 			Assignee: ast.NewVariable("var"),
-			Value:    &ast.Literal{Type: ast.Float},
+			Value:    &ast.Literal{Type: ast.Float, Value: "2"},
 			Operator: "=",
 		}},
 		ast.ExpressionStmt{ast.AssignmentExpression{
 			Assignee: ast.NewVariable("var"),
-			Value:    &ast.Literal{Type: ast.Boolean},
+			Value:    &ast.Literal{Type: ast.Boolean, Value: "true"},
 			Operator: "=",
 		}},
 		ast.ExpressionStmt{ast.AssignmentExpression{
 			Assignee: ast.NewVariable("var"),
-			Value:    &ast.Literal{Type: ast.Null},
+			Value:    &ast.Literal{Type: ast.Null, Value: "null"},
 			Operator: "=",
 		}},
 	}
@@ -732,7 +732,7 @@ func TestCastOperator(t *testing.T) {
 		ast.ExpressionStmt{ast.AssignmentExpression{
 			Assignee: ast.NewVariable("var"),
 			Value: ast.OperatorExpression{
-				Operand1: &ast.Literal{Type: ast.Float},
+				Operand1: &ast.Literal{Type: ast.Float, Value: "1.0"},
 				Operator: "(double)",
 				Type:     ast.Numeric,
 			},

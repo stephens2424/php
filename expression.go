@@ -158,8 +158,12 @@ func (p *parser) parseOperand() (expr ast.Expression) {
 			p.next()
 			// Array lookup with curly braces is a special case that is only supported by PHP in
 			// simple contexts.
-			if p.current.typ == token.BlockBegin {
+			switch p.current.typ {
+			case token.BlockBegin:
 				expr = p.parseArrayLookup(expr)
+				p.next()
+			case token.ScopeResolutionOperator:
+				expr = &ast.ClassExpression{Receiver: expr, Expression: p.parseNextExpression()}
 				p.next()
 			}
 		case token.ObjectOperator:
@@ -177,7 +181,9 @@ func (p *parser) parseOperand() (expr ast.Expression) {
 				p.next()
 				continue
 			case token.ScopeResolutionOperator:
-				expr = ast.NewClassExpression(p.current.val, p.parseNextExpression())
+				classIdent := p.current.val
+				p.next() // get onto ::, then we get to the next expr
+				expr = ast.NewClassExpression(classIdent, p.parseNextExpression())
 				p.next()
 			default:
 				expr = ast.ConstantExpression{
