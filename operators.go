@@ -95,7 +95,12 @@ func (p *parser) parseBinaryOperation(lhs ast.Expression, operator Item, origina
 }
 
 func (p *parser) parseTernaryOperation(lhs ast.Expression) ast.Expression {
-	truthy := p.parseNextExpression()
+	var truthy ast.Expression
+	if p.peek().typ == token.TernaryOperator2 {
+		truthy = lhs
+	} else {
+		truthy = p.parseNextExpression()
+	}
 	p.expect(token.TernaryOperator2)
 	falsy := p.parseNextExpression()
 	return &ast.OperatorExpression{
