@@ -44,6 +44,12 @@ func (f *formatWalker) printNode(node ast.Node) {
 		for _, stmt := range n.Statements {
 			f.Walk(stmt)
 		}
+	default:
+		f.printTabbedLine()
+		f.printf("// unimplemented %T\n", n)
+		for _, child := range n.Children() {
+			f.Walk(child)
+		}
 	}
 }
 
