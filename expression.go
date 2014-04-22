@@ -201,7 +201,7 @@ func (p *parser) parseLiteral() *ast.Literal {
 func (p *parser) parseVariable() ast.Expression {
 	p.expectCurrent(token.VariableOperator)
 	switch p.next(); {
-	case isKeyword(p.current.typ):
+	case isKeyword(p.current.typ, p.current.val):
 		// keywords are all valid variable names
 		fallthrough
 	case p.current.typ == token.Identifier:

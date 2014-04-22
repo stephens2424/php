@@ -21,6 +21,7 @@ function foo(barType $bar, $foobar) {
 
 class MyClass {
   public myMethod() {
+    ++self::$num;
   }
 }
 
@@ -105,6 +106,12 @@ func TestPHPLexer(t *testing.T) {
 	i = assertNext(t, l, token.OpenParen)
 	i = assertNext(t, l, token.CloseParen)
 	i = assertNext(t, l, token.BlockBegin)
+	i = assertNext(t, l, token.UnaryOperator)
+	i = assertNext(t, l, token.Self)
+	i = assertNext(t, l, token.ScopeResolutionOperator)
+	i = assertNext(t, l, token.VariableOperator)
+	i = assertNext(t, l, token.Identifier)
+	i = assertNext(t, l, token.StatementEnd)
 	i = assertNext(t, l, token.BlockEnd)
 	i = assertNext(t, l, token.BlockEnd)
 
