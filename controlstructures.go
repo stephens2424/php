@@ -33,6 +33,7 @@ func (p *parser) parseIf() *ast.IfStmt {
 		}
 	default:
 		n.FalseBranch = ast.Block{}
+		p.backup()
 	}
 	return n
 }
