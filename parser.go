@@ -229,9 +229,7 @@ func (p *parser) parseStmt() ast.Statement {
 		return p.parseForeach()
 	case token.Switch:
 		return p.parseSwitch()
-	case token.Abstract:
-		fallthrough
-	case token.Class:
+	case token.Abstract, token.Final, token.Class:
 		return p.parseClass()
 	case token.Interface:
 		return p.parseInterface()

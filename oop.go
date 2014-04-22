@@ -30,6 +30,9 @@ func (p *parser) parseClass() ast.Class {
 	if p.current.typ == token.Abstract {
 		p.expect(token.Class)
 	}
+	if p.current.typ == token.Final {
+		p.expect(token.Class)
+	}
 	p.expect(token.Identifier)
 	name := p.current.val
 	if p.peek().typ == token.Extends {
