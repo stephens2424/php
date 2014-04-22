@@ -281,6 +281,10 @@ func (p *parser) parseVariableOperand() ast.Expression {
 	case token.ScopeResolutionOperator:
 		expr = &ast.ClassExpression{Receiver: expr, Expression: p.parseNextExpression()}
 		p.next()
+	case token.OpenParen:
+		p.backup()
+		expr = p.parseFunctionCall(expr)
+		p.next()
 	}
 
 	return expr
