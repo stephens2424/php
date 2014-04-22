@@ -221,9 +221,6 @@ func lexBlockComment(l *lexer) stateFn {
 		// the file ends before we find */
 		commentLength = len(l.input[l.pos:])
 	}
-	if phpEndLength := strings.Index(l.input[l.pos:l.pos+commentLength], phpEnd); phpEndLength >= 0 {
-		commentLength = phpEndLength
-	}
 	l.pos += commentLength
 	l.ignore()
 	return lexPHP
