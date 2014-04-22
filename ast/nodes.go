@@ -523,6 +523,7 @@ type ClassExpression struct {
 	BaseNode
 	Receiver   Expression
 	Expression Expression
+	Type       Type
 }
 
 func NewClassExpression(r string, e Expression) *ClassExpression {
@@ -542,6 +543,10 @@ func (c ClassExpression) String() string {
 
 func (c ClassExpression) Children() []Node {
 	return []Node{c.Expression}
+}
+
+func (c ClassExpression) AssignableType() Type {
+	return c.Type
 }
 
 type Method struct {
