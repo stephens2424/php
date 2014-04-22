@@ -263,7 +263,7 @@ func (p *parser) parseScopeResolutionFromKeyword() ast.Expression {
 		r := p.current.val
 		p.expect(token.ScopeResolutionOperator)
 		p.next()
-		return ast.NewClassExpression(r, p.parseOperand())
+		ast.NewClassExpression(r, p.parseOperand())
 	}
 	p.next()
 	return nil
