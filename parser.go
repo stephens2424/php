@@ -7,9 +7,14 @@ import (
 	"stephensearles.com/php/token"
 )
 
+// Parser handles scanning through and parsing a PHP source string into an AST. It is configurable
+// to have various types of debugging features.
 type Parser struct {
-	lexer *lexer
+	Debug       bool // Debug causes the parser to print all errors to stdout and relay any panic upon internal panic recovery.
+	PrintTokens bool // PrintTokens causes the parser to print all tokens received from the lexer to stdout.
+	MaxErrors   int  // Indicates the number of errors to allow before triggering a panic. The default is 10.
 
+	lexer      *lexer
 	previous   []Item
 	idx        int
 	current    Item
@@ -17,12 +22,9 @@ type Parser struct {
 	parenLevel int
 	errorMap   map[int]bool
 	errorCount int
-
-	Debug       bool
-	PrintTokens bool
-	MaxErrors   int
 }
 
+// NewParser readies a parser object for the given input string.
 func NewParser(input string) *Parser {
 	p := &Parser{
 		idx:       -1,
@@ -33,6 +35,7 @@ func NewParser(input string) *Parser {
 	return p
 }
 
+// Parse consumes the input string to produce an AST that represents it.
 func (p *Parser) Parse() (nodes []ast.Node, errors []error) {
 	defer func() {
 		if r := recover(); r != nil {

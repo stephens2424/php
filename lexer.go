@@ -182,18 +182,21 @@ func init() {
 	}
 }
 
+// Item represents a lexed item.
 type Item struct {
 	typ token.Token
 	pos Location
 	val string
 }
 
+// Location represents a position within a PHP file.
 type Location struct {
 	Pos  int
 	Line int
 	File string
 }
 
+// String renders a string representation of the item.
 func (i Item) String() string {
 	switch i.typ {
 	case token.EOF:
