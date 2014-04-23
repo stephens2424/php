@@ -5,7 +5,7 @@ import (
 	"stephensearles.com/php/token"
 )
 
-func (p *parser) parseInstantiation() ast.Expression {
+func (p *Parser) parseInstantiation() ast.Expression {
 	p.expectCurrent(token.NewOperator)
 	p.next()
 
@@ -26,7 +26,7 @@ func (p *parser) parseInstantiation() ast.Expression {
 	return expr
 }
 
-func (p *parser) parseClass() ast.Class {
+func (p *Parser) parseClass() ast.Class {
 	if p.current.typ == token.Abstract {
 		p.expect(token.Class)
 	}
@@ -51,7 +51,7 @@ func (p *parser) parseClass() ast.Class {
 	return p.parseClassFields(ast.Class{Name: name})
 }
 
-func (p *parser) parseObjectLookup(r ast.Expression) (expr ast.Expression) {
+func (p *Parser) parseObjectLookup(r ast.Expression) (expr ast.Expression) {
 	p.expectCurrent(token.ObjectOperator)
 	prop := &ast.PropertyExpression{
 		Receiver: r,
@@ -77,7 +77,7 @@ func (p *parser) parseObjectLookup(r ast.Expression) (expr ast.Expression) {
 	return
 }
 
-func (p *parser) parseVisibility() (vis ast.Visibility, found bool) {
+func (p *Parser) parseVisibility() (vis ast.Visibility, found bool) {
 	switch p.peek().typ {
 	case token.Private:
 		vis = ast.Private
@@ -92,7 +92,7 @@ func (p *parser) parseVisibility() (vis ast.Visibility, found bool) {
 	return vis, true
 }
 
-func (p *parser) parseAbstract() bool {
+func (p *Parser) parseAbstract() bool {
 	if p.peek().typ == token.Abstract {
 		p.next()
 		return true
@@ -100,7 +100,7 @@ func (p *parser) parseAbstract() bool {
 	return false
 }
 
-func (p *parser) parseClassFields(c ast.Class) ast.Class {
+func (p *Parser) parseClassFields(c ast.Class) ast.Class {
 	// Starting on BlockBegin
 	c.Methods = make([]ast.Method, 0)
 	c.Properties = make([]ast.Property, 0)
@@ -156,7 +156,7 @@ func (p *parser) parseClassFields(c ast.Class) ast.Class {
 	return c
 }
 
-func (p *parser) parseInterface() *ast.Interface {
+func (p *Parser) parseInterface() *ast.Interface {
 	i := &ast.Interface{
 		Inherits: make([]string, 0),
 	}
@@ -197,7 +197,7 @@ func (p *parser) parseInterface() *ast.Interface {
 	return i
 }
 
-func (p *parser) parseClassMemberSettings() (vis ast.Visibility, static, final, abstract bool) {
+func (p *Parser) parseClassMemberSettings() (vis ast.Visibility, static, final, abstract bool) {
 	var foundVis bool
 	vis = ast.Public
 	for {

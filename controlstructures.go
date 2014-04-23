@@ -5,7 +5,7 @@ import (
 	"stephensearles.com/php/token"
 )
 
-func (p *parser) parseIf() *ast.IfStmt {
+func (p *Parser) parseIf() *ast.IfStmt {
 	p.expect(token.OpenParen)
 	n := &ast.IfStmt{}
 	p.next()
@@ -38,7 +38,7 @@ func (p *parser) parseIf() *ast.IfStmt {
 	return n
 }
 
-func (p *parser) parseWhile() ast.Statement {
+func (p *Parser) parseWhile() ast.Statement {
 	p.expect(token.OpenParen)
 	term := p.parseNextExpression()
 	p.expect(token.CloseParen)
@@ -50,7 +50,7 @@ func (p *parser) parseWhile() ast.Statement {
 	}
 }
 
-func (p *parser) parseForeach() ast.Statement {
+func (p *Parser) parseForeach() ast.Statement {
 	stmt := &ast.ForeachStmt{}
 	p.expect(token.OpenParen)
 	stmt.Source = p.parseNextExpression()
@@ -79,7 +79,7 @@ func (p *parser) parseForeach() ast.Statement {
 	return stmt
 }
 
-func (p *parser) parseFor() ast.Statement {
+func (p *Parser) parseFor() ast.Statement {
 	stmt := &ast.ForStmt{}
 	p.expect(token.OpenParen)
 	stmt.Initialization = p.parseNextExpression()
@@ -93,7 +93,7 @@ func (p *parser) parseFor() ast.Statement {
 	return stmt
 }
 
-func (p *parser) parseDo() ast.Statement {
+func (p *Parser) parseDo() ast.Statement {
 	block := p.parseBlock()
 	p.expect(token.While)
 	p.expect(token.OpenParen)
@@ -106,7 +106,7 @@ func (p *parser) parseDo() ast.Statement {
 	}
 }
 
-func (p *parser) parseSwitch() ast.Statement {
+func (p *Parser) parseSwitch() ast.Statement {
 	stmt := ast.SwitchStmt{}
 	p.expect(token.OpenParen)
 	stmt.Expression = p.parseExpression()
@@ -136,7 +136,7 @@ func (p *parser) parseSwitch() ast.Statement {
 	}
 }
 
-func (p *parser) parseSwitchBlock() *ast.Block {
+func (p *Parser) parseSwitchBlock() *ast.Block {
 	needBlockEnd := false
 	if p.current.typ == token.BlockBegin {
 		needBlockEnd = true

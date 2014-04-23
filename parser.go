@@ -7,7 +7,7 @@ import (
 	"stephensearles.com/php/token"
 )
 
-type parser struct {
+type Parser struct {
 	lexer *lexer
 
 	previous   []Item
@@ -23,8 +23,8 @@ type parser struct {
 	MaxErrors   int
 }
 
-func NewParser(input string) *parser {
-	p := &parser{
+func NewParser(input string) *Parser {
+	p := &Parser{
 		idx:       -1,
 		MaxErrors: 10,
 		lexer:     newLexer(input),
@@ -33,7 +33,7 @@ func NewParser(input string) *parser {
 	return p
 }
 
-func (p *parser) Parse() (nodes []ast.Node, errors []error) {
+func (p *Parser) Parse() (nodes []ast.Node, errors []error) {
 	defer func() {
 		if r := recover(); r != nil {
 			errors = append([]error{fmt.Errorf("%s", r)}, p.errors...)
@@ -64,7 +64,7 @@ TokenLoop:
 	return nodes, errors
 }
 
-func (p *parser) parseNode() ast.Node {
+func (p *Parser) parseNode() ast.Node {
 	switch p.current.typ {
 	case token.HTML:
 		return ast.Echo(ast.Literal{Type: ast.String, Value: p.current.val})
@@ -76,7 +76,7 @@ func (p *parser) parseNode() ast.Node {
 	return p.parseStmt()
 }
 
-func (p *parser) next() {
+func (p *Parser) next() {
 	p.idx += 1
 	if len(p.previous) <= p.idx {
 		p.current = p.lexer.nextItem()
@@ -89,19 +89,19 @@ func (p *parser) next() {
 	}
 }
 
-func (p *parser) backup() {
+func (p *Parser) backup() {
 	p.idx -= 1
 	p.current = p.previous[p.idx]
 }
 
-func (p *parser) peek() (i Item) {
+func (p *Parser) peek() (i Item) {
 	p.next()
 	i = p.current
 	p.backup()
 	return
 }
 
-func (p *parser) expectCurrent(i ...token.Token) {
+func (p *Parser) expectCurrent(i ...token.Token) {
 	for _, typ := range i {
 		if p.current.typ == typ {
 			return
@@ -110,7 +110,7 @@ func (p *parser) expectCurrent(i ...token.Token) {
 	p.expected(i...)
 }
 
-func (p *parser) expectAndNext(i ...token.Token) {
+func (p *Parser) expectAndNext(i ...token.Token) {
 	defer p.next()
 	for _, typ := range i {
 		if p.current.typ == typ {
@@ -120,16 +120,16 @@ func (p *parser) expectAndNext(i ...token.Token) {
 	p.expected(i...)
 }
 
-func (p *parser) expect(i ...token.Token) {
+func (p *Parser) expect(i ...token.Token) {
 	p.next()
 	p.expectCurrent(i...)
 }
 
-func (p *parser) expected(i ...token.Token) {
+func (p *Parser) expected(i ...token.Token) {
 	p.errorf("Found %s, expected %s", p.current, i)
 }
 
-func (p *parser) errorf(str string, args ...interface{}) {
+func (p *Parser) errorf(str string, args ...interface{}) {
 	if p.errorCount > p.MaxErrors {
 		panic("too many errors")
 	}
@@ -142,16 +142,16 @@ func (p *parser) errorf(str string, args ...interface{}) {
 	p.errorMap[p.current.pos.Line] = true
 }
 
-func (p *parser) errorPrefix() string {
+func (p *Parser) errorPrefix() string {
 	return fmt.Sprintf("%s %d", p.lexer.file, p.current.pos.Line)
 }
 
-func (p *parser) parseNextExpression() ast.Expression {
+func (p *Parser) parseNextExpression() ast.Expression {
 	p.next()
 	return p.parseExpression()
 }
 
-func (p *parser) parseStmt() ast.Statement {
+func (p *Parser) parseStmt() ast.Statement {
 	switch p.current.typ {
 	case token.BlockBegin:
 		p.backup()
@@ -304,20 +304,20 @@ func (p *parser) parseStmt() ast.Statement {
 	}
 }
 
-func (p *parser) expectStmtEnd() {
+func (p *Parser) expectStmtEnd() {
 	if p.peek().typ != token.PHPEnd {
 		p.expect(token.StatementEnd)
 	}
 }
 
-func (p *parser) parseBlock() *ast.Block {
+func (p *Parser) parseBlock() *ast.Block {
 	p.expect(token.BlockBegin)
 	b := p.parseStatementsUntil(token.BlockEnd)
 	p.expectCurrent(token.BlockEnd)
 	return b
 }
 
-func (p *parser) parseStatementsUntil(endTokens ...token.Token) *ast.Block {
+func (p *Parser) parseStatementsUntil(endTokens ...token.Token) *ast.Block {
 	block := &ast.Block{}
 	breakTypes := map[token.Token]bool{}
 	for _, typ := range endTokens {

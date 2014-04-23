@@ -5,14 +5,14 @@ import (
 	"stephensearles.com/php/token"
 )
 
-func (p *parser) parseFunctionStmt() *ast.FunctionStmt {
+func (p *Parser) parseFunctionStmt() *ast.FunctionStmt {
 	stmt := &ast.FunctionStmt{}
 	stmt.FunctionDefinition = p.parseFunctionDefinition()
 	stmt.Body = p.parseBlock()
 	return stmt
 }
 
-func (p *parser) parseFunctionDefinition() *ast.FunctionDefinition {
+func (p *Parser) parseFunctionDefinition() *ast.FunctionDefinition {
 	def := &ast.FunctionDefinition{}
 	if p.peek().typ == token.AmpersandOperator {
 		// This is a function returning a reference ... ignore this for now
@@ -42,7 +42,7 @@ func (p *parser) parseFunctionDefinition() *ast.FunctionDefinition {
 	}
 }
 
-func (p *parser) parseFunctionArgument() ast.FunctionArgument {
+func (p *Parser) parseFunctionArgument() ast.FunctionArgument {
 	arg := ast.FunctionArgument{}
 	switch p.peek().typ {
 	case token.Identifier, token.Array:
@@ -63,13 +63,13 @@ func (p *parser) parseFunctionArgument() ast.FunctionArgument {
 	return arg
 }
 
-func (p *parser) parseFunctionCall(callable ast.Expression) *ast.FunctionCallExpression {
+func (p *Parser) parseFunctionCall(callable ast.Expression) *ast.FunctionCallExpression {
 	expr := &ast.FunctionCallExpression{}
 	expr.FunctionName = callable
 	return p.parseFunctionArguments(expr)
 }
 
-func (p *parser) parseFunctionArguments(expr *ast.FunctionCallExpression) *ast.FunctionCallExpression {
+func (p *Parser) parseFunctionArguments(expr *ast.FunctionCallExpression) *ast.FunctionCallExpression {
 	expr.Arguments = make([]ast.Expression, 0)
 	p.expect(token.OpenParen)
 	if p.peek().typ == token.CloseParen {
@@ -90,7 +90,7 @@ func (p *parser) parseFunctionArguments(expr *ast.FunctionCallExpression) *ast.F
 
 }
 
-func (p *parser) parseAnonymousFunction() ast.Expression {
+func (p *Parser) parseAnonymousFunction() ast.Expression {
 	f := &ast.AnonymousFunction{}
 	f.Arguments = make([]ast.FunctionArgument, 0)
 	f.ClosureVariables = make([]ast.FunctionArgument, 0)

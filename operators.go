@@ -79,7 +79,7 @@ func newBinaryOperation(operator Item, expr1, expr2 ast.Expression) ast.Operator
 	}
 }
 
-func (p *parser) parseBinaryOperation(lhs ast.Expression, operator Item, originalParenLevel int) ast.Expression {
+func (p *Parser) parseBinaryOperation(lhs ast.Expression, operator Item, originalParenLevel int) ast.Expression {
 	p.next()
 	rhs := p.parseOperand()
 	for {
@@ -94,7 +94,7 @@ func (p *parser) parseBinaryOperation(lhs ast.Expression, operator Item, origina
 	return newBinaryOperation(operator, lhs, rhs)
 }
 
-func (p *parser) parseTernaryOperation(lhs ast.Expression) ast.Expression {
+func (p *Parser) parseTernaryOperation(lhs ast.Expression) ast.Expression {
 	var truthy ast.Expression
 	if p.peek().typ == token.TernaryOperator2 {
 		truthy = lhs
@@ -112,10 +112,10 @@ func (p *parser) parseTernaryOperation(lhs ast.Expression) ast.Expression {
 	}
 }
 
-func (p *parser) parseUnaryExpressionRight(operand ast.Expression, operator Item) ast.Expression {
+func (p *Parser) parseUnaryExpressionRight(operand ast.Expression, operator Item) ast.Expression {
 	return newUnaryOperation(operator, operand)
 }
 
-func (p *parser) parseUnaryExpressionLeft(operand ast.Expression, operator Item) ast.Expression {
+func (p *Parser) parseUnaryExpressionLeft(operand ast.Expression, operator Item) ast.Expression {
 	return newUnaryOperation(operator, operand)
 }

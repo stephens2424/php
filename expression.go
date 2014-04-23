@@ -34,7 +34,7 @@ var operatorPrecedence = map[token.Token]int{
 	token.WrittenOrOperator:  1,
 }
 
-func (p *parser) parseExpression() (expr ast.Expression) {
+func (p *Parser) parseExpression() (expr ast.Expression) {
 	originalParenLev := p.parenLevel
 
 	switch p.current.typ {
@@ -87,7 +87,7 @@ func (p *parser) parseExpression() (expr ast.Expression) {
 	return
 }
 
-func (p *parser) parseOperation(originalParenLevel int, lhs ast.Expression) (expr ast.Expression) {
+func (p *Parser) parseOperation(originalParenLevel int, lhs ast.Expression) (expr ast.Expression) {
 	p.next()
 	switch operationTypeForToken(p.current.typ) {
 	case unaryOperation:
@@ -115,7 +115,7 @@ func (p *parser) parseOperation(originalParenLevel int, lhs ast.Expression) (exp
 	return p.parseOperation(originalParenLevel, expr)
 }
 
-func (p *parser) parseAssignmentOperation(lhs ast.Expression) (expr ast.Expression) {
+func (p *Parser) parseAssignmentOperation(lhs ast.Expression) (expr ast.Expression) {
 	assignee, ok := lhs.(ast.Assignable)
 	if !ok {
 		p.errorf("%s is not assignable", lhs)
@@ -132,7 +132,7 @@ func (p *parser) parseAssignmentOperation(lhs ast.Expression) (expr ast.Expressi
 // parseOperand takes the current token and returns it as the simplest
 // expression for that token. That means an expression with no operators
 // except for the object operator.
-func (p *parser) parseOperand() (expr ast.Expression) {
+func (p *Parser) parseOperand() (expr ast.Expression) {
 
 	// These cases must come first and not repeat
 	switch p.current.typ {
@@ -183,7 +183,7 @@ func (p *parser) parseOperand() (expr ast.Expression) {
 	}
 }
 
-func (p *parser) parseLiteral() *ast.Literal {
+func (p *Parser) parseLiteral() *ast.Literal {
 	switch p.current.typ {
 	case token.StringLiteral:
 		return &ast.Literal{Type: ast.String, Value: p.current.val}
@@ -198,7 +198,7 @@ func (p *parser) parseLiteral() *ast.Literal {
 	return nil
 }
 
-func (p *parser) parseVariable() ast.Expression {
+func (p *Parser) parseVariable() ast.Expression {
 	p.expectCurrent(token.VariableOperator)
 	switch p.next(); {
 	case isKeyword(p.current.typ, p.current.val):
@@ -212,7 +212,7 @@ func (p *parser) parseVariable() ast.Expression {
 	}
 }
 
-func (p *parser) parseInclude() ast.Expression {
+func (p *Parser) parseInclude() ast.Expression {
 	inc := ast.Include{Expressions: make([]ast.Expression, 0)}
 	for {
 		inc.Expressions = append(inc.Expressions, p.parseNextExpression())
@@ -224,18 +224,18 @@ func (p *parser) parseInclude() ast.Expression {
 	return inc
 }
 
-func (p *parser) parseIgnoreError() ast.Expression {
+func (p *Parser) parseIgnoreError() ast.Expression {
 	p.next()
 	return p.parseExpression()
 }
 
-func (p *parser) parseNew(originalParenLev int) ast.Expression {
+func (p *Parser) parseNew(originalParenLev int) ast.Expression {
 	expr := p.parseInstantiation()
 	expr = p.parseOperation(originalParenLev, expr)
 	return expr
 }
 
-func (p *parser) parseIdentifier() (expr ast.Expression) {
+func (p *Parser) parseIdentifier() (expr ast.Expression) {
 	switch p.peek().typ {
 	case token.OpenParen:
 		// Function calls are okay here because we know they came with
@@ -258,7 +258,7 @@ func (p *parser) parseIdentifier() (expr ast.Expression) {
 }
 
 // parseScopeResolutionFromKeyword specifically parses self::, static::, and parent::
-func (p *parser) parseScopeResolutionFromKeyword() ast.Expression {
+func (p *Parser) parseScopeResolutionFromKeyword() ast.Expression {
 	if p.peek().typ == token.ScopeResolutionOperator {
 		r := p.current.val
 		p.expect(token.ScopeResolutionOperator)
@@ -272,7 +272,7 @@ func (p *parser) parseScopeResolutionFromKeyword() ast.Expression {
 	return nil
 }
 
-func (p *parser) parseVariableOperand() ast.Expression {
+func (p *Parser) parseVariableOperand() ast.Expression {
 	expr := p.parseVariable()
 	p.next()
 	// Array lookup with curly braces is a special case that is only supported by PHP in

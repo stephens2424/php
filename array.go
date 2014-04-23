@@ -5,7 +5,7 @@ import (
 	"stephensearles.com/php/token"
 )
 
-func (p *parser) parseArrayLookup(e ast.Expression) ast.Expression {
+func (p *Parser) parseArrayLookup(e ast.Expression) ast.Expression {
 	p.expectCurrent(token.ArrayLookupOperatorLeft, token.BlockBegin)
 	switch typ := p.peek().typ; typ {
 	case token.ArrayLookupOperatorRight, token.BlockBegin:
@@ -21,7 +21,7 @@ func (p *parser) parseArrayLookup(e ast.Expression) ast.Expression {
 	return expr
 }
 
-func (p *parser) parseArrayDeclaration() ast.Expression {
+func (p *Parser) parseArrayDeclaration() ast.Expression {
 	pairs := make([]ast.ArrayPair, 0)
 	p.expect(token.OpenParen)
 ArrayLoop:
@@ -58,7 +58,7 @@ ArrayLoop:
 	return &ast.ArrayExpression{Pairs: pairs}
 }
 
-func (p *parser) parseList() ast.Expression {
+func (p *Parser) parseList() ast.Expression {
 	l := &ast.ListStatement{
 		Assignees: make([]*ast.Variable, 0),
 	}
