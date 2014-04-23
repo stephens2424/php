@@ -64,6 +64,7 @@ func (l *lexer) run() {
 func (l *lexer) emit(t token.Token) {
 	i := Item{t, l.currentLocation(), l.input[l.start:l.pos]}
 	l.incrementLines()
+	l.lastPos = i.pos.Pos
 	l.items <- i
 	l.start = l.pos
 }
@@ -75,7 +76,6 @@ func (l *lexer) currentLocation() Location {
 // nextItem returns the next token. from the input.
 func (l *lexer) nextItem() Item {
 	Item := <-l.items
-	l.lastPos = Item.pos.Pos
 	return Item
 }
 
@@ -89,6 +89,11 @@ func (l *lexer) peek() rune {
 // backup steps back one rune. Can only be called once per call of next.
 func (l *lexer) backup() {
 	l.pos -= l.width
+}
+
+func (l *lexer) previous() rune {
+	r, _ := utf8.DecodeRuneInString(l.input[l.lastPos:])
+	return r
 }
 
 func (l *lexer) accept(valid string) bool {
