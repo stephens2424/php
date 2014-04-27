@@ -235,6 +235,7 @@ func lexDoc(l *lexer) stateFn {
 	l.pos += len("<<<")
 	if strings.HasPrefix(l.input[l.pos:], "'") {
 		nowDoc = true
+		l.pos += len("'")
 	}
 	labelPos := l.pos
 	l.accept(underscore + alphabet)
