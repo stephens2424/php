@@ -61,13 +61,17 @@ ArrayLoop:
 
 func (p *Parser) parseList() ast.Expression {
 	l := &ast.ListStatement{
-		Assignees: make([]*ast.Variable, 0),
+		Assignees: make([]ast.Assignable, 0),
 	}
 	p.expect(token.OpenParen)
 	for {
-		p.expect(token.VariableOperator)
-		p.expect(token.Identifier)
-		l.Assignees = append(l.Assignees, ast.NewVariable(p.current.val))
+		p.next()
+		op, ok := p.parseOperand().(ast.Assignable)
+		if ok {
+			l.Assignees = append(l.Assignees, op)
+		} else {
+			p.errorf("%v is not assignable", op)
+		}
 		if p.peek().typ != token.Comma {
 			break
 		}

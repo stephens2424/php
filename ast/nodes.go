@@ -875,7 +875,7 @@ func (s ShellCommand) EvaluatesTo() Type {
 
 type ListStatement struct {
 	BaseNode
-	Assignees []*Variable
+	Assignees []Assignable
 	Value     Expression
 	Operator  string
 }
