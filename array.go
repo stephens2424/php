@@ -65,6 +65,10 @@ func (p *Parser) parseList() ast.Expression {
 	}
 	p.expect(token.OpenParen)
 	for {
+		if p.peek().typ == token.Comma {
+			p.next()
+			continue
+		}
 		p.next()
 		op, ok := p.parseOperand().(ast.Assignable)
 		if ok {
