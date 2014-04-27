@@ -651,9 +651,9 @@ func (s SwitchCase) Children() []Node {
 
 type ForStmt struct {
 	BaseNode
-	Initialization Expression
-	Termination    Expression
-	Iteration      Expression
+	Initialization []Expression
+	Termination    []Expression
+	Iteration      []Expression
 	LoopBlock      Statement
 }
 
@@ -662,12 +662,17 @@ func (f ForStmt) String() string {
 }
 
 func (f ForStmt) Children() []Node {
-	return []Node{
-		f.Initialization,
-		f.Termination,
-		f.Iteration,
-		f.LoopBlock,
+	nodes := []Node{}
+	for _, stmt := range f.Initialization {
+		nodes = append(nodes, stmt)
 	}
+	for _, stmt := range f.Termination {
+		nodes = append(nodes, stmt)
+	}
+	for _, stmt := range f.Iteration {
+		nodes = append(nodes, stmt)
+	}
+	return nodes
 }
 
 type WhileStmt struct {

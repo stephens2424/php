@@ -498,22 +498,22 @@ func TestForLoop(t *testing.T) {
 		t.Fatalf("For loop did not correctly parse")
 	}
 	tree := &ast.ForStmt{
-		Initialization: ast.AssignmentExpression{
+		Initialization: []ast.Expression{ast.AssignmentExpression{
 			Assignee: ast.NewVariable("i"),
 			Value:    &ast.Literal{Type: ast.Float, Value: "0"},
 			Operator: "=",
-		},
-		Termination: ast.OperatorExpression{
+		}},
+		Termination: []ast.Expression{ast.OperatorExpression{
 			Operand1: ast.NewVariable("i"),
 			Operand2: &ast.Literal{Type: ast.Float, Value: "10"},
 			Operator: "<",
 			Type:     ast.Boolean,
-		},
-		Iteration: ast.OperatorExpression{
+		}},
+		Iteration: []ast.Expression{ast.OperatorExpression{
 			Operator: "++",
 			Operand1: ast.NewVariable("i"),
 			Type:     ast.Numeric,
-		},
+		}},
 		LoopBlock: &ast.Block{
 			Statements: []ast.Statement{
 				ast.Echo(ast.NewVariable("i")),

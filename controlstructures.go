@@ -82,12 +82,10 @@ func (p *Parser) parseForeach() ast.Statement {
 func (p *Parser) parseFor() ast.Statement {
 	stmt := &ast.ForStmt{}
 	p.expect(token.OpenParen)
-	stmt.Initialization = p.parseNextExpression()
-	p.expect(token.StatementEnd)
-	stmt.Termination = p.parseNextExpression()
-	p.expect(token.StatementEnd)
-	stmt.Iteration = p.parseNextExpression()
-	p.expect(token.CloseParen)
+	stmt.Initialization = p.parseExpressionsUntil(token.Comma, token.StatementEnd)
+	stmt.Termination = p.parseExpressionsUntil(token.Comma, token.StatementEnd)
+	stmt.Iteration = p.parseExpressionsUntil(token.Comma, token.CloseParen)
+	p.expectCurrent(token.CloseParen)
 	p.next()
 	stmt.LoopBlock = p.parseStmt()
 	return stmt
