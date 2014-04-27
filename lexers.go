@@ -128,7 +128,7 @@ func lexNumberLiteral(l *lexer) stateFn {
 	if l.accept("0") {
 		if l.accept("x") {
 			// hexadecimal
-			l.acceptRun(digits + "abcdef")
+			l.acceptRun(digits + "abcdefABCDEF")
 			l.emit(token.NumberLiteral)
 			return lexPHP
 		}
