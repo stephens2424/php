@@ -22,6 +22,7 @@ func (p *Parser) parseArrayLookup(e ast.Expression) ast.Expression {
 }
 
 func (p *Parser) parseArrayDeclaration() ast.Expression {
+	p.expectCurrent(token.Array)
 	pairs := make([]ast.ArrayPair, 0)
 	p.expect(token.OpenParen)
 ArrayLoop:
@@ -76,7 +77,6 @@ func (p *Parser) parseList() ast.Expression {
 	p.expect(token.AssignmentOperator)
 	l.Operator = p.current.val
 	l.Value = p.parseNextExpression()
-	p.expectStmtEnd()
 	return l
 
 }
