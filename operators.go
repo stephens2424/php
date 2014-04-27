@@ -15,10 +15,13 @@ const (
 	assignmentOperation
 	subexpressionBeginOperation
 	subexpressionEndOperation
+	ignoreErrorOperation
 )
 
 func operationTypeForToken(t token.Token) operationType {
 	switch t {
+	case token.IgnoreErrorOperator:
+		return ignoreErrorOperation
 	case token.UnaryOperator, token.BitwiseNotOperator:
 		return unaryOperation
 	case token.AdditionOperator,

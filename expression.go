@@ -90,6 +90,8 @@ func (p *Parser) parseExpression() (expr ast.Expression) {
 func (p *Parser) parseOperation(originalParenLevel int, lhs ast.Expression) (expr ast.Expression) {
 	p.next()
 	switch operationTypeForToken(p.current.typ) {
+	case ignoreErrorOperation:
+		return p.parseOperation(originalParenLevel, lhs)
 	case unaryOperation:
 		expr = p.parseUnaryExpressionLeft(lhs, p.current)
 	case binaryOperation:
