@@ -189,6 +189,16 @@ func (p *Parser) parseInterface() *ast.Interface {
 			}
 			i.Methods = append(i.Methods, m)
 			p.expect(token.StatementEnd)
+		case token.Const:
+			constant := ast.Constant{}
+			p.expect(token.Identifier)
+			constant.Variable = ast.NewVariable(p.current.val)
+			if p.peek().typ == token.AssignmentOperator {
+				p.expect(token.AssignmentOperator)
+				constant.Value = p.parseNextExpression()
+			}
+			i.Constants = append(i.Constants, constant)
+			p.expect(token.StatementEnd)
 		default:
 			p.errorf("unexpected interface member %v", p.current)
 		}

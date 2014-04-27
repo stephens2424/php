@@ -461,9 +461,10 @@ type ConstantExpression struct {
 
 type Interface struct {
 	BaseNode
-	Name     string
-	Inherits []string
-	Methods  []Method
+	Name      string
+	Inherits  []string
+	Methods   []Method
+	Constants []Constant
 }
 
 func (i Interface) String() string {
