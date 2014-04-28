@@ -126,8 +126,14 @@ func lexPHP(l *lexer) stateFn {
 
 func lexNumberLiteral(l *lexer) stateFn {
 	if l.accept("0") {
-		if l.accept("x") {
-			// hexadecimal
+		// binary?
+		if l.accept("b") {
+			l.acceptRun("01")
+			l.emit(token.NumberLiteral)
+			return lexPHP
+		}
+		// hexadecimal?
+		if l.accept("xX") {
 			l.acceptRun(digits + "abcdefABCDEF")
 			l.emit(token.NumberLiteral)
 			return lexPHP
@@ -136,6 +142,10 @@ func lexNumberLiteral(l *lexer) stateFn {
 	// is decimal?
 	l.acceptRun(digits)
 	if l.accept(".") {
+		l.acceptRun(digits)
+	}
+
+	if l.accept("E") {
 		l.acceptRun(digits)
 	}
 
