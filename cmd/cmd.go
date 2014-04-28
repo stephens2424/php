@@ -43,7 +43,7 @@ func main() {
 			fmt.Println(err)
 			continue
 		}
-		walker := printing.Walker{}
+		walker := printing.NewWalker()
 		Parser := php.NewParser(string(fBytes))
 		if *debugMode {
 			Parser.Debug = true
