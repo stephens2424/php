@@ -157,39 +157,62 @@ func (p *Parser) parseOperand() (expr ast.Expression) {
 		return p.parseUnaryExpressionRight(p.parseOperand(), op)
 	}
 
+	switch p.current.typ {
+	case token.ShellCommand:
+		return &ast.ShellCommand{Command: p.current.val}
+	case
+		token.StringLiteral,
+		token.BooleanLiteral,
+		token.NumberLiteral,
+		token.Null:
+		return p.parseLiteral()
+	case token.UnaryOperator:
+		expr = newUnaryOperation(p.current, expr)
+		p.next()
+		return
+
+	case token.Array:
+		expr = p.parseArrayDeclaration()
+		p.next()
+	case token.VariableOperator:
+		expr = p.parseVariableOperand()
+	case token.ObjectOperator:
+		expr = p.parseObjectLookup(expr)
+		p.next()
+	case token.ArrayLookupOperatorLeft:
+		expr = p.parseArrayLookup(expr)
+		p.next()
+	case token.Identifier:
+		expr = p.parseIdentifier()
+	case token.Self, token.Static, token.Parent:
+		expr = p.parseScopeResolutionFromKeyword()
+	default:
+		p.backup()
+		return
+	}
+
+	return p.parseOperandComponent(expr)
+}
+
+func (p *Parser) parseOperandComponent(lhs ast.Expression) (expr ast.Expression) {
+	expr = lhs
 	for {
 		switch p.current.typ {
-		case token.ShellCommand:
-			return &ast.ShellCommand{Command: p.current.val}
-		case
-			token.StringLiteral,
-			token.BooleanLiteral,
-			token.NumberLiteral,
-			token.Null:
-			return p.parseLiteral()
 		case token.UnaryOperator:
 			expr = newUnaryOperation(p.current, expr)
-			p.next()
-		case token.Array:
-			expr = p.parseArrayDeclaration()
-			p.next()
-		case token.VariableOperator:
-			expr = p.parseVariableOperand()
+			return
 		case token.ObjectOperator:
 			expr = p.parseObjectLookup(expr)
 			p.next()
 		case token.ArrayLookupOperatorLeft:
 			expr = p.parseArrayLookup(expr)
 			p.next()
-		case token.Identifier:
-			expr = p.parseIdentifier()
-		case token.Self, token.Static, token.Parent:
-			expr = p.parseScopeResolutionFromKeyword()
 		default:
 			p.backup()
 			return
 		}
 	}
+	return
 }
 
 func (p *Parser) parseLiteral() ast.Expression {
