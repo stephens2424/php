@@ -140,7 +140,10 @@ func TestInstantiation(t *testing.T) {
 	testStr := `<?
   $obj = new Obj::$classes['obj']($arg);`
 	p := NewParser(testStr)
-	a, _ := p.Parse()
+	a, errs := p.Parse()
+	if len(errs) != 0 {
+		t.Fatalf("Did not parse instantiation correctly: %s", errs)
+	}
 	tree := ast.ExpressionStmt{ast.AssignmentExpression{
 		Operator: "=",
 		Assignee: ast.NewVariable("obj"),

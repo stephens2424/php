@@ -22,6 +22,8 @@ type Parser struct {
 	parenLevel int
 	errorMap   map[int]bool
 	errorCount int
+
+	instantiation bool
 }
 
 // NewParser readies a parser object for the given input string.

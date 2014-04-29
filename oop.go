@@ -9,8 +9,10 @@ func (p *Parser) parseInstantiation() ast.Expression {
 	p.expectCurrent(token.NewOperator)
 	p.next()
 
+	p.instantiation = true
 	expr := &ast.NewExpression{}
 	expr.Class = p.parseOperand()
+	p.instantiation = false
 
 	if p.peek().typ == token.OpenParen {
 		p.expect(token.OpenParen)

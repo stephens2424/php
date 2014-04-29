@@ -207,6 +207,13 @@ func (p *Parser) parseOperandComponent(lhs ast.Expression) (expr ast.Expression)
 		case token.ArrayLookupOperatorLeft:
 			expr = p.parseArrayLookup(expr)
 			p.next()
+		case token.OpenParen:
+			p.backup()
+			if p.instantiation {
+				return
+			}
+			expr = p.parseFunctionCall(expr)
+			p.next()
 		default:
 			p.backup()
 			return
