@@ -100,9 +100,6 @@ func (p *Parser) parseOperation(originalParenLevel int, lhs ast.Expression) (exp
 		expr = p.parseTernaryOperation(lhs)
 	case assignmentOperation:
 		expr = p.parseAssignmentOperation(lhs)
-	case subexpressionBeginOperation:
-		p.parenLevel += 1
-		expr = p.parseNextExpression()
 	case subexpressionEndOperation:
 		if p.parenLevel == originalParenLevel {
 			p.backup()
@@ -110,10 +107,20 @@ func (p *Parser) parseOperation(originalParenLevel int, lhs ast.Expression) (exp
 		}
 		p.parenLevel -= 1
 		expr = lhs
+	case subexpressionBeginOperation:
+		// Check if we have a paren directly after a literal
+		if _, ok := lhs.(*ast.Literal); ok {
+			// If we do, we might be in a particular case of a function call with NULL as the function name. Let callers handle this
+			p.backup()
+			return lhs
+		}
+		p.parenLevel += 1
+		expr = p.parseNextExpression()
 	default:
 		p.backup()
 		return lhs
 	}
+
 	return p.parseOperation(originalParenLevel, expr)
 }
 
@@ -185,7 +192,7 @@ func (p *Parser) parseOperand() (expr ast.Expression) {
 	}
 }
 
-func (p *Parser) parseLiteral() *ast.Literal {
+func (p *Parser) parseLiteral() ast.Expression {
 	switch p.current.typ {
 	case token.StringLiteral:
 		return &ast.Literal{Type: ast.String, Value: p.current.val}
@@ -194,6 +201,11 @@ func (p *Parser) parseLiteral() *ast.Literal {
 	case token.NumberLiteral:
 		return &ast.Literal{Type: ast.Float, Value: p.current.val}
 	case token.Null:
+		if p.peek().typ == token.OpenParen {
+			expr := p.parseIdentifier()
+			p.backup()
+			return expr
+		}
 		return &ast.Literal{Type: ast.Null, Value: p.current.val}
 	}
 	p.errorf("Unknown literal type")
@@ -209,8 +221,13 @@ func (p *Parser) parseVariable() ast.Expression {
 	case p.current.typ == token.Identifier:
 		expr := ast.NewVariable(p.current.val)
 		return expr
+	case p.current.typ == token.BlockBegin:
+		return ast.Variable{Name: p.parseExpression()}
+	case p.current.typ == token.VariableOperator:
+		return ast.Variable{Name: p.parseVariable()}
 	default:
-		return p.parseExpression()
+		p.errorf("unexpected variable operand %s", p.current)
+		return nil
 	}
 }
 
