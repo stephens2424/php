@@ -31,6 +31,9 @@ func (p *Parser) parseIf() *ast.IfStmt {
 		} else {
 			n.FalseBranch = p.parseStmt()
 		}
+	case token.EndIf:
+		n.FalseBranch = ast.Block{}
+		p.next()
 	default:
 		n.FalseBranch = ast.Block{}
 		p.backup()
