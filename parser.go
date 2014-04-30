@@ -298,6 +298,10 @@ func (p *Parser) parseStmt() ast.Statement {
 		// Ignore this operator
 		p.next()
 		return p.parseStmt()
+	case token.StatementEnd:
+		// this is an empty statement
+		p.next()
+		return p.parseStmt()
 	default:
 		expr := p.parseExpression()
 		if expr != nil {
