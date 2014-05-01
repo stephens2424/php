@@ -98,6 +98,11 @@ type Statement interface {
 	Node
 }
 
+// EmptyStatement represents a statement that does nothing.
+type EmptyStatement struct {
+	BaseNode
+}
+
 // An Expression is a snippet of code that evaluates to a single value when run
 // and does not represent a program instruction.
 type Expression interface {

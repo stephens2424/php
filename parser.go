@@ -300,11 +300,7 @@ func (p *Parser) parseStmt() ast.Statement {
 		return p.parseStmt()
 	case token.StatementEnd:
 		// this is an empty statement
-		if p.peek().typ == token.EOF {
-			return nil
-		}
-		p.next()
-		return p.parseStmt()
+		return &ast.EmptyStatement{}
 	default:
 		expr := p.parseExpression()
 		if expr != nil {
