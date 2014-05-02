@@ -49,7 +49,7 @@ func (p *Parser) parseExpression() (expr ast.Expression) {
 
 	switch p.current.typ {
 	case token.IgnoreErrorOperator:
-		expr = p.parseIgnoreError()
+		return p.parseNextExpression()
 	case token.List:
 		expr = p.parseList()
 	case
@@ -150,6 +150,9 @@ func (p *Parser) parseOperand() (expr ast.Expression) {
 
 	// These cases must come first and not repeat
 	switch p.current.typ {
+	case token.IgnoreErrorOperator:
+		p.next()
+		return p.parseOperand()
 	case
 		token.UnaryOperator,
 		token.NegationOperator,
