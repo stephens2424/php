@@ -87,14 +87,14 @@ func (p *Parser) newBinaryOperation(operator Item, expr1, expr2 ast.Expression) 
 func (p *Parser) parseBinaryOperation(lhs ast.Expression, operator Item, originalParenLevel int) ast.Expression {
 	p.next()
 	rhs := p.parseOperand()
+	currentPrecedence := operatorPrecedence[operator.typ]
 	for {
 		nextOperator := p.peek()
-		nextOperatorPrecedence, ok := operatorPrecedence[nextOperator.typ]
-		if ok && nextOperatorPrecedence > operatorPrecedence[operator.typ] {
-			rhs = p.parseOperation(originalParenLevel, rhs)
-		} else {
+		nextPrecedence, ok := operatorPrecedence[nextOperator.typ]
+		if !ok || nextPrecedence <= currentPrecedence {
 			break
 		}
+		rhs = p.parseOperation(originalParenLevel, rhs)
 	}
 	return p.newBinaryOperation(operator, lhs, rhs)
 }
