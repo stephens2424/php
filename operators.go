@@ -91,7 +91,7 @@ func (p *Parser) parseBinaryOperation(lhs ast.Expression, operator Item, origina
 	for {
 		nextOperator := p.peek()
 		nextPrecedence, ok := operatorPrecedence[nextOperator.typ]
-		if !ok || nextPrecedence <= currentPrecedence {
+		if !ok || nextPrecedence < currentPrecedence {
 			break
 		}
 		rhs = p.parseOperation(originalParenLevel, rhs)
