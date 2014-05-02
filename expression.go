@@ -40,10 +40,6 @@ func (p *Parser) parseExpression() (expr ast.Expression) {
 	switch p.current.typ {
 	case token.IgnoreErrorOperator:
 		expr = p.parseIgnoreError()
-	case token.Function:
-		expr = p.parseAnonymousFunction()
-	case token.NewOperator:
-		expr = p.parseNew(originalParenLev)
 	case token.List:
 		expr = p.parseList()
 	case
@@ -56,6 +52,8 @@ func (p *Parser) parseExpression() (expr ast.Expression) {
 		op := p.current
 		expr = p.parseUnaryExpressionRight(p.parseNextExpression(), op)
 	case
+		token.Function,
+		token.NewOperator,
 		token.VariableOperator,
 		token.Array,
 		token.Identifier,
@@ -94,12 +92,10 @@ func (p *Parser) parseOperation(originalParenLevel int, lhs ast.Expression) (exp
 		return p.parseOperation(originalParenLevel, lhs)
 	case unaryOperation:
 		expr = p.parseUnaryExpressionLeft(lhs, p.current)
-	case binaryOperation:
+	case assignmentOperation, binaryOperation:
 		expr = p.parseBinaryOperation(lhs, p.current, originalParenLevel)
 	case ternaryOperation:
 		expr = p.parseTernaryOperation(lhs)
-	case assignmentOperation:
-		expr = p.parseAssignmentOperation(lhs)
 	case subexpressionEndOperation:
 		if p.parenLevel == originalParenLevel {
 			p.backup()
@@ -124,16 +120,15 @@ func (p *Parser) parseOperation(originalParenLevel int, lhs ast.Expression) (exp
 	return p.parseOperation(originalParenLevel, expr)
 }
 
-func (p *Parser) parseAssignmentOperation(lhs ast.Expression) (expr ast.Expression) {
+func (p *Parser) parseAssignmentOperation(lhs, rhs ast.Expression, operator Item) (expr ast.Expression) {
 	assignee, ok := lhs.(ast.Assignable)
 	if !ok {
 		p.errorf("%s is not assignable", lhs)
 	}
-	op := p.current.val
 	expr = ast.AssignmentExpression{
 		Assignee: assignee,
-		Operator: op,
-		Value:    p.parseNextExpression(),
+		Operator: operator.val,
+		Value:    rhs,
 	}
 	return expr
 }
@@ -155,6 +150,10 @@ func (p *Parser) parseOperand() (expr ast.Expression) {
 		op := p.current
 		p.next()
 		return p.parseUnaryExpressionRight(p.parseOperand(), op)
+	case token.Function:
+		return p.parseAnonymousFunction()
+	case token.NewOperator:
+		return p.parseInstantiation()
 	}
 
 	switch p.current.typ {

@@ -64,9 +64,11 @@ func newUnaryOperation(operator Item, expr ast.Expression) ast.OperatorExpressio
 	}
 }
 
-func newBinaryOperation(operator Item, expr1, expr2 ast.Expression) ast.OperatorExpression {
+func (p *Parser) newBinaryOperation(operator Item, expr1, expr2 ast.Expression) ast.Expression {
 	t := ast.Numeric
 	switch operator.typ {
+	case token.AssignmentOperator:
+		return p.parseAssignmentOperation(expr1, expr2, operator)
 	case token.ComparisonOperator, token.AndOperator, token.OrOperator, token.WrittenAndOperator, token.WrittenOrOperator, token.WrittenXorOperator:
 		t = ast.Boolean
 	case token.ConcatenationOperator:
@@ -94,7 +96,7 @@ func (p *Parser) parseBinaryOperation(lhs ast.Expression, operator Item, origina
 			break
 		}
 	}
-	return newBinaryOperation(operator, lhs, rhs)
+	return p.newBinaryOperation(operator, lhs, rhs)
 }
 
 func (p *Parser) parseTernaryOperation(lhs ast.Expression) ast.Expression {
