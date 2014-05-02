@@ -28,7 +28,17 @@ var operatorPrecedence = map[token.Token]int{
 	token.OrOperator:         6,
 	token.TernaryOperator1:   5,
 	token.TernaryOperator2:   5,
-	token.AssignmentOperator: 4,
+
+	/*
+	   PHP's documentation would have this operator be at 4, but it also notes:
+
+	       Although = has a lower precedence than most other operators, PHP will
+	       still allow expressions similar to the following: if (!$a = foo()), in
+	       which case the return value of foo() is put into $a.
+
+	   Thus, we put it at 17, pending further testing.
+	*/
+	token.AssignmentOperator: 17,
 	token.WrittenAndOperator: 3,
 	token.WrittenXorOperator: 2,
 	token.WrittenOrOperator:  1,
