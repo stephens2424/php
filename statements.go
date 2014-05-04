@@ -44,6 +44,19 @@ func (p *Parser) parseStmt() ast.Statement {
 		p.expectStmtEnd()
 		// We are ignoring this for now
 		return nil
+	case token.Static:
+		p.expect(token.VariableOperator)
+		p.expect(token.Identifier)
+		v := ast.NewVariable(p.current.val)
+		p.expect(token.AssignmentOperator)
+		op := p.current.val
+		p.expect(token.Null, token.StringLiteral, token.BooleanLiteral, token.NumberLiteral, token.Array)
+		switch p.current.typ {
+		case token.Array:
+			return &ast.AssignmentExpression{Assignee: v, Value: p.parseArrayDeclaration(), Operator: op}
+		default:
+			return &ast.AssignmentExpression{Assignee: v, Value: p.parseLiteral(), Operator: op}
+		}
 	case token.VariableOperator, token.UnaryOperator:
 		expr := ast.ExpressionStmt{p.parseExpression()}
 		p.expectStmtEnd()
