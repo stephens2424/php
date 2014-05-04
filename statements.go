@@ -61,6 +61,18 @@ func (p *Parser) parseStmt() ast.Statement {
 		expr := ast.ExpressionStmt{p.parseExpression()}
 		p.expectStmtEnd()
 		return expr
+	case token.Print:
+		requireParen := false
+		if p.peek().typ == token.OpenParen {
+			p.expect(token.OpenParen)
+			requireParen = true
+		}
+		stmt := ast.Echo(p.parseNextExpression())
+		if requireParen {
+			p.expect(token.CloseParen)
+		}
+		p.expectStmtEnd()
+		return stmt
 	case token.Function:
 		return p.parseFunctionStmt()
 	case token.PHPEnd:

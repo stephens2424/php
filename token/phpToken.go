@@ -43,6 +43,7 @@ const (
 	Comma
 	StatementEnd
 	Echo
+	Print
 
 	If
 	Else
@@ -159,6 +160,7 @@ var tokens = []string{
 	Comma:             "Function Argument Separator",
 	StatementEnd:      "Statement End",
 	Echo:              "Echo",
+	Print:             "Print",
 
 	Namespace: "namespace",
 	Use:       "use",
@@ -297,6 +299,7 @@ var TokenMap = map[string]Token{
 	")":            CloseParen,
 	",":            Comma,
 	"echo":         Echo,
+	"print":        Print,
 	"throw":        Throw,
 	"try":          Try,
 	"catch":        Catch,
