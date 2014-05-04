@@ -78,8 +78,16 @@ func (p *Parser) parseForeach() ast.Statement {
 	}
 	p.expect(token.CloseParen)
 	p.next()
-	stmt.LoopBlock = p.parseStmt()
+	stmt.LoopBlock = p.parseControlBlock(token.EndForeach)
 	return stmt
+}
+
+func (p *Parser) parseControlBlock(end ...token.Token) ast.Statement {
+	// try to parse this in bash style, but it requires an end token
+	if len(end) > 0 && p.current.typ == token.TernaryOperator2 {
+		return p.parseStatementsUntil(end...)
+	}
+	return p.parseStmt()
 }
 
 func (p *Parser) parseFor() ast.Statement {
