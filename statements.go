@@ -45,21 +45,29 @@ func (p *Parser) parseStmt() ast.Statement {
 		// We are ignoring this for now
 		return nil
 	case token.Static:
-		p.expect(token.VariableOperator)
-		p.expect(token.Identifier)
-		v := ast.NewVariable(p.current.val)
-		if p.peek().typ == token.AssignmentOperator {
-			p.expect(token.AssignmentOperator)
-			op := p.current.val
-			p.expect(token.Null, token.StringLiteral, token.BooleanLiteral, token.NumberLiteral, token.Array)
-			switch p.current.typ {
-			case token.Array:
-				return &ast.AssignmentExpression{Assignee: v, Value: p.parseArrayDeclaration(), Operator: op}
-			default:
-				return &ast.AssignmentExpression{Assignee: v, Value: p.parseLiteral(), Operator: op}
+		s := &ast.StaticVariableDeclaration{Declarations: make([]ast.Expression, 0)}
+		for {
+			p.expect(token.VariableOperator)
+			p.expect(token.Identifier)
+			v := ast.NewVariable(p.current.val)
+			if p.peek().typ == token.AssignmentOperator {
+				p.expect(token.AssignmentOperator)
+				op := p.current.val
+				p.expect(token.Null, token.StringLiteral, token.BooleanLiteral, token.NumberLiteral, token.Array)
+				switch p.current.typ {
+				case token.Array:
+					s.Declarations = append(s.Declarations, &ast.AssignmentExpression{Assignee: v, Value: p.parseArrayDeclaration(), Operator: op})
+				default:
+					s.Declarations = append(s.Declarations, &ast.AssignmentExpression{Assignee: v, Value: p.parseLiteral(), Operator: op})
+				}
 			}
+			s.Declarations = append(s.Declarations, v)
+			if p.peek().typ != token.Comma {
+				break
+			}
+			p.next()
 		}
-		return v
+		return s
 	case token.VariableOperator, token.UnaryOperator:
 		expr := ast.ExpressionStmt{p.parseExpression()}
 		p.expectStmtEnd()

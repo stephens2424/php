@@ -896,3 +896,8 @@ func (l ListStatement) String() string {
 func (l ListStatement) Children() []Node {
 	return []Node{l.Value}
 }
+
+type StaticVariableDeclaration struct {
+	BaseNode
+	Declarations []Expression
+}
