@@ -35,7 +35,13 @@ func (p *Parser) parseClass() ast.Class {
 	if p.current.typ == token.Final {
 		p.expect(token.Class)
 	}
-	p.expect(token.Identifier)
+	switch p.next(); {
+	case p.current.typ == token.Identifier:
+	case isKeyword(p.current.typ, p.current.val):
+	default:
+		p.errorf("unexpected variable operand %s", p.current)
+	}
+
 	name := p.current.val
 	if p.peek().typ == token.Extends {
 		p.expect(token.Extends)
