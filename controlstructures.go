@@ -47,7 +47,7 @@ func (p *Parser) parseWhile() ast.Statement {
 	term := p.parseNextExpression()
 	p.expect(token.CloseParen)
 	p.next()
-	block := p.parseControlBlock()
+	block := p.parseControlBlock(token.EndWhile)
 	return &ast.WhileStmt{
 		Termination: term,
 		LoopBlock:   block,
