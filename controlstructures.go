@@ -8,17 +8,19 @@ import (
 func (p *Parser) parseIf() *ast.IfStmt {
 	p.expect(token.OpenParen)
 	n := &ast.IfStmt{}
-	p.next()
-	n.Condition = p.parseExpression()
+	n.Condition = p.parseNextExpression()
 	p.expect(token.CloseParen)
 
-	if p.peek().typ == token.TernaryOperator2 {
-		p.expect(token.TernaryOperator2)
-		n.TrueBranch = p.parseStatementsUntil(token.EndIf, token.ElseIf, token.Else)
-	} else {
+	p.next()
+	n.TrueBranch = p.parseControlBlock(token.EndIf, token.ElseIf, token.Else)
+	n.FalseBranch = ast.Block{}
+
+	blockStyle := false
+	switch p.current.typ {
+	case token.ElseIf, token.Else, token.EndIf:
+	default:
 		p.next()
-		n.TrueBranch = p.parseStmt()
-		p.next()
+		blockStyle = true
 	}
 
 	switch p.current.typ {
@@ -26,18 +28,17 @@ func (p *Parser) parseIf() *ast.IfStmt {
 		n.FalseBranch = p.parseIf()
 	case token.Else:
 		p.next()
-		if p.current.typ == token.TernaryOperator2 {
-			n.FalseBranch = p.parseStatementsUntil(token.EndIf)
+		if p.current.typ == token.If {
+			n.FalseBranch = p.parseIf()
 		} else {
-			n.FalseBranch = p.parseStmt()
+			n.FalseBranch = p.parseControlBlock(token.EndIf)
 		}
-	case token.EndIf:
-		n.FalseBranch = ast.Block{}
-		p.next()
 	default:
-		n.FalseBranch = ast.Block{}
-		p.backup()
+		if blockStyle {
+			p.backup()
+		}
 	}
+
 	return n
 }
 
@@ -46,7 +47,7 @@ func (p *Parser) parseWhile() ast.Statement {
 	term := p.parseNextExpression()
 	p.expect(token.CloseParen)
 	p.next()
-	block := p.parseStmt()
+	block := p.parseControlBlock()
 	return &ast.WhileStmt{
 		Termination: term,
 		LoopBlock:   block,
@@ -98,7 +99,7 @@ func (p *Parser) parseFor() ast.Statement {
 	stmt.Iteration = p.parseExpressionsUntil(token.Comma, token.CloseParen)
 	p.expectCurrent(token.CloseParen)
 	p.next()
-	stmt.LoopBlock = p.parseStmt()
+	stmt.LoopBlock = p.parseControlBlock(token.EndFor)
 	return stmt
 }
 
@@ -120,7 +121,7 @@ func (p *Parser) parseSwitch() ast.Statement {
 	p.expect(token.OpenParen)
 	stmt.Expression = p.parseExpression()
 	p.expectCurrent(token.CloseParen)
-	p.expect(token.BlockBegin)
+	p.expect(token.BlockBegin, token.TernaryOperator2)
 	p.next()
 	for {
 		switch p.current.typ {
@@ -136,7 +137,7 @@ func (p *Parser) parseSwitch() ast.Statement {
 			p.expect(token.TernaryOperator2)
 			p.next()
 			stmt.DefaultCase = p.parseSwitchBlock()
-		case token.BlockEnd:
+		case token.BlockEnd, token.EndSwitch:
 			return stmt
 		default:
 			p.errorf("Unexpected token. in switch statement:", p.current)
