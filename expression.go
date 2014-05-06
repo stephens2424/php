@@ -74,10 +74,9 @@ func (p *Parser) parseExpression() (expr ast.Expression) {
 		token.Self,
 		token.Static,
 		token.Parent,
+		token.Include,
 		token.ShellCommand:
 		expr = p.parseOperation(originalParenLev, p.parseOperand())
-	case token.Include:
-		expr = p.parseInclude()
 	case token.OpenParen:
 		p.parenLevel += 1
 		p.next()
@@ -163,6 +162,8 @@ func (p *Parser) parseOperand() (expr ast.Expression) {
 		op := p.current
 		p.next()
 		return p.parseUnaryExpressionRight(p.parseExpression(), op)
+	case token.Include:
+		return p.parseInclude()
 	case token.Function:
 		return p.parseAnonymousFunction()
 	case token.NewOperator:
