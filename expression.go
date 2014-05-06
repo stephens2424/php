@@ -191,7 +191,7 @@ func (p *Parser) parseOperand() (expr ast.Expression) {
 	case token.ObjectOperator:
 		expr = p.parseObjectLookup(expr)
 		p.next()
-	case token.ArrayLookupOperatorLeft:
+	case token.ArrayLookupOperatorLeft, token.BlockBegin:
 		expr = p.parseArrayLookup(expr)
 		p.next()
 	case token.Identifier:
@@ -216,7 +216,7 @@ func (p *Parser) parseOperandComponent(lhs ast.Expression) (expr ast.Expression)
 		case token.ObjectOperator:
 			expr = p.parseObjectLookup(expr)
 			p.next()
-		case token.ArrayLookupOperatorLeft:
+		case token.ArrayLookupOperatorLeft, token.BlockBegin:
 			expr = p.parseArrayLookup(expr)
 			p.next()
 		case token.OpenParen:
