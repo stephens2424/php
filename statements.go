@@ -67,6 +67,7 @@ func (p *Parser) parseStmt() ast.Statement {
 			}
 			p.next()
 		}
+		p.expectStmtEnd()
 		return s
 	case token.VariableOperator, token.UnaryOperator:
 		expr := ast.ExpressionStmt{p.parseExpression()}
