@@ -264,7 +264,9 @@ func (p *Parser) parseVariable() ast.Expression {
 		expr := ast.NewVariable(p.current.val)
 		return expr
 	case p.current.typ == token.BlockBegin:
-		return ast.Variable{Name: p.parseExpression()}
+		expr := ast.Variable{Name: p.parseNextExpression()}
+		p.expect(token.BlockEnd)
+		return expr
 	case p.current.typ == token.VariableOperator:
 		return ast.Variable{Name: p.parseVariable()}
 	default:
