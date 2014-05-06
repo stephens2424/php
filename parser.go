@@ -134,6 +134,17 @@ func (p *Parser) expected(i ...token.Token) {
 	p.errorf("Found %s, expected %s", p.current, i)
 }
 
+func (p *Parser) accept(i ...token.Token) bool {
+	nextTyp := p.peek().typ
+	for _, typ := range i {
+		if nextTyp == typ {
+			p.next()
+			return true
+		}
+	}
+	return false
+}
+
 func (p *Parser) errorf(str string, args ...interface{}) {
 	if p.errorCount > p.MaxErrors {
 		panic("too many errors")

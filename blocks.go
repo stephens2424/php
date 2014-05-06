@@ -24,10 +24,9 @@ func (p *Parser) parseStatementsUntil(endTokens ...token.Token) *ast.Block {
 			break
 		}
 		stmt := p.parseStmt()
-		if stmt == nil {
-			return block
+		if stmt != nil {
+			block.Statements = append(block.Statements, stmt)
 		}
-		block.Statements = append(block.Statements, stmt)
 	}
 	return block
 }

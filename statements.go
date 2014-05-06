@@ -91,8 +91,10 @@ func (p *Parser) parseStmt() ast.Statement {
 		if p.peek().typ == token.EOF {
 			return nil
 		}
-		p.expect(token.HTML)
-		expr := ast.Echo(&ast.Literal{Type: ast.String, Value: p.current.val})
+		var expr ast.Statement
+		if p.accept(token.HTML) {
+			expr = ast.Echo(&ast.Literal{Type: ast.String, Value: p.current.val})
+		}
 		p.next()
 		if p.current.typ != token.EOF {
 			p.expectCurrent(token.PHPBegin)
