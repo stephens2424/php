@@ -1,6 +1,8 @@
 package php
 
 import (
+	"strings"
+
 	"stephensearles.com/php/ast"
 	"stephensearles.com/php/token"
 )
@@ -78,6 +80,11 @@ func (p *Parser) parseExpression() (expr ast.Expression) {
 		token.ShellCommand:
 		expr = p.parseOperation(originalParenLev, p.parseOperand())
 	case token.OpenParen:
+		// check for a cast operator that happens to have had spaces in it, and was thus lexed incorrectly
+		if op := p.checkForCast(); op != nil {
+			expr = p.parseUnaryExpressionRight(p.parseNextExpression(), *op)
+			break
+		}
 		p.parenLevel += 1
 		p.next()
 		expr = p.parseExpression()
@@ -92,6 +99,37 @@ func (p *Parser) parseExpression() (expr ast.Expression) {
 		return
 	}
 	return
+}
+
+func (p *Parser) checkForCast() *Item {
+	if t := p.peek(); p.isCastType(t.val) {
+		p.next()
+		if p.accept(token.CloseParen) {
+			t.val = "(" + t.val + ")"
+			t.typ = token.CastOperator
+			return &t
+		}
+		p.backup()
+	}
+	return nil
+
+}
+
+func (p *Parser) isCastType(s string) bool {
+	switch strings.ToLower(s) {
+	case "int":
+	case "integer":
+	case "float":
+	case "bool":
+	case "boolean":
+	case "string":
+	case "null":
+	case "array":
+	case "object":
+	default:
+		return false
+	}
+	return true
 }
 
 func (p *Parser) parseOperation(originalParenLevel int, lhs ast.Expression) (expr ast.Expression) {
@@ -162,6 +200,11 @@ func (p *Parser) parseOperand() (expr ast.Expression) {
 		op := p.current
 		p.next()
 		return p.parseUnaryExpressionRight(p.parseExpression(), op)
+	case token.OpenParen:
+		if op := p.checkForCast(); op != nil {
+			p.next()
+			return p.parseUnaryExpressionRight(p.parseExpression(), *op)
+		}
 	case token.Include:
 		return p.parseInclude()
 	case token.Function:
@@ -265,11 +308,11 @@ func (p *Parser) parseVariable() ast.Expression {
 		expr := ast.NewVariable(p.current.val)
 		return expr
 	case p.current.typ == token.BlockBegin:
-		expr := ast.Variable{Name: p.parseNextExpression()}
+		expr := &ast.Variable{Name: p.parseNextExpression()}
 		p.expect(token.BlockEnd)
 		return expr
 	case p.current.typ == token.VariableOperator:
-		return ast.Variable{Name: p.parseVariable()}
+		return &ast.Variable{Name: p.parseVariable()}
 	default:
 		p.errorf("unexpected variable operand %s", p.current)
 		return nil
