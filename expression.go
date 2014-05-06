@@ -162,7 +162,7 @@ func (p *Parser) parseOperand() (expr ast.Expression) {
 		token.BitwiseNotOperator:
 		op := p.current
 		p.next()
-		return p.parseUnaryExpressionRight(p.parseOperand(), op)
+		return p.parseUnaryExpressionRight(p.parseExpression(), op)
 	case token.Function:
 		return p.parseAnonymousFunction()
 	case token.NewOperator:
