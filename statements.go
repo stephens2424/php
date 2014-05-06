@@ -45,6 +45,11 @@ func (p *Parser) parseStmt() ast.Statement {
 		// We are ignoring this for now
 		return nil
 	case token.Static:
+		if p.peek().typ == token.ScopeResolutionOperator {
+			expr := p.parseExpression()
+			p.expectStmtEnd()
+			return expr
+		}
 		s := &ast.StaticVariableDeclaration{Declarations: make([]ast.Expression, 0)}
 		for {
 			p.expect(token.VariableOperator)
