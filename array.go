@@ -65,16 +65,18 @@ func (p *Parser) parseList() ast.Expression {
 	}
 	p.expect(token.OpenParen)
 	for {
-		if p.peek().typ == token.Comma {
-			p.next()
+		if p.accept(token.Comma) {
 			continue
+		}
+		if p.peek().typ == token.CloseParen {
+			break
 		}
 		p.next()
 		op, ok := p.parseOperand().(ast.Assignable)
 		if ok {
 			l.Assignees = append(l.Assignees, op)
 		} else {
-			p.errorf("%v is not assignable", op)
+			p.errorf("%v list element is not assignable", op)
 		}
 		if p.peek().typ != token.Comma {
 			break
