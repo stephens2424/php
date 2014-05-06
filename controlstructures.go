@@ -164,7 +164,7 @@ stmtLoop:
 				p.next()
 			}
 			fallthrough
-		case token.Case, token.Default:
+		case token.Case, token.Default, token.EndSwitch:
 			break stmtLoop
 		default:
 			stmt := p.parseStmt()
