@@ -73,5 +73,5 @@ func main() {
 			}
 		}
 	}
-	fmt.Printf("Compiled %d files. %d files with errors - %f%% success\n", flag.NArg(), errors, 1-(float64(errors)/float64(files)))
+	fmt.Printf("Compiled %d files. %d files with errors - %f%% success\n", flag.NArg(), errors, 100*(1-(float64(errors)/float64(files))))
 }
