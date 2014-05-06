@@ -27,6 +27,9 @@ func (p *Parser) parseStatementsUntil(endTokens ...token.Token) *ast.Block {
 		if stmt != nil {
 			block.Statements = append(block.Statements, stmt)
 		}
+		if p.current.typ == token.EOF {
+			break
+		}
 	}
 	return block
 }
