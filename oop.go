@@ -135,17 +135,23 @@ func (p *Parser) parseClassFields(c ast.Class) ast.Class {
 			p.expect(token.VariableOperator)
 			fallthrough
 		case token.VariableOperator:
-			p.expect(token.Identifier)
-			prop := ast.Property{
-				Visibility: vis,
-				Name:       "$" + p.current.val,
+			for {
+				p.expect(token.Identifier)
+				prop := ast.Property{
+					Visibility: vis,
+					Name:       "$" + p.current.val,
+				}
+				if p.peek().typ == token.AssignmentOperator {
+					p.expect(token.AssignmentOperator)
+					prop.Initialization = p.parseNextExpression()
+				}
+				c.Properties = append(c.Properties, prop)
+				if p.accept(token.StatementEnd) {
+					break
+				}
+				p.expect(token.Comma)
+				p.expect(token.VariableOperator)
 			}
-			if p.peek().typ == token.AssignmentOperator {
-				p.expect(token.AssignmentOperator)
-				prop.Initialization = p.parseNextExpression()
-			}
-			c.Properties = append(c.Properties, prop)
-			p.expect(token.StatementEnd)
 		case token.Const:
 			constant := ast.Constant{}
 			p.expect(token.Identifier)
