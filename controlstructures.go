@@ -127,14 +127,14 @@ func (p *Parser) parseSwitch() ast.Statement {
 		switch p.current.typ {
 		case token.Case:
 			expr := p.parseNextExpression()
-			p.expect(token.TernaryOperator2)
+			p.expect(token.TernaryOperator2, token.StatementEnd)
 			p.next()
 			stmt.Cases = append(stmt.Cases, &ast.SwitchCase{
 				Expression: expr,
 				Block:      *(p.parseSwitchBlock()),
 			})
 		case token.Default:
-			p.expect(token.TernaryOperator2)
+			p.expect(token.TernaryOperator2, token.StatementEnd)
 			p.next()
 			stmt.DefaultCase = p.parseSwitchBlock()
 		case token.BlockEnd, token.EndSwitch:

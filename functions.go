@@ -18,7 +18,12 @@ func (p *Parser) parseFunctionDefinition() *ast.FunctionDefinition {
 		// This is a function returning a reference ... ignore this for now
 		p.next()
 	}
-	p.expect(token.Identifier)
+	if !p.accept(token.Identifier) {
+		p.next()
+		if !isKeyword(p.current.typ, p.current.val) {
+			p.errorf("bad function name", p.current.val)
+		}
+	}
 	def.Name = p.current.val
 	def.Arguments = make([]ast.FunctionArgument, 0)
 	p.expect(token.OpenParen)
