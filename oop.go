@@ -164,6 +164,7 @@ func (p *Parser) parseClassFields(c ast.Class) ast.Class {
 			p.expect(token.StatementEnd)
 		default:
 			p.errorf("unexpected class member %v", p.current)
+			return c
 		}
 	}
 	p.expect(token.BlockEnd)
