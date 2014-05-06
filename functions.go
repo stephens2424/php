@@ -50,7 +50,7 @@ func (p *Parser) parseFunctionDefinition() *ast.FunctionDefinition {
 func (p *Parser) parseFunctionArgument() ast.FunctionArgument {
 	arg := ast.FunctionArgument{}
 	switch p.peek().typ {
-	case token.Identifier, token.Array:
+	case token.Identifier, token.Array, token.Self:
 		p.next()
 		arg.TypeHint = p.current.val
 	}
