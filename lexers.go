@@ -243,6 +243,7 @@ func lexBlockComment(l *lexer) stateFn {
 func lexDoc(l *lexer) stateFn {
 	var nowDoc bool
 	l.pos += len("<<<")
+	l.skipSpace()
 	if strings.HasPrefix(l.input[l.pos:], "'") {
 		nowDoc = true
 		l.pos += len("'")
