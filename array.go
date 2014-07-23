@@ -36,7 +36,7 @@ ArrayLoop:
 	for {
 		var key, val ast.Expression
 		switch p.peek().typ {
-		case token.CloseParen:
+		case endType:
 			break ArrayLoop
 		default:
 			val = p.parseNextExpression()
