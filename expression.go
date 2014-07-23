@@ -64,6 +64,7 @@ func (p *Parser) parseExpression() (expr ast.Expression) {
 		op := p.current
 		expr = p.parseUnaryExpressionRight(p.parseNextExpression(), op)
 	case
+		token.ArrayLookupOperatorLeft,
 		token.Function,
 		token.NewOperator,
 		token.VariableOperator,
@@ -211,6 +212,8 @@ func (p *Parser) parseOperand() (expr ast.Expression) {
 		return p.parseAnonymousFunction()
 	case token.NewOperator:
 		return p.parseInstantiation()
+	case token.ArrayLookupOperatorLeft:
+		return p.parseArrayDeclaration()
 	}
 
 	switch p.current.typ {

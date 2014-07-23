@@ -22,9 +22,16 @@ func (p *Parser) parseArrayLookup(e ast.Expression) ast.Expression {
 }
 
 func (p *Parser) parseArrayDeclaration() ast.Expression {
-	p.expectCurrent(token.Array)
+	var endType token.Token
 	pairs := make([]ast.ArrayPair, 0)
-	p.expect(token.OpenParen)
+	p.expectCurrent(token.Array, token.ArrayLookupOperatorLeft)
+	switch p.current.typ {
+	case token.Array:
+		p.expect(token.OpenParen)
+		endType = token.CloseParen
+	case token.ArrayLookupOperatorLeft:
+		endType = token.ArrayLookupOperatorRight
+	}
 ArrayLoop:
 	for {
 		var key, val ast.Expression
@@ -37,14 +44,14 @@ ArrayLoop:
 		switch p.peek().typ {
 		case token.Comma:
 			p.expect(token.Comma)
-		case token.CloseParen:
+		case endType:
 			pairs = append(pairs, ast.ArrayPair{Key: key, Value: val})
 			break ArrayLoop
 		case token.ArrayKeyOperator:
 			p.expect(token.ArrayKeyOperator)
 			key = val
 			val = p.parseNextExpression()
-			if p.peek().typ == token.CloseParen {
+			if p.peek().typ == endType {
 				pairs = append(pairs, ast.ArrayPair{Key: key, Value: val})
 				break ArrayLoop
 			}
@@ -55,7 +62,7 @@ ArrayLoop:
 		}
 		pairs = append(pairs, ast.ArrayPair{Key: key, Value: val})
 	}
-	p.expect(token.CloseParen)
+	p.expect(endType)
 	return &ast.ArrayExpression{Pairs: pairs}
 }
 
