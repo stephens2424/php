@@ -6,6 +6,35 @@ import (
 	"stephensearles.com/php/ast"
 )
 
+func TestList(t *testing.T) {
+	testStr := `<?
+    list($one, $two) = array(1, 2);`
+
+	p := NewParser(testStr)
+	a, errs := p.Parse()
+	if len(errs) != 0 {
+		t.Fatalf("Did not parse list correctly: %s", errs)
+	}
+
+	tree := ast.ExpressionStmt{&ast.ListStatement{
+		Operator: "=",
+		Assignees: []ast.Assignable{
+			ast.NewVariable("one"),
+			ast.NewVariable("two"),
+		},
+		Value: &ast.ArrayExpression{
+			Pairs: []ast.ArrayPair{
+				{Key: nil, Value: &ast.Literal{Value: "1", Type: ast.Float}},
+				{Key: nil, Value: &ast.Literal{Value: "2", Type: ast.Float}},
+			},
+		},
+	}}
+
+	if !assertEquals(a[0], tree) {
+		t.Fatalf("Array bracked did not parse correctly")
+	}
+}
+
 func TestArrayBracket(t *testing.T) {
 	testStr := `<?
     $arr = ["one", "two"];
