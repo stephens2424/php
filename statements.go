@@ -1,8 +1,8 @@
 package php
 
 import (
-	"stephensearles.com/php/ast"
-	"stephensearles.com/php/token"
+	"github.com/stephens2424/php/ast"
+	"github.com/stephens2424/php/token"
 )
 
 func (p *Parser) parseStmt() ast.Statement {

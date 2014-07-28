@@ -3,8 +3,8 @@ package php
 import (
 	"fmt"
 
-	"stephensearles.com/php/ast"
-	"stephensearles.com/php/token"
+	"github.com/stephens2424/php/ast"
+	"github.com/stephens2424/php/token"
 )
 
 // Parser handles scanning through and parsing a PHP source string into an AST. It is configurable

@@ -3,7 +3,7 @@ package typecheck
 import (
 	"fmt"
 
-	"stephensearles.com/php/ast"
+	"github.com/stephens2424/php/ast"
 )
 
 type Walker struct {

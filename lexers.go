@@ -5,7 +5,7 @@ import (
 	"strings"
 	"unicode"
 
-	"stephensearles.com/php/token"
+	"github.com/stephens2424/php/token"
 )
 
 const shortPHPBegin = "<?"

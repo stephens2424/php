@@ -8,9 +8,9 @@ import (
 	"os"
 	"runtime/pprof"
 
-	"stephensearles.com/php"
-	//"stephensearles.com/php/passes/typechecking"
-	"stephensearles.com/php/passes/printing"
+	"github.com/stephens2424/php"
+	//"github.com/stephens2424/php/passes/typechecking"
+	"github.com/stephens2424/php/passes/printing"
 )
 
 func main() {

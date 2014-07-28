@@ -6,7 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 
-	"stephensearles.com/php/passes/format"
+	"github.com/stephens2424/php/passes/format"
 )
 
 func main() {

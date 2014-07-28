@@ -7,7 +7,7 @@ import (
 	"unicode"
 	"unicode/utf8"
 
-	"stephensearles.com/php/token"
+	"github.com/stephens2424/php/token"
 )
 
 // Lexer represents the state of "lexing" items from a source string.

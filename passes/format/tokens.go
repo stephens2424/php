@@ -1,6 +1,6 @@
 package format
 
-import "stephensearles.com/php/token"
+import "github.com/stephens2424/php/token"
 
 var tokenMap = map[token.Token]string{
 	token.Class:               "class",

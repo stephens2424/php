@@ -3,7 +3,7 @@ package php
 import (
 	"testing"
 
-	"stephensearles.com/php/token"
+	"github.com/stephens2424/php/token"
 )
 
 var testFile = `<?php

@@ -4,7 +4,7 @@ import (
 	"io"
 	"strings"
 
-	"stephensearles.com/php"
+	"github.com/stephens2424/php"
 )
 
 type Formatter struct {

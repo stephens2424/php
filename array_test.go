@@ -3,7 +3,7 @@ package php
 import (
 	"testing"
 
-	"stephensearles.com/php/ast"
+	"github.com/stephens2424/php/ast"
 )
 
 func TestList(t *testing.T) {

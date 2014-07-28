@@ -6,7 +6,7 @@ import (
 	"os"
 	"strings"
 
-	"stephensearles.com/php/ast"
+	"github.com/stephens2424/php/ast"
 )
 
 type Walker struct {

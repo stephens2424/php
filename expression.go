@@ -3,8 +3,8 @@ package php
 import (
 	"strings"
 
-	"stephensearles.com/php/ast"
-	"stephensearles.com/php/token"
+	"github.com/stephens2424/php/ast"
+	"github.com/stephens2424/php/token"
 )
 
 var operatorPrecedence = map[token.Token]int{
