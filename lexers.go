@@ -247,6 +247,8 @@ func lexDoc(l *lexer) stateFn {
 	if strings.HasPrefix(l.input[l.pos:], "'") {
 		nowDoc = true
 		l.pos += len("'")
+	} else if l.peek() == '"' {
+		l.next()
 	}
 	labelPos := l.pos
 	l.accept(underscore + alphabet)
@@ -254,6 +256,8 @@ func lexDoc(l *lexer) stateFn {
 	endMarker := fmt.Sprintf("\n%s", l.input[labelPos:l.pos])
 	if nowDoc {
 		l.accept("'")
+	} else if l.peek() == '"' {
+		l.next()
 	}
 	l.accept("\n")
 	for !strings.HasPrefix(l.input[l.pos:], endMarker) {

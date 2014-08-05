@@ -27,6 +27,10 @@ class MyClass {
 
 $myvar = $this->myMethod();
 
+$x =<<<"foo"
+    bar
+foo;
+
 ?>
 <html>
 <? echo something(); ?>
@@ -124,6 +128,12 @@ func TestPHPLexer(t *testing.T) {
 	i = assertNext(t, l, token.Identifier)
 	i = assertNext(t, l, token.OpenParen)
 	i = assertNext(t, l, token.CloseParen)
+	i = assertNext(t, l, token.StatementEnd)
+
+	i = assertNext(t, l, token.VariableOperator)
+	i = assertNext(t, l, token.Identifier)
+	i = assertNext(t, l, token.AssignmentOperator)
+	i = assertNext(t, l, token.StringLiteral)
 	i = assertNext(t, l, token.StatementEnd)
 
 	i = assertNext(t, l, token.PHPEnd)
