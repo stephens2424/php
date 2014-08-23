@@ -44,6 +44,22 @@ func (f *formatWalker) printNode(node ast.Node) {
 		for _, stmt := range n.Statements {
 			f.Walk(stmt)
 		}
+	case ast.Class:
+		f.printToken(token.Class)
+		f.printf(" %s {", n.Name)
+		f.tabLevel += 1
+		for _, child := range n.Children() {
+			f.Walk(child)
+		}
+	case ast.Property:
+		f.printTabbedLine()
+		f.printVisibility(n.Visibility)
+		f.printf(" %s", n.Name)
+		if n.Initialization != nil {
+			f.print(" = ")
+			f.printNode(n.Initialization)
+		}
+		f.print(";")
 	default:
 		f.printTabbedLine()
 		f.printf("// unimplemented %T\n", n)
@@ -105,4 +121,14 @@ func (f *formatWalker) printTabbedLine() {
 
 func (f *formatWalker) println() {
 	io.WriteString(f.w, "\n")
+}
+
+var visibilityMap = map[ast.Visibility]string{
+	ast.Private:   "private",
+	ast.Protected: "protected",
+	ast.Public:    "public",
+}
+
+func (f *formatWalker) printVisibility(v ast.Visibility) {
+	f.print(visibilityMap[v])
 }
