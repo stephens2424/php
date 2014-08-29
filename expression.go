@@ -78,6 +78,7 @@ func (p *Parser) parseExpression() (expr ast.Expression) {
 		token.Static,
 		token.Parent,
 		token.Include,
+		token.Exit,
 		token.ShellCommand:
 		expr = p.parseOperation(originalParenLev, p.parseOperand())
 	case token.OpenParen:
@@ -241,7 +242,7 @@ func (p *Parser) parseOperand() (expr ast.Expression) {
 	case token.ArrayLookupOperatorLeft, token.BlockBegin:
 		expr = p.parseArrayLookup(expr)
 		p.next()
-	case token.Identifier:
+	case token.Identifier, token.Exit:
 		expr = p.parseIdentifier()
 	case token.Self, token.Static, token.Parent:
 		expr = p.parseScopeResolutionFromKeyword()
