@@ -226,7 +226,7 @@ func (p *Parser) parseOperand() (expr ast.Expression) {
 		token.Null:
 		return p.parseLiteral()
 	case token.UnaryOperator:
-		expr = newUnaryOperation(p.current, expr)
+		expr = p.parseUnaryExpressionLeft(expr, p.current)
 		p.next()
 		return
 
@@ -258,7 +258,7 @@ func (p *Parser) parseOperandComponent(lhs ast.Expression) (expr ast.Expression)
 	for {
 		switch p.current.typ {
 		case token.UnaryOperator:
-			expr = newUnaryOperation(p.current, expr)
+			expr = p.parseUnaryExpressionRight(expr, p.current)
 			return
 		case token.ObjectOperator:
 			expr = p.parseObjectLookup(expr)

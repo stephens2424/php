@@ -17,7 +17,8 @@ const (
 	Object
 	Function
 
-	Numeric Type = Float | Integer
+	Numeric = Float | Integer
+	Unknown = String | Integer | Float | Boolean | Null | Resource | Array | Object | Function
 )
 
 var typeMap = map[Type]string{

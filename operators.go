@@ -52,18 +52,6 @@ func operationTypeForToken(t token.Token) operationType {
 	return nilOperation
 }
 
-func newUnaryOperation(operator Item, expr ast.Expression) ast.OperatorExpression {
-	t := ast.Numeric
-	if operator.val == "!" {
-		t = ast.Boolean
-	}
-	return ast.OperatorExpression{
-		Type:     t,
-		Operand1: expr,
-		Operator: operator.val,
-	}
-}
-
 func (p *Parser) newBinaryOperation(operator Item, expr1, expr2 ast.Expression) ast.Expression {
 	t := ast.Numeric
 	switch operator.typ {
@@ -118,9 +106,16 @@ func (p *Parser) parseTernaryOperation(lhs ast.Expression) ast.Expression {
 }
 
 func (p *Parser) parseUnaryExpressionRight(operand ast.Expression, operator Item) ast.Expression {
-	return newUnaryOperation(operator, operand)
+	return ast.UnaryExpression{
+		Operand:  operand,
+		Operator: operator.val,
+	}
 }
 
 func (p *Parser) parseUnaryExpressionLeft(operand ast.Expression, operator Item) ast.Expression {
-	return newUnaryOperation(operator, operand)
+	return ast.UnaryExpression{
+		Operand:   operand,
+		Operator:  operator.val,
+		Preceding: true,
+	}
 }
