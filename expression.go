@@ -78,6 +78,7 @@ func (p *Parser) parseExpression() (expr ast.Expression) {
 		token.Static,
 		token.Parent,
 		token.Include,
+		token.Exit,
 		token.ShellCommand:
 		expr = p.parseOperation(originalParenLev, p.parseOperand())
 	case token.OpenParen:
@@ -226,7 +227,7 @@ func (p *Parser) parseOperand() (expr ast.Expression) {
 		token.Null:
 		return p.parseLiteral()
 	case token.UnaryOperator:
-		expr = newUnaryOperation(p.current, expr)
+		expr = p.parseUnaryExpressionLeft(expr, p.current)
 		p.next()
 		return
 
@@ -241,7 +242,7 @@ func (p *Parser) parseOperand() (expr ast.Expression) {
 	case token.ArrayLookupOperatorLeft, token.BlockBegin:
 		expr = p.parseArrayLookup(expr)
 		p.next()
-	case token.Identifier:
+	case token.Identifier, token.Exit:
 		expr = p.parseIdentifier()
 	case token.Self, token.Static, token.Parent:
 		expr = p.parseScopeResolutionFromKeyword()
@@ -258,7 +259,7 @@ func (p *Parser) parseOperandComponent(lhs ast.Expression) (expr ast.Expression)
 	for {
 		switch p.current.typ {
 		case token.UnaryOperator:
-			expr = newUnaryOperation(p.current, expr)
+			expr = p.parseUnaryExpressionRight(expr, p.current)
 			return
 		case token.ObjectOperator:
 			expr = p.parseObjectLookup(expr)

@@ -5,7 +5,7 @@ Parser for PHP written in Go
 
 See [this post](https://stephensearles.com/?p=288) for an introduction.
 
-[Documentation](http://godoc.org/github.com/stephens2424/php)
+[![Build Status](https://travis-ci.org/stephens2424/php.svg)](https://travis-ci.org/stephens2424/php) [![GoDoc](https://godoc.org/github.com/stephens2424/php?status.svg)](https://godoc.org/github.com/stephens2424/php)
 
 Test console:
 

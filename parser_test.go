@@ -509,10 +509,10 @@ func TestForLoop(t *testing.T) {
 			Operator: "<",
 			Type:     ast.Boolean,
 		}},
-		Iteration: []ast.Expression{ast.OperatorExpression{
-			Operator: "++",
-			Operand1: ast.NewVariable("i"),
-			Type:     ast.Numeric,
+		Iteration: []ast.Expression{ast.UnaryExpression{
+			Operator:  "++",
+			Operand:   ast.NewVariable("i"),
+			Preceding: false,
 		}},
 		LoopBlock: &ast.Block{
 			Statements: []ast.Statement{
@@ -758,10 +758,10 @@ func TestCastOperator(t *testing.T) {
 	tree := []ast.Node{
 		ast.ExpressionStmt{ast.AssignmentExpression{
 			Assignee: ast.NewVariable("var"),
-			Value: ast.OperatorExpression{
-				Operand1: &ast.Literal{Type: ast.Float, Value: "1.0"},
-				Operator: "(double)",
-				Type:     ast.Numeric,
+			Value: ast.UnaryExpression{
+				Operand:   &ast.Literal{Type: ast.Float, Value: "1.0"},
+				Operator:  "(double)",
+				Preceding: false,
 			},
 			Operator: "=",
 		}},

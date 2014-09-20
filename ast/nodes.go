@@ -146,6 +146,26 @@ func (o OperatorExpression) EvaluatesTo() Type {
 	return o.Type
 }
 
+// UnaryExpression is an expression that applies an operator to only one operand. The
+// operator may precede or follow the operand.
+type UnaryExpression struct {
+	BaseNode
+	Operand   Expression
+	Operator  string
+	Preceding bool
+}
+
+func (u UnaryExpression) String() string {
+	if u.Preceding {
+		return u.Operator + u.Operand.String()
+	}
+	return u.Operand.String() + u.Operator
+}
+
+func (u UnaryExpression) EvaluatesTo() Type {
+	return Unknown
+}
+
 type ExpressionStmt struct {
 	Expression
 }

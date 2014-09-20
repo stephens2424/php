@@ -205,7 +205,7 @@ var tokens = []string{
 	NewOperator: "new",
 
 	ShellCommand:   "`",
-	StringLiteral:  "sting-literal",
+	StringLiteral:  "string-literal",
 	NumberLiteral:  "number-literal",
 	BooleanLiteral: "bool-literal",
 
