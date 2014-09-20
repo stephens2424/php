@@ -183,17 +183,34 @@ stmtLoop:
 }
 
 func (p *Parser) parseDeclareBlock() *ast.DeclareBlock {
+	declare := &ast.DeclareBlock{Declarations: make([]string, 0)}
+
 	p.expectCurrent(token.Declare)
 	p.expect(token.OpenParen)
-	p.expect(token.Identifier)
-	p.parseExpression()
+
+	declare.Declarations = append(declare.Declarations, p.parseDeclareElement())
+
 	p.next()
 	for p.current.typ == token.Comma {
-		p.expect(token.Identifier)
-		p.parseExpression()
+		declare.Declarations = append(declare.Declarations, p.parseDeclareElement())
 		p.next()
 	}
+
 	p.expectCurrent(token.CloseParen)
 
-	return &ast.DeclareBlock{Statements: p.parseBlock(), Declaration: ""}
+	declare.Statements = p.parseBlock()
+	return declare
+}
+
+func (p *Parser) parseDeclareElement() string {
+	element := ""
+	p.expect(token.Identifier)
+	element += p.current.val
+
+	p.expect(token.AssignmentOperator)
+	element += p.current.val
+
+	p.parseNextExpression()
+	element += p.current.val
+	return element
 }

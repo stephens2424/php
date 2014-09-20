@@ -924,6 +924,6 @@ type StaticVariableDeclaration struct {
 
 type DeclareBlock struct {
 	BaseNode
-	Statements  *Block
-	Declaration string
+	Statements   *Block
+	Declarations []string
 }
