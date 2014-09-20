@@ -198,7 +198,11 @@ func (p *Parser) parseDeclareBlock() *ast.DeclareBlock {
 
 	p.expectCurrent(token.CloseParen)
 
-	declare.Statements = p.parseBlock()
+	if p.peek().typ == token.BlockBegin {
+		declare.Statements = p.parseBlock()
+	} else {
+		p.expect(token.StatementEnd)
+	}
 	return declare
 }
 
