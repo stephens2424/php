@@ -194,6 +194,8 @@ func (p *Parser) parseStmt() ast.Statement {
 	case token.StatementEnd:
 		// this is an empty statement
 		return &ast.EmptyStatement{}
+	case token.Declare:
+		return p.parseDeclareBlock()
 	default:
 		expr := p.parseExpression()
 		if expr != nil {

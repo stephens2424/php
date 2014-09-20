@@ -127,6 +127,8 @@ const (
 	TernaryOperator1
 	TernaryOperator2
 
+	Declare
+
 	Include
 	Exit
 )
@@ -244,6 +246,8 @@ var tokens = []string{
 
 	Include: "include",
 	Exit:    "exit",
+
+	Declare: "declare",
 }
 
 var TokenList []string
@@ -401,7 +405,8 @@ var TokenMap = map[string]Token{
 	"[": ArrayLookupOperatorLeft,
 	"]": ArrayLookupOperatorRight,
 
-	"$": VariableOperator,
+	"$":       VariableOperator,
+	"declare": Declare,
 }
 
 func (i Token) String() string {

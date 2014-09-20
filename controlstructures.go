@@ -181,3 +181,19 @@ stmtLoop:
 	}
 	return block
 }
+
+func (p *Parser) parseDeclareBlock() *ast.DeclareBlock {
+	p.expectCurrent(token.Declare)
+	p.expect(token.OpenParen)
+	p.expect(token.Identifier)
+	p.parseExpression()
+	p.next()
+	for p.current.typ == token.Comma {
+		p.expect(token.Identifier)
+		p.parseExpression()
+		p.next()
+	}
+	p.expectCurrent(token.CloseParen)
+
+	return &ast.DeclareBlock{Statements: p.parseBlock(), Declaration: ""}
+}

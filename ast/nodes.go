@@ -901,3 +901,9 @@ type StaticVariableDeclaration struct {
 	BaseNode
 	Declarations []Expression
 }
+
+type DeclareBlock struct {
+	BaseNode
+	Statements  *Block
+	Declaration string
+}
