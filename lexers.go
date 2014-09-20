@@ -145,7 +145,7 @@ func lexNumberLiteral(l *lexer) stateFn {
 		l.acceptRun(digits)
 	}
 
-	if l.accept("E") {
+	if l.accept("eE") {
 		l.acceptRun(digits)
 	}
 
