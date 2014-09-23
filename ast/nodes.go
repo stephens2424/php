@@ -289,7 +289,8 @@ func (i Include) EvaluatesTo() Type {
 }
 
 type ExitStmt struct {
-	Expression
+	BaseNode
+	Expression Expression
 }
 
 type NewExpression struct {
