@@ -64,13 +64,13 @@ func (l *lexer) run() {
 func (l *lexer) emit(t token.Token) {
 	i := Item{t, l.currentLocation(), l.input[l.start:l.pos]}
 	l.incrementLines()
-	l.lastPos = i.pos.Pos
+	l.lastPos = i.pos.Position
 	l.items <- i
 	l.start = l.pos
 }
 
-func (l *lexer) currentLocation() Location {
-	return Location{Pos: l.start, Line: l.line, File: l.file}
+func (l *lexer) currentLocation() token.Position {
+	return token.Position{Position: l.start, Line: l.line, File: l.file}
 }
 
 // nextItem returns the next token. from the input.
@@ -185,15 +185,12 @@ func init() {
 // Item represents a lexed item.
 type Item struct {
 	typ token.Token
-	pos Location
+	pos token.Position
 	val string
 }
 
-// Location represents a position within a PHP file.
-type Location struct {
-	Pos  int
-	Line int
-	File string
+func (i Item) Position() token.Position {
+	return i.pos
 }
 
 // String renders a string representation of the item.

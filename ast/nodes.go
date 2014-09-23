@@ -3,23 +3,28 @@ package ast
 import (
 	"fmt"
 	"strings"
+
+	"github.com/stephens2424/php/token"
 )
 
 // Node encapsulates every AST node.
 type Node interface {
 	String() string
 	Children() []Node
-	Position() Position
+	Begin() token.Position
+	End() token.Position
 }
-
-type Position int
 
 type BaseNode struct {
-	pos int
+	B, E token.Position
 }
 
-func (b BaseNode) Position() Position {
-	return Position(b.pos)
+func (b BaseNode) Begin() token.Position {
+	return b.B
+}
+
+func (b BaseNode) End() token.Position {
+	return b.E
 }
 
 func (b BaseNode) Children() []Node {

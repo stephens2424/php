@@ -51,6 +51,7 @@ func (p *Parser) parseStmt() ast.Statement {
 			return expr
 		}
 		s := &ast.StaticVariableDeclaration{Declarations: make([]ast.Expression, 0)}
+		s.B = p.current.Position()
 		for {
 			p.expect(token.VariableOperator)
 			p.expect(token.Identifier)
@@ -72,6 +73,7 @@ func (p *Parser) parseStmt() ast.Statement {
 			}
 			p.next()
 		}
+		s.E = p.current.Position()
 		p.expectStmtEnd()
 		return s
 	case token.VariableOperator, token.UnaryOperator:
