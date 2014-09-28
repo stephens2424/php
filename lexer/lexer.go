@@ -1,4 +1,5 @@
-package php
+// Lexer transforms an input string into a stream of PHP tokens.
+package lexer
 
 import (
 	"fmt"
@@ -27,7 +28,7 @@ type lexer struct {
 	line int
 	// width is the length of the current rune
 	width int
-	items chan Item // channel of scanned items.
+	items chan token.Item // channel of scanned items.
 
 	// input is the full input string.
 	input string
@@ -36,11 +37,11 @@ type lexer struct {
 	file string
 }
 
-func newLexer(input string) *lexer {
+func NewLexer(input string) token.Stream {
 	l := &lexer{
 		line:  1,
 		input: input,
-		items: make(chan Item),
+		items: make(chan token.Item),
 	}
 	go l.run()
 	return l
@@ -50,8 +51,8 @@ func newLexer(input string) *lexer {
 // as a function that returns the next state.
 type stateFn func(*lexer) stateFn
 
-// run lexes the input by executing state functions until
-// the state is nil.
+// Run lexes the input by executing state functions until
+// the state is nil. It is typically called in a goroutine.
 func (l *lexer) run() {
 	for state := lexHTML; state != nil; {
 		state = state(l)
@@ -62,11 +63,18 @@ func (l *lexer) run() {
 // emit gets the current token., sends it on the token. channel
 // and prepares for lexing the next token.
 func (l *lexer) emit(t token.Token) {
-	i := Item{t, l.currentLocation(), l.input[l.start:l.pos]}
+	i := token.Item{
+		Typ:   t,
+		Begin: l.currentLocation(),
+		Val:   l.input[l.start:l.pos],
+	}
+
 	l.incrementLines()
-	l.lastPos = i.pos.Position
-	l.items <- i
+	l.lastPos = i.Position().Position
 	l.start = l.pos
+
+	i.End = l.currentLocation()
+	l.items <- i
 }
 
 func (l *lexer) currentLocation() token.Position {
@@ -74,7 +82,7 @@ func (l *lexer) currentLocation() token.Position {
 }
 
 // nextItem returns the next token. from the input.
-func (l *lexer) nextItem() Item {
+func (l *lexer) Next() token.Item {
 	Item := <-l.items
 	return Item
 }
@@ -138,7 +146,12 @@ func (l *lexer) skipSpace() {
 }
 
 func (l *lexer) errorf(format string, args ...interface{}) stateFn {
-	i := Item{token.Error, l.currentLocation(), fmt.Sprintf(format, args...)}
+	i := token.Item{
+		Typ:   token.Error,
+		Begin: l.currentLocation(),
+		End:   l.currentLocation(),
+		Val:   fmt.Sprintf(format, args...),
+	}
 	l.incrementLines()
 	l.items <- i
 	return nil
@@ -180,29 +193,4 @@ func init() {
 			keywordMap[t] = true
 		}
 	}
-}
-
-// Item represents a lexed item.
-type Item struct {
-	typ token.Token
-	pos token.Position
-	val string
-}
-
-func (i Item) Position() token.Position {
-	return i.pos
-}
-
-// String renders a string representation of the item.
-func (i Item) String() string {
-	switch i.typ {
-	case token.EOF:
-		return "EOF"
-	case token.Error:
-		return i.val
-	}
-	if len(i.val) > 10 {
-		return fmt.Sprintf("%v:%.10q...", i.typ, i.val)
-	}
-	return fmt.Sprintf("%v:%q", i.typ, i.val)
 }
