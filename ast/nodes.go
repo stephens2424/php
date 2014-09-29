@@ -10,36 +10,18 @@ import (
 // Node encapsulates every AST node.
 type Node interface {
 	String() string
+	Parent() Node
 	Children() []Node
-	Begin() token.Position
-	End() token.Position
-}
+	Tokens() token.Stream
 
-type BaseNode struct {
-	B, E token.Position
-}
-
-func (b BaseNode) Begin() token.Position {
-	return b.B
-}
-
-func (b BaseNode) End() token.Position {
-	return b.E
-}
-
-func (b BaseNode) Children() []Node {
-	return nil
-}
-
-func (b BaseNode) String() string {
-	return ""
+	setTokens(t token.Stream)
 }
 
 // An Identifier is a raw string that can be used to identify
 // a variable, function, class, constant, property, etc.
 type Identifier struct {
-	BaseNode
-	Value string
+	Parent Node
+	Value  string
 }
 
 func (i Identifier) EvaluatesTo() Type {
@@ -50,8 +32,15 @@ func (i Identifier) String() string {
 	return i.Value
 }
 
+func (i Identifier) Chilren() []Node {
+	return nil
+}
+
+func (i Identifier) Tokens() *token.ItemList {
+	return token.NewList(token.NewItem(token.Identifier, i.Value))
+}
+
 type Variable struct {
-	BaseNode
 
 	// Name is the identifier for the variable, which may be
 	// a dynamic expression.
@@ -64,7 +53,6 @@ func (i Variable) String() string {
 }
 
 type GlobalDeclaration struct {
-	BaseNode
 	Identifiers []*Variable
 }
 
@@ -105,7 +93,6 @@ type Statement interface {
 
 // EmptyStatement represents a statement that does nothing.
 type EmptyStatement struct {
-	BaseNode
 }
 
 // An Expression is a snippet of code that evaluates to a single value when run
@@ -121,7 +108,6 @@ const AnyType = String | Integer | Float | Boolean | Null | Resource | Array | O
 // OperatorExpression is an expression that applies an operator to one, two, or three
 // operands. The operator determines how many operands it should contain.
 type OperatorExpression struct {
-	BaseNode
 	Operand1 Expression
 	Operand2 Expression
 	Operand3 Expression
@@ -154,7 +140,6 @@ func (o OperatorExpression) EvaluatesTo() Type {
 // UnaryExpression is an expression that applies an operator to only one operand. The
 // operator may precede or follow the operand.
 type UnaryExpression struct {
-	BaseNode
 	Operand   Expression
 	Operator  string
 	Preceding bool
@@ -197,7 +182,6 @@ func Echo(exprs ...Expression) EchoStmt {
 // Echo represents an echo statement. It may be either a literal statement
 // or it may be from data outside PHP-mode, such as "here" in: <? not here ?> here <? not here ?>
 type EchoStmt struct {
-	BaseNode
 	Expressions []Expression
 }
 
@@ -268,7 +252,6 @@ type IncludeStmt struct {
 }
 
 type Include struct {
-	BaseNode
 	Expressions []Expression
 }
 
@@ -289,12 +272,10 @@ func (i Include) EvaluatesTo() Type {
 }
 
 type ExitStmt struct {
-	BaseNode
 	Expression Expression
 }
 
 type NewExpression struct {
-	BaseNode
 	Class     Expression
 	Arguments []Expression
 }
@@ -317,7 +298,6 @@ func (c NewExpression) Children() []Node {
 }
 
 type AssignmentExpression struct {
-	BaseNode
 	Assignee Assignable
 	Value    Expression
 	Operator string
@@ -348,7 +328,6 @@ type FunctionCallStmt struct {
 }
 
 type FunctionCallExpression struct {
-	BaseNode
 	FunctionName Expression
 	Arguments    []Expression
 }
@@ -370,7 +349,6 @@ func (f FunctionCallExpression) Children() []Node {
 }
 
 type Block struct {
-	BaseNode
 	Statements []Statement
 	Scope      Scope
 }
@@ -388,7 +366,6 @@ func (b Block) Children() []Node {
 }
 
 type FunctionStmt struct {
-	BaseNode
 	*FunctionDefinition
 	Body *Block
 }
@@ -409,7 +386,6 @@ func (f FunctionStmt) Children() []Node {
 }
 
 type AnonymousFunction struct {
-	BaseNode
 	ClosureVariables []FunctionArgument
 	Arguments        []FunctionArgument
 	Body             *Block
@@ -420,7 +396,6 @@ func (a AnonymousFunction) EvaluatesTo() Type {
 }
 
 type FunctionDefinition struct {
-	BaseNode
 	Name      string
 	Arguments []FunctionArgument
 }
@@ -434,7 +409,6 @@ func (fd FunctionDefinition) Children() []Node {
 }
 
 type FunctionArgument struct {
-	BaseNode
 	TypeHint string
 	Default  Expression
 	Variable *Variable
@@ -455,7 +429,6 @@ func (fa FunctionArgument) Children() []Node {
 }
 
 type Class struct {
-	BaseNode
 	Name       string
 	Extends    *Class
 	Implements []string
@@ -481,7 +454,6 @@ func (c Class) Children() []Node {
 }
 
 type Constant struct {
-	BaseNode
 	*Variable
 	Value interface{}
 }
@@ -491,7 +463,6 @@ type ConstantExpression struct {
 }
 
 type Interface struct {
-	BaseNode
 	Name      string
 	Inherits  []string
 	Methods   []Method
@@ -511,7 +482,6 @@ func (i Interface) Children() []Node {
 }
 
 type Property struct {
-	BaseNode
 	Name           string
 	Visibility     Visibility
 	Type           Type
@@ -527,7 +497,6 @@ func (p Property) AssignableType() Type {
 }
 
 type PropertyExpression struct {
-	BaseNode
 	Receiver Expression
 	Name     Expression
 	Type     Type
@@ -552,7 +521,6 @@ func (p PropertyExpression) Children() []Node {
 }
 
 type ClassExpression struct {
-	BaseNode
 	Receiver   Expression
 	Expression Expression
 	Type       Type
@@ -582,7 +550,6 @@ func (c ClassExpression) AssignableType() Type {
 }
 
 type Method struct {
-	BaseNode
 	*FunctionStmt
 	Visibility Visibility
 }
@@ -620,7 +587,6 @@ const (
 )
 
 type IfStmt struct {
-	BaseNode
 	Condition   Expression
 	TrueBranch  Statement
 	FalseBranch Statement
@@ -641,7 +607,6 @@ func (i IfStmt) Children() []Node {
 }
 
 type SwitchStmt struct {
-	BaseNode
 	Expression  Expression
 	Cases       []*SwitchCase
 	DefaultCase *Block
@@ -665,7 +630,6 @@ func (s SwitchStmt) Children() []Node {
 }
 
 type SwitchCase struct {
-	BaseNode
 	Expression Expression
 	Block      Block
 }
@@ -682,7 +646,6 @@ func (s SwitchCase) Children() []Node {
 }
 
 type ForStmt struct {
-	BaseNode
 	Initialization []Expression
 	Termination    []Expression
 	Iteration      []Expression
@@ -708,7 +671,6 @@ func (f ForStmt) Children() []Node {
 }
 
 type WhileStmt struct {
-	BaseNode
 	Termination Expression
 	LoopBlock   Statement
 }
@@ -725,7 +687,6 @@ func (w WhileStmt) Children() []Node {
 }
 
 type DoWhileStmt struct {
-	BaseNode
 	Termination Expression
 	LoopBlock   Statement
 }
@@ -742,7 +703,6 @@ func (d DoWhileStmt) Children() []Node {
 }
 
 type TryStmt struct {
-	BaseNode
 	TryBlock     *Block
 	FinallyBlock *Block
 	CatchStmts   []*CatchStmt
@@ -764,7 +724,6 @@ func (t TryStmt) Children() []Node {
 }
 
 type CatchStmt struct {
-	BaseNode
 	CatchBlock *Block
 	CatchType  string
 	CatchVar   *Variable
@@ -779,7 +738,6 @@ func (c CatchStmt) Children() []Node {
 }
 
 type Literal struct {
-	BaseNode
 	Type  Type
 	Value string
 }
@@ -793,7 +751,6 @@ func (l Literal) EvaluatesTo() Type {
 }
 
 type ForeachStmt struct {
-	BaseNode
 	Source    Expression
 	Key       *Variable
 	Value     *Variable
@@ -814,7 +771,6 @@ func (f ForeachStmt) Children() []Node {
 }
 
 type ArrayExpression struct {
-	BaseNode
 	ArrayType
 	Pairs []ArrayPair
 }
@@ -832,7 +788,6 @@ func (a ArrayExpression) Children() []Node {
 }
 
 type ArrayPair struct {
-	BaseNode
 	Key   Expression
 	Value Expression
 }
@@ -853,7 +808,6 @@ func (a ArrayExpression) AssignableType() Type {
 }
 
 type ArrayLookupExpression struct {
-	BaseNode
 	Array Expression
 	Index Expression
 }
@@ -875,7 +829,6 @@ func (a ArrayLookupExpression) AssignableType() Type {
 }
 
 type ArrayAppendExpression struct {
-	BaseNode
 	Array Expression
 }
 
@@ -893,7 +846,6 @@ func (a ArrayAppendExpression) String() string {
 
 type ShellCommand struct {
 	Command string
-	BaseNode
 }
 
 func (s ShellCommand) String() string {
@@ -905,7 +857,6 @@ func (s ShellCommand) EvaluatesTo() Type {
 }
 
 type ListStatement struct {
-	BaseNode
 	Assignees []Assignable
 	Value     Expression
 	Operator  string
@@ -924,12 +875,10 @@ func (l ListStatement) Children() []Node {
 }
 
 type StaticVariableDeclaration struct {
-	BaseNode
 	Declarations []Expression
 }
 
 type DeclareBlock struct {
-	BaseNode
 	Statements   *Block
 	Declarations []string
 }

@@ -27,6 +27,32 @@ type Stream interface {
 	Next() Item
 }
 
+// List represents an ordered set of tokens.
+type ItemList struct {
+	// Items contains all the items in the list.
+	Items []Item
+
+	// Position is the current position the set is at in the token slice.
+	Position int
+}
+
+func NewList(t ...Item) *ItemList {
+	return &ItemList{t, 0}
+}
+
+func (s *ItemList) Next() Item {
+	s.Position += 1
+	return s.Items[s.Position]
+}
+
+func (s *ItemList) Peek() Item {
+	return s.Items[s.Position+1]
+}
+
+func (s *ItemList) Seek(position int) {
+	s.Position = position
+}
+
 // Subset returns a stream that emits only tokens from s that are
 // of Type t..
 func Subset(s Stream, t Type) Stream {
@@ -51,6 +77,13 @@ type Item struct {
 	Typ        Token
 	Begin, End Position
 	Val        string
+}
+
+func NewItem(t Token, v string) Item {
+	return Item{
+		Typ: t,
+		Val: v,
+	}
 }
 
 func (i Item) Position() Position {
