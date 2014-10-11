@@ -192,16 +192,16 @@ func TestExpressionParsing(t *testing.T) {
     echo "good"; `)
 	a, _ := p.Parse()
 	ifStmt := ast.IfStmt{
-		Condition: ast.OperatorExpression{
-			Operand1: ast.OperatorExpression{
-				Operand1: &ast.Literal{Type: ast.Float, Value: "1"},
-				Operand2: &ast.Literal{Type: ast.Float, Value: "2"},
-				Type:     ast.Numeric,
-				Operator: "+",
+		Condition: ast.BinaryExpression{
+			Antecedent: ast.BinaryExpression{
+				Antecedent: &ast.Literal{Type: ast.Float, Value: "1"},
+				Subsequent: &ast.Literal{Type: ast.Float, Value: "2"},
+				Type:       ast.Numeric,
+				Operator:   "+",
 			},
-			Operand2: &ast.Literal{Type: ast.Float, Value: "3"},
-			Type:     ast.Boolean,
-			Operator: ">",
+			Subsequent: &ast.Literal{Type: ast.Float, Value: "3"},
+			Type:       ast.Boolean,
+			Operator:   ">",
 		},
 		TrueBranch:  ast.Echo(&ast.Literal{Type: ast.String, Value: `"good"`}),
 		FalseBranch: ast.Block{},
@@ -222,16 +222,16 @@ func TestExpressionParsing(t *testing.T) {
   `)
 	a, _ = p.Parse()
 	ifStmt = ast.IfStmt{
-		Condition: ast.OperatorExpression{
-			Operand2: ast.OperatorExpression{
-				Operand1: &ast.Literal{Type: ast.Float, Value: "5"},
-				Operand2: &ast.Literal{Type: ast.Float, Value: "6"},
-				Type:     ast.Numeric,
-				Operator: "*",
+		Condition: ast.BinaryExpression{
+			Subsequent: ast.BinaryExpression{
+				Antecedent: &ast.Literal{Type: ast.Float, Value: "5"},
+				Subsequent: &ast.Literal{Type: ast.Float, Value: "6"},
+				Type:       ast.Numeric,
+				Operator:   "*",
 			},
-			Operand1: &ast.Literal{Type: ast.Float, Value: "4"},
-			Type:     ast.Numeric,
-			Operator: "+",
+			Antecedent: &ast.Literal{Type: ast.Float, Value: "4"},
+			Type:       ast.Numeric,
+			Operator:   "+",
 		},
 		TrueBranch:  ast.Echo(&ast.Literal{Type: ast.String, Value: `"bad"`}),
 		FalseBranch: ast.Block{},
@@ -252,18 +252,18 @@ func TestExpressionParsing(t *testing.T) {
   `)
 	a, _ = p.Parse()
 	ifStmt = ast.IfStmt{
-		Condition: ast.OperatorExpression{
-			Operand1: &ast.Literal{Type: ast.Float, Value: `1`},
-			Operand2: ast.OperatorExpression{
-				Operand1: ast.OperatorExpression{
-					Operand1: &ast.Literal{Type: ast.Float, Value: `2`},
-					Operand2: &ast.Literal{Type: ast.Float, Value: `3`},
-					Type:     ast.Numeric,
-					Operator: "*",
+		Condition: ast.BinaryExpression{
+			Antecedent: &ast.Literal{Type: ast.Float, Value: `1`},
+			Subsequent: ast.BinaryExpression{
+				Antecedent: ast.BinaryExpression{
+					Antecedent: &ast.Literal{Type: ast.Float, Value: `2`},
+					Subsequent: &ast.Literal{Type: ast.Float, Value: `3`},
+					Type:       ast.Numeric,
+					Operator:   "*",
 				},
-				Operand2: &ast.Literal{Type: ast.Float, Value: `4`},
-				Operator: "+",
-				Type:     ast.Numeric,
+				Subsequent: &ast.Literal{Type: ast.Float, Value: `4`},
+				Operator:   "+",
+				Type:       ast.Numeric,
 			},
 			Type:     ast.Boolean,
 			Operator: ">",
@@ -306,7 +306,6 @@ func TestArray(t *testing.T) {
 			Assignee: ast.NewVariable("var"),
 			Operator: "=",
 			Value: &ast.ArrayExpression{
-				ast.BaseNode{},
 				ast.ArrayType{},
 				[]ast.ArrayPair{
 					{Value: &ast.Literal{Type: ast.String, Value: `"one"`}},
@@ -335,7 +334,6 @@ func TestArrayKeys(t *testing.T) {
 		Assignee: ast.NewVariable("var"),
 		Operator: "=",
 		Value: &ast.ArrayExpression{
-			ast.BaseNode{},
 			ast.ArrayType{},
 			[]ast.ArrayPair{
 				{Key: &ast.Literal{Type: ast.Float, Value: "1"}, Value: &ast.Literal{Type: ast.String, Value: `"one"`}},
@@ -472,11 +470,11 @@ func TestForeachLoop(t *testing.T) {
 		Key:    ast.NewVariable("key"),
 		Value:  ast.NewVariable("val"),
 		LoopBlock: &ast.Block{
-			Statements: []ast.Statement{ast.Echo(ast.OperatorExpression{
-				Operator: ".",
-				Operand1: ast.NewVariable("key"),
-				Operand2: ast.NewVariable("val"),
-				Type:     ast.String,
+			Statements: []ast.Statement{ast.Echo(ast.BinaryExpression{
+				Operator:   ".",
+				Antecedent: ast.NewVariable("key"),
+				Subsequent: ast.NewVariable("val"),
+				Type:       ast.String,
 			})},
 		},
 	}
@@ -503,11 +501,11 @@ func TestForLoop(t *testing.T) {
 			Value:    &ast.Literal{Type: ast.Float, Value: "0"},
 			Operator: "=",
 		}},
-		Termination: []ast.Expression{ast.OperatorExpression{
-			Operand1: ast.NewVariable("i"),
-			Operand2: &ast.Literal{Type: ast.Float, Value: "10"},
-			Operator: "<",
-			Type:     ast.Boolean,
+		Termination: []ast.Expression{ast.BinaryExpression{
+			Antecedent: ast.NewVariable("i"),
+			Subsequent: &ast.Literal{Type: ast.Float, Value: "10"},
+			Operator:   "<",
+			Type:       ast.Boolean,
 		}},
 		Iteration: []ast.Expression{ast.UnaryExpression{
 			Operator:  "++",
