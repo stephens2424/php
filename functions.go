@@ -2,6 +2,7 @@ package php
 
 import (
 	"github.com/stephens2424/php/ast"
+	"github.com/stephens2424/php/lexer"
 	"github.com/stephens2424/php/token"
 )
 
@@ -20,7 +21,7 @@ func (p *Parser) parseFunctionDefinition() *ast.FunctionDefinition {
 	}
 	if !p.accept(token.Identifier) {
 		p.next()
-		if !isKeyword(p.current.Typ, p.current.Val) {
+		if !lexer.IsKeyword(p.current.Typ, p.current.Val) {
 			p.errorf("bad function name", p.current.Val)
 		}
 	}

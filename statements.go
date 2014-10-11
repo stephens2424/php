@@ -6,8 +6,6 @@ import (
 )
 
 func (p *Parser) parseStmt() ast.Statement {
-	begin := p.current.pos
-
 	switch p.current.Typ {
 	case token.BlockBegin:
 		p.backup()
@@ -31,8 +29,6 @@ func (p *Parser) parseStmt() ast.Statement {
 			p.next()
 		}
 		p.expectStmtEnd()
-		g.BaseNode.B = begin
-		g.BaseNode.E = p.current.pos
 		return g
 	case token.Namespace:
 		p.expect(token.Identifier)
@@ -55,7 +51,6 @@ func (p *Parser) parseStmt() ast.Statement {
 			return expr
 		}
 		s := &ast.StaticVariableDeclaration{Declarations: make([]ast.Expression, 0)}
-		s.B = p.current.Position()
 		for {
 			p.expect(token.VariableOperator)
 			p.expect(token.Identifier)
@@ -77,7 +72,6 @@ func (p *Parser) parseStmt() ast.Statement {
 			}
 			p.next()
 		}
-		s.E = p.current.Position()
 		p.expectStmtEnd()
 		return s
 	case token.VariableOperator, token.UnaryOperator:
@@ -91,12 +85,10 @@ func (p *Parser) parseStmt() ast.Statement {
 			requireParen = true
 		}
 		stmt := ast.Echo(p.parseNextExpression())
-		stmt.BaseNode.B = begin
 		if requireParen {
 			p.expect(token.CloseParen)
 		}
 		p.expectStmtEnd()
-		stmt.BaseNode.E = p.current.pos
 		return stmt
 	case token.Function:
 		return p.parseFunctionStmt()
@@ -123,8 +115,6 @@ func (p *Parser) parseStmt() ast.Statement {
 		}
 		p.expectStmtEnd()
 		echo := ast.Echo(exprs...)
-		echo.BaseNode.B = begin
-		echo.BaseNode.E = p.current.pos
 		return echo
 	case token.If:
 		return p.parseIf()
@@ -180,8 +170,6 @@ func (p *Parser) parseStmt() ast.Statement {
 			p.expect(token.CloseParen)
 		}
 		p.expectStmtEnd()
-		stmt.BaseNode.B = begin
-		stmt.BaseNode.E = p.current.pos
 		return stmt
 	case token.Try:
 		stmt := &ast.TryStmt{}

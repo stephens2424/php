@@ -1,6 +1,7 @@
 package ast
 
 import (
+	"bytes"
 	"fmt"
 	"strings"
 
@@ -404,6 +405,14 @@ func (e Include) Tokens() token.Stream {
 
 type ExitStmt struct {
 	Expression Expression
+}
+
+func (e ExitStmt) Children() []Node {
+	return nil
+}
+
+func (e ExitStmt) String() string {
+	return "exit"
 }
 
 func (b ExitStmt) Tokens() token.Stream {
@@ -1480,7 +1489,56 @@ type StaticVariableDeclaration struct {
 	Declarations []Expression
 }
 
+func (s StaticVariableDeclaration) Children() []Node {
+	return nil
+}
+func (s StaticVariableDeclaration) Tokens() token.Stream {
+	l := token.NewList()
+	l.PushKeyword(token.Static)
+	for i, d := range s.Declarations {
+		if i > 0 {
+			l.PushKeyword(token.Comma)
+		}
+		l.PushStream(d.Tokens())
+	}
+	l.PushKeyword(token.StatementEnd)
+	return l
+}
+func (s StaticVariableDeclaration) String() string {
+	buf := bytes.NewBufferString("static ")
+	for i, d := range s.Declarations {
+		if i > 0 {
+			buf.WriteString(",")
+		}
+		buf.WriteString(d.String())
+	}
+	return buf.String()
+}
+
 type DeclareBlock struct {
 	Statements   *Block
 	Declarations []string
+}
+
+func (d DeclareBlock) Children() []Node {
+	return d.Statements.Children()
+}
+
+func (d DeclareBlock) String() string {
+	return "declare{}"
+}
+
+func (d DeclareBlock) Tokens() token.Stream {
+	l := token.NewList()
+	l.PushKeyword(token.Declare)
+	l.PushKeyword(token.OpenParen)
+	for i, decl := range d.Declarations {
+		if i > 0 {
+			l.PushKeyword(token.Comma)
+		}
+		l.Push(token.Item{Typ: token.Identifier, Val: decl})
+	}
+	l.PushKeyword(token.CloseParen)
+	l.PushStream(d.Statements.Tokens())
+	return l
 }

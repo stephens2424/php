@@ -2,6 +2,7 @@ package php
 
 import (
 	"github.com/stephens2424/php/ast"
+	"github.com/stephens2424/php/lexer"
 	"github.com/stephens2424/php/token"
 )
 
@@ -37,7 +38,7 @@ func (p *Parser) parseClass() ast.Class {
 	}
 	switch p.next(); {
 	case p.current.Typ == token.Identifier:
-	case isKeyword(p.current.Typ, p.current.Val):
+	case lexer.IsKeyword(p.current.Typ, p.current.Val):
 	default:
 		p.errorf("unexpected variable operand %s", p.current)
 	}

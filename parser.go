@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/stephens2424/php/ast"
+	"github.com/stephens2424/php/lexer"
 	"github.com/stephens2424/php/token"
 )
 
@@ -31,7 +32,7 @@ func NewParser(input string) *Parser {
 	p := &Parser{
 		idx:       -1,
 		MaxErrors: 10,
-		lexer:     newLexer(input),
+		lexer:     lexer.NewLexer(input),
 		errorMap:  make(map[int]bool),
 	}
 	return p
@@ -84,7 +85,7 @@ func (p *Parser) parseNode() ast.Node {
 func (p *Parser) next() {
 	p.idx += 1
 	if len(p.previous) <= p.idx {
-		p.current = p.lexer.nextItem()
+		p.current = p.lexer.Next()
 		if p.PrintTokens {
 			fmt.Println(p.current)
 		}
@@ -149,17 +150,17 @@ func (p *Parser) errorf(str string, args ...interface{}) {
 	if p.errorCount > p.MaxErrors {
 		panic("too many errors")
 	}
-	if _, ok := p.errorMap[p.current.pos.Line]; ok {
+	if _, ok := p.errorMap[p.current.Begin.Line]; ok {
 		return
 	}
 	errString := fmt.Sprintf(str, args...)
 	p.errorCount += 1
 	p.errors = append(p.errors, fmt.Errorf("%s: %s", p.errorPrefix(), errString))
-	p.errorMap[p.current.pos.Line] = true
+	p.errorMap[p.current.Begin.Line] = true
 }
 
 func (p *Parser) errorPrefix() string {
-	return fmt.Sprintf("%s %d", p.lexer.file, p.current.pos.Line)
+	return fmt.Sprintf("%d", p.current.Begin.Line)
 }
 
 func (p *Parser) parseNextExpression() ast.Expression {
