@@ -105,11 +105,11 @@ func lexPHP(l *lexer) stateFn {
 		}
 		if strings.HasPrefix(strings.ToLower(potentialToken), tokenString) {
 			prev := l.previous()
-			if isKeyword(t, tokenString) && prev == '$' {
+			if IsKeyword(t, tokenString) && prev == '$' {
 				break
 			}
 			l.pos += len(tokenString)
-			if isKeyword(t, tokenString) && l.accept(alphabet+underscore+digits) {
+			if IsKeyword(t, tokenString) && l.accept(alphabet+underscore+digits) {
 				l.backup() // to account for the character consumed by accept
 				l.pos -= len(tokenString)
 				break

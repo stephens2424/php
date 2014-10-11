@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/stephens2424/php/ast"
+	"github.com/stephens2424/php/lexer"
 	"github.com/stephens2424/php/token"
 )
 
@@ -49,7 +50,7 @@ var operatorPrecedence = map[token.Token]int{
 func (p *Parser) parseExpression() (expr ast.Expression) {
 	originalParenLev := p.parenLevel
 
-	switch p.current.typ {
+	switch p.current.Typ {
 	case token.IgnoreErrorOperator:
 		return p.parseNextExpression()
 	case token.List:
@@ -103,12 +104,12 @@ func (p *Parser) parseExpression() (expr ast.Expression) {
 	return
 }
 
-func (p *Parser) checkForCast() *Item {
-	if t := p.peek(); p.isCastType(t.val) {
+func (p *Parser) checkForCast() *token.Item {
+	if t := p.peek(); p.isCastType(t.Val) {
 		p.next()
 		if p.accept(token.CloseParen) {
-			t.val = "(" + t.val + ")"
-			t.typ = token.CastOperator
+			t.Val = "(" + t.Val + ")"
+			t.Typ = token.CastOperator
 			return &t
 		}
 		p.backup()
@@ -136,7 +137,7 @@ func (p *Parser) isCastType(s string) bool {
 
 func (p *Parser) parseOperation(originalParenLevel int, lhs ast.Expression) (expr ast.Expression) {
 	p.next()
-	switch operationTypeForToken(p.current.typ) {
+	switch operationTypeForToken(p.current.Typ) {
 	case ignoreErrorOperation:
 		return p.parseOperation(originalParenLevel, lhs)
 	case unaryOperation:
@@ -169,14 +170,14 @@ func (p *Parser) parseOperation(originalParenLevel int, lhs ast.Expression) (exp
 	return p.parseOperation(originalParenLevel, expr)
 }
 
-func (p *Parser) parseAssignmentOperation(lhs, rhs ast.Expression, operator Item) (expr ast.Expression) {
+func (p *Parser) parseAssignmentOperation(lhs, rhs ast.Expression, operator token.Item) (expr ast.Expression) {
 	assignee, ok := lhs.(ast.Assignable)
 	if !ok {
 		p.errorf("%s is not assignable", lhs)
 	}
 	expr = ast.AssignmentExpression{
 		Assignee: assignee,
-		Operator: operator.val,
+		Operator: operator.Val,
 		Value:    rhs,
 	}
 	return expr
@@ -188,7 +189,7 @@ func (p *Parser) parseAssignmentOperation(lhs, rhs ast.Expression, operator Item
 func (p *Parser) parseOperand() (expr ast.Expression) {
 
 	// These cases must come first and not repeat
-	switch p.current.typ {
+	switch p.current.Typ {
 	case token.IgnoreErrorOperator:
 		p.next()
 		return p.parseOperand()
@@ -217,9 +218,9 @@ func (p *Parser) parseOperand() (expr ast.Expression) {
 		return p.parseArrayDeclaration()
 	}
 
-	switch p.current.typ {
+	switch p.current.Typ {
 	case token.ShellCommand:
-		return &ast.ShellCommand{Command: p.current.val}
+		return &ast.ShellCommand{Command: p.current.Val}
 	case
 		token.StringLiteral,
 		token.BooleanLiteral,
@@ -257,7 +258,7 @@ func (p *Parser) parseOperand() (expr ast.Expression) {
 func (p *Parser) parseOperandComponent(lhs ast.Expression) (expr ast.Expression) {
 	expr = lhs
 	for {
-		switch p.current.typ {
+		switch p.current.Typ {
 		case token.UnaryOperator:
 			expr = p.parseUnaryExpressionRight(expr, p.current)
 			return
@@ -283,20 +284,20 @@ func (p *Parser) parseOperandComponent(lhs ast.Expression) (expr ast.Expression)
 }
 
 func (p *Parser) parseLiteral() ast.Expression {
-	switch p.current.typ {
+	switch p.current.Typ {
 	case token.StringLiteral:
-		return &ast.Literal{Type: ast.String, Value: p.current.val}
+		return &ast.Literal{Type: ast.String, Value: p.current.Val}
 	case token.BooleanLiteral:
-		return &ast.Literal{Type: ast.Boolean, Value: p.current.val}
+		return &ast.Literal{Type: ast.Boolean, Value: p.current.Val}
 	case token.NumberLiteral:
-		return &ast.Literal{Type: ast.Float, Value: p.current.val}
+		return &ast.Literal{Type: ast.Float, Value: p.current.Val}
 	case token.Null:
-		if p.peek().typ == token.OpenParen {
+		if p.peek().Typ == token.OpenParen {
 			expr := p.parseIdentifier()
 			p.backup()
 			return expr
 		}
-		return &ast.Literal{Type: ast.Null, Value: p.current.val}
+		return &ast.Literal{Type: ast.Null, Value: p.current.Val}
 	}
 	p.errorf("Unknown literal type")
 	return nil
@@ -305,17 +306,17 @@ func (p *Parser) parseLiteral() ast.Expression {
 func (p *Parser) parseVariable() ast.Expression {
 	p.expectCurrent(token.VariableOperator)
 	switch p.next(); {
-	case isKeyword(p.current.typ, p.current.val):
+	case lexer.IsKeyword(p.current.Typ, p.current.Val):
 		// keywords are all valid variable names
 		fallthrough
-	case p.current.typ == token.Identifier:
-		expr := ast.NewVariable(p.current.val)
+	case p.current.Typ == token.Identifier:
+		expr := ast.NewVariable(p.current.Val)
 		return expr
-	case p.current.typ == token.BlockBegin:
+	case p.current.Typ == token.BlockBegin:
 		expr := &ast.Variable{Name: p.parseNextExpression()}
 		p.expect(token.BlockEnd)
 		return expr
-	case p.current.typ == token.VariableOperator:
+	case p.current.Typ == token.VariableOperator:
 		return &ast.Variable{Name: p.parseVariable()}
 	default:
 		p.errorf("unexpected variable operand %s", p.current)
@@ -327,7 +328,7 @@ func (p *Parser) parseInclude() ast.Expression {
 	inc := ast.Include{Expressions: make([]ast.Expression, 0)}
 	for {
 		inc.Expressions = append(inc.Expressions, p.parseNextExpression())
-		if p.peek().typ != token.Comma {
+		if p.peek().Typ != token.Comma {
 			break
 		}
 		p.expect(token.Comma)
@@ -347,21 +348,21 @@ func (p *Parser) parseNew(originalParenLev int) ast.Expression {
 }
 
 func (p *Parser) parseIdentifier() (expr ast.Expression) {
-	switch p.peek().typ {
+	switch p.peek().Typ {
 	case token.OpenParen:
 		// Function calls are okay here because we know they came with
 		// a non-dynamic identifier.
-		expr = p.parseFunctionCall(ast.Identifier{Value: p.current.val})
+		expr = p.parseFunctionCall(ast.Identifier{Value: p.current.Val})
 		p.next()
 	case token.ScopeResolutionOperator:
-		classIdent := p.current.val
+		classIdent := p.current.Val
 		p.next() // get onto ::, then we get to the next expr
 		p.next()
 		expr = ast.NewClassExpression(classIdent, p.parseOperand())
 		p.next()
 	default:
 		expr = ast.ConstantExpression{
-			Variable: ast.NewVariable(p.current.val),
+			Variable: ast.NewVariable(p.current.Val),
 		}
 		p.next()
 	}
@@ -370,8 +371,8 @@ func (p *Parser) parseIdentifier() (expr ast.Expression) {
 
 // parseScopeResolutionFromKeyword specifically parses self::, static::, and parent::
 func (p *Parser) parseScopeResolutionFromKeyword() ast.Expression {
-	if p.peek().typ == token.ScopeResolutionOperator {
-		r := p.current.val
+	if p.peek().Typ == token.ScopeResolutionOperator {
+		r := p.current.Val
 		p.expect(token.ScopeResolutionOperator)
 		p.next()
 		expr := ast.NewClassExpression(r, p.parseOperand())
@@ -388,7 +389,7 @@ func (p *Parser) parseVariableOperand() ast.Expression {
 	p.next()
 	// Array lookup with curly braces is a special case that is only supported by PHP in
 	// simple contexts.
-	switch p.current.typ {
+	switch p.current.Typ {
 	case token.BlockBegin:
 		expr = p.parseArrayLookup(expr)
 		p.next()

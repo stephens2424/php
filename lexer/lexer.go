@@ -167,7 +167,7 @@ func isSpace(r rune) bool {
 	return unicode.IsSpace(r)
 }
 
-func isKeyword(i token.Token, tokenString string) bool {
+func IsKeyword(i token.Token, tokenString string) bool {
 	_, ok := keywordMap[i]
 	return ok && !isNonAlphaOperator(tokenString)
 }

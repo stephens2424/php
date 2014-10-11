@@ -15,19 +15,19 @@ func (p *Parser) parseBlock() *ast.Block {
 func (p *Parser) parseStatementsUntil(endTokens ...token.Token) *ast.Block {
 	block := &ast.Block{}
 	breakTypes := map[token.Token]bool{}
-	for _, typ := range endTokens {
-		breakTypes[typ] = true
+	for _, Typ := range endTokens {
+		breakTypes[Typ] = true
 	}
 	for {
 		p.next()
-		if _, ok := breakTypes[p.current.typ]; ok {
+		if _, ok := breakTypes[p.current.Typ]; ok {
 			break
 		}
 		stmt := p.parseStmt()
 		if stmt != nil {
 			block.Statements = append(block.Statements, stmt)
 		}
-		if p.current.typ == token.EOF {
+		if p.current.Typ == token.EOF {
 			break
 		}
 	}
@@ -37,13 +37,13 @@ func (p *Parser) parseStatementsUntil(endTokens ...token.Token) *ast.Block {
 func (p *Parser) parseExpressionsUntil(separator token.Token, endTokens ...token.Token) []ast.Expression {
 	exprs := make([]ast.Expression, 0, 1)
 	breakTypes := map[token.Token]bool{}
-	for _, typ := range endTokens {
-		breakTypes[typ] = true
+	for _, Typ := range endTokens {
+		breakTypes[Typ] = true
 	}
 	p.next()
 	first := true
 	for {
-		if _, ok := breakTypes[p.current.typ]; ok {
+		if _, ok := breakTypes[p.current.Typ]; ok {
 			break
 		} else if first {
 			first = false

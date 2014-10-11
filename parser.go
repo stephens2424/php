@@ -55,7 +55,7 @@ func (p *Parser) Parse() (nodes []ast.Node, errors []error) {
 TokenLoop:
 	for {
 		p.next()
-		switch p.current.typ {
+		switch p.current.Typ {
 		case token.EOF:
 			break TokenLoop
 		default:
@@ -70,9 +70,9 @@ TokenLoop:
 }
 
 func (p *Parser) parseNode() ast.Node {
-	switch p.current.typ {
+	switch p.current.Typ {
 	case token.HTML:
-		return ast.Echo(ast.Literal{Type: ast.String, Value: p.current.val})
+		return ast.Echo(ast.Literal{Type: ast.String, Value: p.current.Val})
 	case token.PHPBegin:
 		return nil
 	case token.PHPEnd:
@@ -99,7 +99,7 @@ func (p *Parser) backup() {
 	p.current = p.previous[p.idx]
 }
 
-func (p *Parser) peek() (i Item) {
+func (p *Parser) peek() (i token.Item) {
 	p.next()
 	i = p.current
 	p.backup()
@@ -107,8 +107,8 @@ func (p *Parser) peek() (i Item) {
 }
 
 func (p *Parser) expectCurrent(i ...token.Token) {
-	for _, typ := range i {
-		if p.current.typ == typ {
+	for _, Typ := range i {
+		if p.current.Typ == Typ {
 			return
 		}
 	}
@@ -117,8 +117,8 @@ func (p *Parser) expectCurrent(i ...token.Token) {
 
 func (p *Parser) expectAndNext(i ...token.Token) {
 	defer p.next()
-	for _, typ := range i {
-		if p.current.typ == typ {
+	for _, Typ := range i {
+		if p.current.Typ == Typ {
 			return
 		}
 	}
@@ -135,9 +135,9 @@ func (p *Parser) expected(i ...token.Token) {
 }
 
 func (p *Parser) accept(i ...token.Token) bool {
-	nextTyp := p.peek().typ
-	for _, typ := range i {
-		if nextTyp == typ {
+	nextTyp := p.peek().Typ
+	for _, Typ := range i {
+		if nextTyp == Typ {
 			p.next()
 			return true
 		}

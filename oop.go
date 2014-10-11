@@ -14,11 +14,11 @@ func (p *Parser) parseInstantiation() ast.Expression {
 	expr.Class = p.parseOperand()
 	p.instantiation = false
 
-	if p.peek().typ == token.OpenParen {
+	if p.peek().Typ == token.OpenParen {
 		p.expect(token.OpenParen)
-		if p.peek().typ != token.CloseParen {
+		if p.peek().Typ != token.CloseParen {
 			expr.Arguments = append(expr.Arguments, p.parseNextExpression())
-			for p.peek().typ == token.Comma {
+			for p.peek().Typ == token.Comma {
 				p.expect(token.Comma)
 				expr.Arguments = append(expr.Arguments, p.parseNextExpression())
 			}
@@ -29,28 +29,28 @@ func (p *Parser) parseInstantiation() ast.Expression {
 }
 
 func (p *Parser) parseClass() ast.Class {
-	if p.current.typ == token.Abstract {
+	if p.current.Typ == token.Abstract {
 		p.expect(token.Class)
 	}
-	if p.current.typ == token.Final {
+	if p.current.Typ == token.Final {
 		p.expect(token.Class)
 	}
 	switch p.next(); {
-	case p.current.typ == token.Identifier:
-	case isKeyword(p.current.typ, p.current.val):
+	case p.current.Typ == token.Identifier:
+	case isKeyword(p.current.Typ, p.current.Val):
 	default:
 		p.errorf("unexpected variable operand %s", p.current)
 	}
 
-	name := p.current.val
-	if p.peek().typ == token.Extends {
+	name := p.current.Val
+	if p.peek().Typ == token.Extends {
 		p.expect(token.Extends)
 		p.expect(token.Identifier)
 	}
-	if p.peek().typ == token.Implements {
+	if p.peek().Typ == token.Implements {
 		p.expect(token.Implements)
 		p.expect(token.Identifier)
-		for p.peek().typ == token.Comma {
+		for p.peek().Typ == token.Comma {
 			p.expect(token.Comma)
 			p.expect(token.Identifier)
 		}
@@ -64,17 +64,17 @@ func (p *Parser) parseObjectLookup(r ast.Expression) (expr ast.Expression) {
 	prop := &ast.PropertyExpression{
 		Receiver: r,
 	}
-	switch p.next(); p.current.typ {
+	switch p.next(); p.current.Typ {
 	case token.BlockBegin:
 		prop.Name = p.parseNextExpression()
 		p.expect(token.BlockEnd)
 	case token.VariableOperator:
 		prop.Name = p.parseExpression()
 	case token.Identifier:
-		prop.Name = ast.Identifier{Value: p.current.val}
+		prop.Name = ast.Identifier{Value: p.current.Val}
 	}
 	expr = prop
-	switch pk := p.peek(); pk.typ {
+	switch pk := p.peek(); pk.Typ {
 	case token.OpenParen:
 		expr = &ast.MethodCallExpression{
 			Receiver:               r,
@@ -86,7 +86,7 @@ func (p *Parser) parseObjectLookup(r ast.Expression) (expr ast.Expression) {
 }
 
 func (p *Parser) parseVisibility() (vis ast.Visibility, found bool) {
-	switch p.peek().typ {
+	switch p.peek().Typ {
 	case token.Private:
 		vis = ast.Private
 	case token.Public:
@@ -101,7 +101,7 @@ func (p *Parser) parseVisibility() (vis ast.Visibility, found bool) {
 }
 
 func (p *Parser) parseAbstract() bool {
-	if p.peek().typ == token.Abstract {
+	if p.peek().Typ == token.Abstract {
 		p.next()
 		return true
 	}
@@ -112,10 +112,10 @@ func (p *Parser) parseClassFields(c ast.Class) ast.Class {
 	// Starting on BlockBegin
 	c.Methods = make([]ast.Method, 0)
 	c.Properties = make([]ast.Property, 0)
-	for p.peek().typ != token.BlockEnd {
+	for p.peek().Typ != token.BlockEnd {
 		vis, _, _, abstract := p.parseClassMemberSettings()
 		p.next()
-		switch p.current.typ {
+		switch p.current.Typ {
 		case token.Function:
 			if abstract {
 				f := p.parseFunctionDefinition()
@@ -139,9 +139,9 @@ func (p *Parser) parseClassFields(c ast.Class) ast.Class {
 				p.expect(token.Identifier)
 				prop := ast.Property{
 					Visibility: vis,
-					Name:       "$" + p.current.val,
+					Name:       "$" + p.current.Val,
 				}
-				if p.peek().typ == token.AssignmentOperator {
+				if p.peek().Typ == token.AssignmentOperator {
 					p.expect(token.AssignmentOperator)
 					prop.Initialization = p.parseNextExpression()
 				}
@@ -155,8 +155,8 @@ func (p *Parser) parseClassFields(c ast.Class) ast.Class {
 		case token.Const:
 			constant := ast.Constant{}
 			p.expect(token.Identifier)
-			constant.Variable = ast.NewVariable(p.current.val)
-			if p.peek().typ == token.AssignmentOperator {
+			constant.Variable = ast.NewVariable(p.current.Val)
+			if p.peek().Typ == token.AssignmentOperator {
 				p.expect(token.AssignmentOperator)
 				constant.Value = p.parseNextExpression()
 			}
@@ -176,26 +176,26 @@ func (p *Parser) parseInterface() *ast.Interface {
 		Inherits: make([]string, 0),
 	}
 	p.expect(token.Identifier)
-	i.Name = p.current.val
-	if p.peek().typ == token.Extends {
+	i.Name = p.current.Val
+	if p.peek().Typ == token.Extends {
 		p.expect(token.Extends)
 		for {
 			p.expect(token.Identifier)
-			i.Inherits = append(i.Inherits, p.current.val)
-			if p.peek().typ != token.Comma {
+			i.Inherits = append(i.Inherits, p.current.Val)
+			if p.peek().Typ != token.Comma {
 				break
 			}
 			p.expect(token.Comma)
 		}
 	}
 	p.expect(token.BlockBegin)
-	for p.peek().typ != token.BlockEnd {
+	for p.peek().Typ != token.BlockEnd {
 		vis, _ := p.parseVisibility()
-		if p.peek().typ == token.Static {
+		if p.peek().Typ == token.Static {
 			p.next()
 		}
 		p.next()
-		switch p.current.typ {
+		switch p.current.Typ {
 		case token.Function:
 			f := p.parseFunctionDefinition()
 			m := ast.Method{
@@ -207,8 +207,8 @@ func (p *Parser) parseInterface() *ast.Interface {
 		case token.Const:
 			constant := ast.Constant{}
 			p.expect(token.Identifier)
-			constant.Variable = ast.NewVariable(p.current.val)
-			if p.peek().typ == token.AssignmentOperator {
+			constant.Variable = ast.NewVariable(p.current.Val)
+			if p.peek().Typ == token.AssignmentOperator {
 				p.expect(token.AssignmentOperator)
 				constant.Value = p.parseNextExpression()
 			}
@@ -226,7 +226,7 @@ func (p *Parser) parseClassMemberSettings() (vis ast.Visibility, static, final, 
 	var foundVis bool
 	vis = ast.Public
 	for {
-		switch p.peek().typ {
+		switch p.peek().Typ {
 		case token.Abstract:
 			if abstract {
 				p.errorf("found multiple abstract declarations")

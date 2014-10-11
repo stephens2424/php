@@ -52,9 +52,9 @@ func operationTypeForToken(t token.Token) operationType {
 	return nilOperation
 }
 
-func (p *Parser) newBinaryOperation(operator Item, expr1, expr2 ast.Expression) ast.Expression {
+func (p *Parser) newBinaryOperation(operator token.Item, expr1, expr2 ast.Expression) ast.Expression {
 	t := ast.Numeric
-	switch operator.typ {
+	switch operator.Typ {
 	case token.AssignmentOperator:
 		return p.parseAssignmentOperation(expr1, expr2, operator)
 	case token.ComparisonOperator, token.AndOperator, token.OrOperator, token.WrittenAndOperator, token.WrittenOrOperator, token.WrittenXorOperator:
@@ -64,21 +64,21 @@ func (p *Parser) newBinaryOperation(operator Item, expr1, expr2 ast.Expression) 
 	case token.AmpersandOperator, token.BitwiseXorOperator, token.BitwiseOrOperator, token.BitwiseShiftOperator:
 		t = ast.AnyType
 	}
-	return ast.OperatorExpression{
-		Type:     t,
-		Operand1: expr1,
-		Operand2: expr2,
-		Operator: operator.val,
+	return ast.BinaryExpression{
+		Type:       t,
+		Antecedent: expr1,
+		Subsequent: expr2,
+		Operator:   operator.Val,
 	}
 }
 
-func (p *Parser) parseBinaryOperation(lhs ast.Expression, operator Item, originalParenLevel int) ast.Expression {
+func (p *Parser) parseBinaryOperation(lhs ast.Expression, operator token.Item, originalParenLevel int) ast.Expression {
 	p.next()
 	rhs := p.parseOperand()
-	currentPrecedence := operatorPrecedence[operator.typ]
+	currentPrecedence := operatorPrecedence[operator.Typ]
 	for {
 		nextOperator := p.peek()
-		nextPrecedence, ok := operatorPrecedence[nextOperator.typ]
+		nextPrecedence, ok := operatorPrecedence[nextOperator.Typ]
 		if !ok || nextPrecedence < currentPrecedence {
 			break
 		}
@@ -89,33 +89,32 @@ func (p *Parser) parseBinaryOperation(lhs ast.Expression, operator Item, origina
 
 func (p *Parser) parseTernaryOperation(lhs ast.Expression) ast.Expression {
 	var truthy ast.Expression
-	if p.peek().typ == token.TernaryOperator2 {
+	if p.peek().Typ == token.TernaryOperator2 {
 		truthy = lhs
 	} else {
 		truthy = p.parseNextExpression()
 	}
 	p.expect(token.TernaryOperator2)
 	falsy := p.parseNextExpression()
-	return &ast.OperatorExpression{
-		Operand1: lhs,
-		Operand2: truthy,
-		Operand3: falsy,
-		Type:     truthy.EvaluatesTo() | falsy.EvaluatesTo(),
-		Operator: "?:",
+	return &ast.TernaryExpression{
+		Condition: lhs,
+		True:      truthy,
+		False:     falsy,
+		Type:      truthy.EvaluatesTo() | falsy.EvaluatesTo(),
 	}
 }
 
-func (p *Parser) parseUnaryExpressionRight(operand ast.Expression, operator Item) ast.Expression {
+func (p *Parser) parseUnaryExpressionRight(operand ast.Expression, operator token.Item) ast.Expression {
 	return ast.UnaryExpression{
 		Operand:  operand,
-		Operator: operator.val,
+		Operator: operator.Val,
 	}
 }
 
-func (p *Parser) parseUnaryExpressionLeft(operand ast.Expression, operator Item) ast.Expression {
+func (p *Parser) parseUnaryExpressionLeft(operand ast.Expression, operator token.Item) ast.Expression {
 	return ast.UnaryExpression{
 		Operand:   operand,
-		Operator:  operator.val,
+		Operator:  operator.Val,
 		Preceding: true,
 	}
 }

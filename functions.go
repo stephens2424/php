@@ -14,26 +14,26 @@ func (p *Parser) parseFunctionStmt() *ast.FunctionStmt {
 
 func (p *Parser) parseFunctionDefinition() *ast.FunctionDefinition {
 	def := &ast.FunctionDefinition{}
-	if p.peek().typ == token.AmpersandOperator {
+	if p.peek().Typ == token.AmpersandOperator {
 		// This is a function returning a reference ... ignore this for now
 		p.next()
 	}
 	if !p.accept(token.Identifier) {
 		p.next()
-		if !isKeyword(p.current.typ, p.current.val) {
-			p.errorf("bad function name", p.current.val)
+		if !isKeyword(p.current.Typ, p.current.Val) {
+			p.errorf("bad function name", p.current.Val)
 		}
 	}
-	def.Name = p.current.val
+	def.Name = p.current.Val
 	def.Arguments = make([]ast.FunctionArgument, 0)
 	p.expect(token.OpenParen)
-	if p.peek().typ == token.CloseParen {
+	if p.peek().Typ == token.CloseParen {
 		p.expect(token.CloseParen)
 		return def
 	}
 	def.Arguments = append(def.Arguments, p.parseFunctionArgument())
 	for {
-		switch p.peek().typ {
+		switch p.peek().Typ {
 		case token.Comma:
 			p.expect(token.Comma)
 			def.Arguments = append(def.Arguments, p.parseFunctionArgument())
@@ -49,18 +49,18 @@ func (p *Parser) parseFunctionDefinition() *ast.FunctionDefinition {
 
 func (p *Parser) parseFunctionArgument() ast.FunctionArgument {
 	arg := ast.FunctionArgument{}
-	switch p.peek().typ {
+	switch p.peek().Typ {
 	case token.Identifier, token.Array, token.Self:
 		p.next()
-		arg.TypeHint = p.current.val
+		arg.TypeHint = p.current.Val
 	}
-	if p.peek().typ == token.AmpersandOperator {
+	if p.peek().Typ == token.AmpersandOperator {
 		p.next()
 	}
 	p.expect(token.VariableOperator)
 	p.next()
-	arg.Variable = ast.NewVariable(p.current.val)
-	if p.peek().typ == token.AssignmentOperator {
+	arg.Variable = ast.NewVariable(p.current.Val)
+	if p.peek().Typ == token.AssignmentOperator {
 		p.expect(token.AssignmentOperator)
 		p.next()
 		arg.Default = p.parseExpression()
@@ -77,12 +77,12 @@ func (p *Parser) parseFunctionCall(callable ast.Expression) *ast.FunctionCallExp
 func (p *Parser) parseFunctionArguments(expr *ast.FunctionCallExpression) *ast.FunctionCallExpression {
 	expr.Arguments = make([]ast.Expression, 0)
 	p.expect(token.OpenParen)
-	if p.peek().typ == token.CloseParen {
+	if p.peek().Typ == token.CloseParen {
 		p.expect(token.CloseParen)
 		return expr
 	}
 	expr.Arguments = append(expr.Arguments, p.parseNextExpression())
-	for p.peek().typ != token.CloseParen {
+	for p.peek().Typ != token.CloseParen {
 		p.expect(token.Comma)
 		arg := p.parseNextExpression()
 		if arg == nil {
@@ -100,13 +100,13 @@ func (p *Parser) parseAnonymousFunction() ast.Expression {
 	f.Arguments = make([]ast.FunctionArgument, 0)
 	f.ClosureVariables = make([]ast.FunctionArgument, 0)
 	p.expect(token.OpenParen)
-	if p.peek().typ != token.CloseParen {
+	if p.peek().Typ != token.CloseParen {
 		f.Arguments = append(f.Arguments, p.parseFunctionArgument())
 	}
 
 Loop:
 	for {
-		switch p.peek().typ {
+		switch p.peek().Typ {
 		case token.Comma:
 			p.expect(token.Comma)
 			f.Arguments = append(f.Arguments, p.parseFunctionArgument())
@@ -120,13 +120,13 @@ Loop:
 	p.expect(token.CloseParen)
 
 	// Closure variables
-	if p.peek().typ == token.Use {
+	if p.peek().Typ == token.Use {
 		p.expect(token.Use)
 		p.expect(token.OpenParen)
 		f.ClosureVariables = append(f.ClosureVariables, p.parseFunctionArgument())
 	ClosureLoop:
 		for {
-			switch p.peek().typ {
+			switch p.peek().Typ {
 			case token.Comma:
 				p.expect(token.Comma)
 				f.ClosureVariables = append(f.ClosureVariables, p.parseFunctionArgument())
