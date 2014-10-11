@@ -7,7 +7,7 @@ import (
 
 func (p *Parser) parseArrayLookup(e ast.Expression) ast.Expression {
 	p.expectCurrent(token.ArrayLookupOperatorLeft, token.BlockBegin)
-	switch typ := p.peek().typ; typ {
+	switch Typ := p.peek().Typ; Typ {
 	case token.ArrayLookupOperatorRight, token.BlockBegin:
 		p.expect(token.ArrayLookupOperatorRight, token.BlockEnd)
 		return ast.ArrayAppendExpression{Array: e}
@@ -25,7 +25,7 @@ func (p *Parser) parseArrayDeclaration() ast.Expression {
 	var endType token.Token
 	pairs := make([]ast.ArrayPair, 0)
 	p.expectCurrent(token.Array, token.ArrayLookupOperatorLeft)
-	switch p.current.typ {
+	switch p.current.Typ {
 	case token.Array:
 		p.expect(token.OpenParen)
 		endType = token.CloseParen
@@ -34,25 +34,25 @@ func (p *Parser) parseArrayDeclaration() ast.Expression {
 	}
 ArrayLoop:
 	for {
-		var key, val ast.Expression
-		switch p.peek().typ {
+		var key, Val ast.Expression
+		switch p.peek().Typ {
 		case endType:
 			break ArrayLoop
 		default:
-			val = p.parseNextExpression()
+			Val = p.parseNextExpression()
 		}
-		switch p.peek().typ {
+		switch p.peek().Typ {
 		case token.Comma:
 			p.expect(token.Comma)
 		case endType:
-			pairs = append(pairs, ast.ArrayPair{Key: key, Value: val})
+			pairs = append(pairs, ast.ArrayPair{Key: key, Value: Val})
 			break ArrayLoop
 		case token.ArrayKeyOperator:
 			p.expect(token.ArrayKeyOperator)
-			key = val
-			val = p.parseNextExpression()
-			if p.peek().typ == endType {
-				pairs = append(pairs, ast.ArrayPair{Key: key, Value: val})
+			key = Val
+			Val = p.parseNextExpression()
+			if p.peek().Typ == endType {
+				pairs = append(pairs, ast.ArrayPair{Key: key, Value: Val})
 				break ArrayLoop
 			}
 			p.expect(token.Comma)
@@ -60,7 +60,7 @@ ArrayLoop:
 			p.errorf("expected => or ,")
 			return nil
 		}
-		pairs = append(pairs, ast.ArrayPair{Key: key, Value: val})
+		pairs = append(pairs, ast.ArrayPair{Key: key, Value: Val})
 	}
 	p.expect(endType)
 	return &ast.ArrayExpression{Pairs: pairs}
@@ -75,7 +75,7 @@ func (p *Parser) parseList() ast.Expression {
 		if p.accept(token.Comma) {
 			continue
 		}
-		if p.peek().typ == token.CloseParen {
+		if p.peek().Typ == token.CloseParen {
 			break
 		}
 		p.next()
@@ -85,14 +85,14 @@ func (p *Parser) parseList() ast.Expression {
 		} else {
 			p.errorf("%v list element is not assignable", op)
 		}
-		if p.peek().typ != token.Comma {
+		if p.peek().Typ != token.Comma {
 			break
 		}
 		p.expect(token.Comma)
 	}
 	p.expect(token.CloseParen)
 	p.expect(token.AssignmentOperator)
-	l.Operator = p.current.val
+	l.Operator = p.current.Val
 	l.Value = p.parseNextExpression()
 	return l
 

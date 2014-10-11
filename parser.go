@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/stephens2424/php/ast"
+	"github.com/stephens2424/php/lexer"
 	"github.com/stephens2424/php/token"
 )
 
@@ -14,10 +15,10 @@ type Parser struct {
 	PrintTokens bool // PrintTokens causes the parser to print all tokens received from the lexer to stdout.
 	MaxErrors   int  // Indicates the number of errors to allow before triggering a panic. The default is 10.
 
-	lexer      *lexer
-	previous   []Item
+	lexer      token.Stream
+	previous   []token.Item
 	idx        int
-	current    Item
+	current    token.Item
 	errors     []error
 	parenLevel int
 	errorMap   map[int]bool
@@ -31,7 +32,7 @@ func NewParser(input string) *Parser {
 	p := &Parser{
 		idx:       -1,
 		MaxErrors: 10,
-		lexer:     newLexer(input),
+		lexer:     lexer.NewLexer(input),
 		errorMap:  make(map[int]bool),
 	}
 	return p
@@ -55,7 +56,7 @@ func (p *Parser) Parse() (nodes []ast.Node, errors []error) {
 TokenLoop:
 	for {
 		p.next()
-		switch p.current.typ {
+		switch p.current.Typ {
 		case token.EOF:
 			break TokenLoop
 		default:
@@ -70,9 +71,9 @@ TokenLoop:
 }
 
 func (p *Parser) parseNode() ast.Node {
-	switch p.current.typ {
+	switch p.current.Typ {
 	case token.HTML:
-		return ast.Echo(ast.Literal{Type: ast.String, Value: p.current.val})
+		return ast.Echo(ast.Literal{Type: ast.String, Value: p.current.Val})
 	case token.PHPBegin:
 		return nil
 	case token.PHPEnd:
@@ -84,7 +85,7 @@ func (p *Parser) parseNode() ast.Node {
 func (p *Parser) next() {
 	p.idx += 1
 	if len(p.previous) <= p.idx {
-		p.current = p.lexer.nextItem()
+		p.current = p.lexer.Next()
 		if p.PrintTokens {
 			fmt.Println(p.current)
 		}
@@ -99,7 +100,7 @@ func (p *Parser) backup() {
 	p.current = p.previous[p.idx]
 }
 
-func (p *Parser) peek() (i Item) {
+func (p *Parser) peek() (i token.Item) {
 	p.next()
 	i = p.current
 	p.backup()
@@ -107,8 +108,8 @@ func (p *Parser) peek() (i Item) {
 }
 
 func (p *Parser) expectCurrent(i ...token.Token) {
-	for _, typ := range i {
-		if p.current.typ == typ {
+	for _, Typ := range i {
+		if p.current.Typ == Typ {
 			return
 		}
 	}
@@ -117,8 +118,8 @@ func (p *Parser) expectCurrent(i ...token.Token) {
 
 func (p *Parser) expectAndNext(i ...token.Token) {
 	defer p.next()
-	for _, typ := range i {
-		if p.current.typ == typ {
+	for _, Typ := range i {
+		if p.current.Typ == Typ {
 			return
 		}
 	}
@@ -135,9 +136,9 @@ func (p *Parser) expected(i ...token.Token) {
 }
 
 func (p *Parser) accept(i ...token.Token) bool {
-	nextTyp := p.peek().typ
-	for _, typ := range i {
-		if nextTyp == typ {
+	nextTyp := p.peek().Typ
+	for _, Typ := range i {
+		if nextTyp == Typ {
 			p.next()
 			return true
 		}
@@ -149,17 +150,17 @@ func (p *Parser) errorf(str string, args ...interface{}) {
 	if p.errorCount > p.MaxErrors {
 		panic("too many errors")
 	}
-	if _, ok := p.errorMap[p.current.pos.Line]; ok {
+	if _, ok := p.errorMap[p.current.Begin.Line]; ok {
 		return
 	}
 	errString := fmt.Sprintf(str, args...)
 	p.errorCount += 1
 	p.errors = append(p.errors, fmt.Errorf("%s: %s", p.errorPrefix(), errString))
-	p.errorMap[p.current.pos.Line] = true
+	p.errorMap[p.current.Begin.Line] = true
 }
 
 func (p *Parser) errorPrefix() string {
-	return fmt.Sprintf("%s %d", p.lexer.file, p.current.pos.Line)
+	return fmt.Sprintf("%d", p.current.Begin.Line)
 }
 
 func (p *Parser) parseNextExpression() ast.Expression {

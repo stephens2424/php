@@ -6,7 +6,7 @@ import (
 )
 
 func (p *Parser) parseStmt() ast.Statement {
-	switch p.current.typ {
+	switch p.current.Typ {
 	case token.BlockBegin:
 		p.backup()
 		return p.parseBlock()
@@ -15,14 +15,14 @@ func (p *Parser) parseStmt() ast.Statement {
 		g := &ast.GlobalDeclaration{
 			Identifiers: make([]*ast.Variable, 0, 1),
 		}
-		for p.current.typ == token.VariableOperator {
+		for p.current.Typ == token.VariableOperator {
 			variable, ok := p.parseVariable().(*ast.Variable)
 			if !ok {
 				p.errorf("global declarations must be of standard variables")
 				break
 			}
 			g.Identifiers = append(g.Identifiers, variable)
-			if p.peek().typ != token.Comma {
+			if p.peek().Typ != token.Comma {
 				break
 			}
 			p.expect(token.Comma)
@@ -37,7 +37,7 @@ func (p *Parser) parseStmt() ast.Statement {
 		return nil
 	case token.Use:
 		p.expect(token.Identifier)
-		if p.peek().typ == token.AsOperator {
+		if p.peek().Typ == token.AsOperator {
 			p.expect(token.AsOperator)
 			p.expect(token.Identifier)
 		}
@@ -45,22 +45,21 @@ func (p *Parser) parseStmt() ast.Statement {
 		// We are ignoring this for now
 		return nil
 	case token.Static:
-		if p.peek().typ == token.ScopeResolutionOperator {
+		if p.peek().Typ == token.ScopeResolutionOperator {
 			expr := p.parseExpression()
 			p.expectStmtEnd()
 			return expr
 		}
 		s := &ast.StaticVariableDeclaration{Declarations: make([]ast.Expression, 0)}
-		s.B = p.current.Position()
 		for {
 			p.expect(token.VariableOperator)
 			p.expect(token.Identifier)
-			v := ast.NewVariable(p.current.val)
-			if p.peek().typ == token.AssignmentOperator {
+			v := ast.NewVariable(p.current.Val)
+			if p.peek().Typ == token.AssignmentOperator {
 				p.expect(token.AssignmentOperator)
-				op := p.current.val
+				op := p.current.Val
 				p.expect(token.Null, token.StringLiteral, token.BooleanLiteral, token.NumberLiteral, token.Array)
-				switch p.current.typ {
+				switch p.current.Typ {
 				case token.Array:
 					s.Declarations = append(s.Declarations, &ast.AssignmentExpression{Assignee: v, Value: p.parseArrayDeclaration(), Operator: op})
 				default:
@@ -68,12 +67,11 @@ func (p *Parser) parseStmt() ast.Statement {
 				}
 			}
 			s.Declarations = append(s.Declarations, v)
-			if p.peek().typ != token.Comma {
+			if p.peek().Typ != token.Comma {
 				break
 			}
 			p.next()
 		}
-		s.E = p.current.Position()
 		p.expectStmtEnd()
 		return s
 	case token.VariableOperator, token.UnaryOperator:
@@ -82,7 +80,7 @@ func (p *Parser) parseStmt() ast.Statement {
 		return expr
 	case token.Print:
 		requireParen := false
-		if p.peek().typ == token.OpenParen {
+		if p.peek().Typ == token.OpenParen {
 			p.expect(token.OpenParen)
 			requireParen = true
 		}
@@ -95,15 +93,15 @@ func (p *Parser) parseStmt() ast.Statement {
 	case token.Function:
 		return p.parseFunctionStmt()
 	case token.PHPEnd:
-		if p.peek().typ == token.EOF {
+		if p.peek().Typ == token.EOF {
 			return nil
 		}
 		var expr ast.Statement
 		if p.accept(token.HTML) {
-			expr = ast.Echo(&ast.Literal{Type: ast.String, Value: p.current.val})
+			expr = ast.Echo(&ast.Literal{Type: ast.String, Value: p.current.Val})
 		}
 		p.next()
-		if p.current.typ != token.EOF {
+		if p.current.Typ != token.EOF {
 			p.expectCurrent(token.PHPBegin)
 		}
 		return expr
@@ -111,12 +109,13 @@ func (p *Parser) parseStmt() ast.Statement {
 		exprs := []ast.Expression{
 			p.parseNextExpression(),
 		}
-		for p.peek().typ == token.Comma {
+		for p.peek().Typ == token.Comma {
 			p.expect(token.Comma)
 			exprs = append(exprs, p.parseNextExpression())
 		}
 		p.expectStmtEnd()
-		return ast.Echo(exprs...)
+		echo := ast.Echo(exprs...)
+		return echo
 	case token.If:
 		return p.parseIf()
 	case token.While:
@@ -136,7 +135,7 @@ func (p *Parser) parseStmt() ast.Statement {
 	case token.Return:
 		p.next()
 		stmt := ast.ReturnStmt{}
-		if p.current.typ != token.StatementEnd {
+		if p.current.Typ != token.StatementEnd {
 			stmt.Expression = p.parseExpression()
 			p.expectStmtEnd()
 		}
@@ -144,7 +143,7 @@ func (p *Parser) parseStmt() ast.Statement {
 	case token.Break:
 		p.next()
 		stmt := ast.BreakStmt{}
-		if p.current.typ != token.StatementEnd {
+		if p.current.Typ != token.StatementEnd {
 			stmt.Expression = p.parseExpression()
 			p.expectStmtEnd()
 		}
@@ -152,7 +151,7 @@ func (p *Parser) parseStmt() ast.Statement {
 	case token.Continue:
 		p.next()
 		stmt := ast.ContinueStmt{}
-		if p.current.typ != token.StatementEnd {
+		if p.current.Typ != token.StatementEnd {
 			stmt.Expression = p.parseExpression()
 			p.expectStmtEnd()
 		}
@@ -163,9 +162,9 @@ func (p *Parser) parseStmt() ast.Statement {
 		return stmt
 	case token.Exit:
 		stmt := ast.ExitStmt{}
-		if p.peek().typ == token.OpenParen {
+		if p.peek().Typ == token.OpenParen {
 			p.expect(token.OpenParen)
-			if p.peek().typ != token.CloseParen {
+			if p.peek().Typ != token.CloseParen {
 				stmt.Expression = p.parseNextExpression()
 			}
 			p.expect(token.CloseParen)
@@ -175,14 +174,14 @@ func (p *Parser) parseStmt() ast.Statement {
 	case token.Try:
 		stmt := &ast.TryStmt{}
 		stmt.TryBlock = p.parseBlock()
-		for p.expect(token.Catch); p.current.typ == token.Catch; p.next() {
+		for p.expect(token.Catch); p.current.Typ == token.Catch; p.next() {
 			caught := &ast.CatchStmt{}
 			p.expect(token.OpenParen)
 			p.expect(token.Identifier)
-			caught.CatchType = p.current.val
+			caught.CatchType = p.current.Val
 			p.expect(token.VariableOperator)
 			p.expect(token.Identifier)
-			caught.CatchVar = ast.NewVariable(p.current.val)
+			caught.CatchVar = ast.NewVariable(p.current.Val)
 			p.expect(token.CloseParen)
 			caught.CatchBlock = p.parseBlock()
 			stmt.CatchStmts = append(stmt.CatchStmts, caught)
@@ -210,7 +209,7 @@ func (p *Parser) parseStmt() ast.Statement {
 }
 
 func (p *Parser) expectStmtEnd() {
-	if p.peek().typ != token.PHPEnd {
+	if p.peek().Typ != token.PHPEnd {
 		p.expect(token.StatementEnd)
 	}
 }

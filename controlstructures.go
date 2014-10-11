@@ -16,19 +16,19 @@ func (p *Parser) parseIf() *ast.IfStmt {
 	n.FalseBranch = ast.Block{}
 
 	blockStyle := false
-	switch p.current.typ {
+	switch p.current.Typ {
 	case token.ElseIf, token.Else, token.EndIf:
 	default:
 		p.next()
 		blockStyle = true
 	}
 
-	switch p.current.typ {
+	switch p.current.Typ {
 	case token.ElseIf:
 		n.FalseBranch = p.parseIf()
 	case token.Else:
 		p.next()
-		if p.current.typ == token.If {
+		if p.current.Typ == token.If {
 			n.FalseBranch = p.parseIf()
 		} else {
 			n.FalseBranch = p.parseControlBlock(token.EndIf)
@@ -59,21 +59,21 @@ func (p *Parser) parseForeach() ast.Statement {
 	p.expect(token.OpenParen)
 	stmt.Source = p.parseNextExpression()
 	p.expect(token.AsOperator)
-	if p.peek().typ == token.AmpersandOperator {
+	if p.peek().Typ == token.AmpersandOperator {
 		p.expect(token.AmpersandOperator)
 	}
 	p.expect(token.VariableOperator)
 	p.next()
-	first := ast.NewVariable(p.current.val)
-	if p.peek().typ == token.ArrayKeyOperator {
+	first := ast.NewVariable(p.current.Val)
+	if p.peek().Typ == token.ArrayKeyOperator {
 		stmt.Key = first
 		p.expect(token.ArrayKeyOperator)
-		if p.peek().typ == token.AmpersandOperator {
+		if p.peek().Typ == token.AmpersandOperator {
 			p.expect(token.AmpersandOperator)
 		}
 		p.expect(token.VariableOperator)
 		p.next()
-		stmt.Value = ast.NewVariable(p.current.val)
+		stmt.Value = ast.NewVariable(p.current.Val)
 	} else {
 		stmt.Value = first
 	}
@@ -85,7 +85,7 @@ func (p *Parser) parseForeach() ast.Statement {
 
 func (p *Parser) parseControlBlock(end ...token.Token) ast.Statement {
 	// try to parse this in bash style, but it requires an end token
-	if len(end) > 0 && p.current.typ == token.TernaryOperator2 {
+	if len(end) > 0 && p.current.Typ == token.TernaryOperator2 {
 		return p.parseStatementsUntil(end...)
 	}
 	return p.parseStmt()
@@ -124,7 +124,7 @@ func (p *Parser) parseSwitch() ast.Statement {
 	p.expect(token.BlockBegin, token.TernaryOperator2)
 	p.next()
 	for {
-		switch p.current.typ {
+		switch p.current.Typ {
 		case token.Case:
 			expr := p.parseNextExpression()
 			p.expect(token.TernaryOperator2, token.StatementEnd)
@@ -148,7 +148,7 @@ func (p *Parser) parseSwitch() ast.Statement {
 
 func (p *Parser) parseSwitchBlock() *ast.Block {
 	needBlockEnd := false
-	if p.current.typ == token.BlockBegin {
+	if p.current.Typ == token.BlockBegin {
 		needBlockEnd = true
 		p.next()
 	}
@@ -157,7 +157,7 @@ func (p *Parser) parseSwitchBlock() *ast.Block {
 	}
 stmtLoop:
 	for {
-		switch p.current.typ {
+		switch p.current.Typ {
 		case token.BlockEnd:
 			if needBlockEnd {
 				needBlockEnd = false
@@ -191,14 +191,14 @@ func (p *Parser) parseDeclareBlock() *ast.DeclareBlock {
 	declare.Declarations = append(declare.Declarations, p.parseDeclareElement())
 
 	p.next()
-	for p.current.typ == token.Comma {
+	for p.current.Typ == token.Comma {
 		declare.Declarations = append(declare.Declarations, p.parseDeclareElement())
 		p.next()
 	}
 
 	p.expectCurrent(token.CloseParen)
 
-	if p.peek().typ == token.BlockBegin {
+	if p.peek().Typ == token.BlockBegin {
 		declare.Statements = p.parseBlock()
 	} else {
 		p.expect(token.StatementEnd)
@@ -209,12 +209,12 @@ func (p *Parser) parseDeclareBlock() *ast.DeclareBlock {
 func (p *Parser) parseDeclareElement() string {
 	element := ""
 	p.expect(token.Identifier)
-	element += p.current.val
+	element += p.current.Val
 
 	p.expect(token.AssignmentOperator)
-	element += p.current.val
+	element += p.current.Val
 
 	p.parseNextExpression()
-	element += p.current.val
+	element += p.current.Val
 	return element
 }

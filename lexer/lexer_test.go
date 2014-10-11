@@ -1,4 +1,4 @@
-package php
+package lexer
 
 import (
 	"testing"
@@ -36,24 +36,24 @@ foo;
 <? echo something(); ?>
 </html>`
 
-func assertNext(t *testing.T, l *lexer, typ token.Token) Item {
-	i := l.nextItem()
-	if i.typ != typ {
+func assertNext(t *testing.T, l token.Stream, typ token.Token) token.Item {
+	i := l.Next()
+	if i.Typ != typ {
 		t.Fatal("Incorrect lexing. Expected:", typ, "Found:", i)
 	}
 	return i
 }
 
-func assertItem(t *testing.T, i Item, expected string) {
-	if i.val != expected {
+func assertItem(t *testing.T, i token.Item, expected string) {
+	if i.Val != expected {
 		t.Fatal("Did not correctly parse token.", i)
 	}
 }
 
 func TestPHPLexer(t *testing.T) {
-	l := newLexer(testFile)
+	l := NewLexer(testFile)
 
-	var i Item
+	var i token.Item
 	i = assertNext(t, l, token.PHPBegin)
 
 	i = assertNext(t, l, token.VariableOperator)

@@ -36,8 +36,6 @@ const (
 	IgnoreErrorOperator
 
 	Return
-	FunctionCallBegin
-	FunctionCallEnd
 	ArgumentType
 	ArgumentName
 	Comma
@@ -119,7 +117,10 @@ const (
 	ArrayLookupOperatorRight
 	List
 	BitwiseShiftOperator
+	StrongEqualityOperator
+	StrongNotEqualityOperator
 	EqualityOperator
+	NotEqualityOperator
 	AmpersandOperator
 	BitwiseXorOperator
 	BitwiseOrOperator
@@ -153,16 +154,14 @@ var tokens = []string{
 	BlockBegin:       "Block Begin",
 	BlockEnd:         "Block End",
 
-	Global:            "global",
-	Return:            "Return",
-	FunctionCallBegin: "Function Call Begin",
-	FunctionCallEnd:   "Function Call End",
-	ArgumentType:      "Function Argument Type",
-	ArgumentName:      "Function Argument Name",
-	Comma:             "Function Argument Separator",
-	StatementEnd:      "Statement End",
-	Echo:              "Echo",
-	Print:             "Print",
+	Global:       "global",
+	Return:       "Return",
+	ArgumentType: "Function Argument Type",
+	ArgumentName: "Function Argument Name",
+	Comma:        "Function Argument Separator",
+	StatementEnd: ";",
+	Echo:         "echo",
+	Print:        "Print",
 
 	Namespace: "namespace",
 	Use:       "use",
