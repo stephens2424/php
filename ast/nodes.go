@@ -10,11 +10,8 @@ import (
 // Node encapsulates every AST node.
 type Node interface {
 	String() string
-	Parent() Node
 	Children() []Node
 	Tokens() token.Stream
-
-	setTokens(t token.Stream)
 }
 
 // An Identifier is a raw string that can be used to identify
@@ -32,11 +29,11 @@ func (i Identifier) String() string {
 	return i.Value
 }
 
-func (i Identifier) Chilren() []Node {
+func (i Identifier) Children() []Node {
 	return nil
 }
 
-func (i Identifier) Tokens() *token.ItemList {
+func (i Identifier) Tokens() token.Stream {
 	return token.NewList(token.NewItem(token.Identifier, i.Value))
 }
 
@@ -48,8 +45,19 @@ type Variable struct {
 	Type Type
 }
 
-func (i Variable) String() string {
-	return "$" + i.Name.String()
+func (v Variable) String() string {
+	return "$" + v.Name.String()
+}
+
+func (v Variable) Children() []Node {
+	return []Node{v.Name}
+}
+
+func (v Variable) Tokens() token.Stream {
+	l := token.NewList()
+	l.Push(token.NewItem(token.VariableOperator, "$"))
+	l.PushStream(v.Name.Tokens())
+	return l
 }
 
 type GlobalDeclaration struct {
@@ -66,6 +74,18 @@ func (g GlobalDeclaration) Children() []Node {
 
 func (g GlobalDeclaration) String() string {
 	return "global"
+}
+
+func (g GlobalDeclaration) Tokens() token.Stream {
+	l := token.NewList(token.Keyword(token.Global))
+	for i, id := range g.Identifiers {
+		l.PushStream(id.Tokens())
+		if i+1 < len(g.Identifiers) {
+			l.PushKeyword(token.Comma)
+		}
+	}
+	l.PushKeyword(token.StatementEnd)
+	return l
 }
 
 func (i Variable) AssignableType() Type {
@@ -95,6 +115,10 @@ type Statement interface {
 type EmptyStatement struct {
 }
 
+func (e EmptyStatement) String() string       { return "" }
+func (e EmptyStatement) Children() []Node     { return nil }
+func (e EmptyStatement) Tokens() token.Stream { return token.NewList() }
+
 // An Expression is a snippet of code that evaluates to a single value when run
 // and does not represent a program instruction.
 type Expression interface {
@@ -107,34 +131,58 @@ const AnyType = String | Integer | Float | Boolean | Null | Resource | Array | O
 
 // OperatorExpression is an expression that applies an operator to one, two, or three
 // operands. The operator determines how many operands it should contain.
-type OperatorExpression struct {
-	Operand1 Expression
-	Operand2 Expression
-	Operand3 Expression
-	Type     Type
-	Operator string
+type BinaryExpression struct {
+	Antecedent Expression
+	Subsequent Expression
+	Type       Type
+	Operator   string
 }
 
-func (o OperatorExpression) Children() []Node {
-	n := make([]Node, 0, 3)
-	if o.Operand1 != nil {
-		n = append(n, o.Operand1)
-	}
-	if o.Operand2 != nil {
-		n = append(n, o.Operand2)
-	}
-	if o.Operand3 != nil {
-		n = append(n, o.Operand3)
-	}
-	return n
+func (b BinaryExpression) Children() []Node {
+	return []Node{b.Antecedent, b.Subsequent}
 }
 
-func (o OperatorExpression) String() string {
-	return o.Operator
+func (b BinaryExpression) String() string {
+	return b.Operator
 }
 
-func (o OperatorExpression) EvaluatesTo() Type {
-	return o.Type
+func (b BinaryExpression) EvaluatesTo() Type {
+	return b.Type
+}
+
+func (b BinaryExpression) Tokens() token.Stream {
+	l := token.NewList()
+	l.PushStream(b.Antecedent.Tokens())
+	l.Push(token.Item{Typ: token.TokenMap[b.Operator], Val: b.Operator})
+	l.PushStream(b.Subsequent.Tokens())
+	return l
+}
+
+type TernaryExpression struct {
+	Condition, True, False Expression
+	Type                   Type
+}
+
+func (t TernaryExpression) Children() []Node {
+	return []Node{t.Condition, t.True, t.False}
+}
+
+func (t TernaryExpression) String() string {
+	return "?:"
+}
+
+func (t TernaryExpression) EvaluatesTo() Type {
+	return t.Type
+}
+
+func (t TernaryExpression) Tokens() token.Stream {
+	l := token.NewList()
+	l.PushStream(t.Condition.Tokens())
+	l.PushKeyword(token.TernaryOperator1)
+	l.PushStream(t.True.Tokens())
+	l.PushKeyword(token.TernaryOperator2)
+	l.PushStream(t.False.Tokens())
+	return l
 }
 
 // UnaryExpression is an expression that applies an operator to only one operand. The
@@ -340,6 +388,20 @@ func (f FunctionCallExpression) String() string {
 	return fmt.Sprintf("%s()", f.FunctionName)
 }
 
+func (f FunctionCallExpression) Tokens() token.Stream {
+	l := token.NewList()
+	l.PushStream(f.FunctionName.Tokens())
+	l.PushKeyword(token.OpenParen)
+	for i, arg := range f.Arguments {
+		if i > 0 {
+			l.PushKeyword(token.Comma)
+		}
+		l.PushStream(arg.Tokens())
+	}
+	l.PushKeyword(token.CloseParen)
+	return l
+}
+
 func (f FunctionCallExpression) Children() []Node {
 	n := make([]Node, len(f.Arguments))
 	for i, a := range f.Arguments {
@@ -363,6 +425,14 @@ func (b Block) Children() []Node {
 		n[i] = s
 	}
 	return n
+}
+
+func (b Block) Tokens() token.Stream {
+	l := token.NewList()
+	for _, s := range b.Statements {
+		l.PushStream(s.Tokens())
+	}
+	return l
 }
 
 type FunctionStmt struct {
@@ -408,6 +478,24 @@ func (fd FunctionDefinition) Children() []Node {
 	return n
 }
 
+func (fd FunctionDefinition) String() string {
+	return fmt.Sprintf("function %s( %s )", fd.Name, fd.Arguments)
+}
+
+func (fd FunctionDefinition) Tokens() token.Stream {
+	l := token.NewList(token.Keyword(token.Function))
+	l.Push(token.Item{Typ: token.Identifier, Val: fd.Name})
+	l.PushKeyword(token.OpenParen)
+	for i, arg := range fd.Arguments {
+		l.PushStream(arg.Tokens())
+		if i+1 < len(fd.Arguments) {
+			l.PushKeyword(token.Comma)
+		}
+	}
+	l.Push(token.Keyword(token.CloseParen))
+	return l
+}
+
 type FunctionArgument struct {
 	TypeHint string
 	Default  Expression
@@ -426,6 +514,19 @@ func (fa FunctionArgument) Children() []Node {
 		n = append(n, fa.Default)
 	}
 	return n
+}
+
+func (fa FunctionArgument) Tokens() token.Stream {
+	l := token.NewList()
+	if fa.TypeHint != "" {
+		l.Push(token.Item{Typ: token.Identifier, Val: fa.TypeHint})
+	}
+	l.PushStream(fa.Variable.Tokens())
+	if fa.Default != nil {
+		l.PushKeyword(token.AssignmentOperator)
+		l.PushStream(fa.Default.Tokens())
+	}
+	return l
 }
 
 type Class struct {
@@ -494,6 +595,21 @@ func (p Property) String() string {
 
 func (p Property) AssignableType() Type {
 	return p.Type
+}
+
+func (p Property) Children() []Node {
+	return []Node{p.Initialization}
+}
+
+func (p Property) Tokens() token.Stream {
+	l := token.NewList()
+	l.PushKeyword(p.Visibility.Token())
+	l.Push(token.Item{Typ: token.Identifier, Val: p.Name})
+	if p.Initialization != nil {
+		l.PushKeyword(token.AssignmentOperator)
+		l.PushStream(p.Initialization.Tokens())
+	}
+	return l
 }
 
 type PropertyExpression struct {
@@ -578,6 +694,14 @@ func (m MethodCallExpression) String() string {
 	return fmt.Sprintf("%s->", m.Receiver)
 }
 
+func (m MethodCallExpression) Tokens() token.Stream {
+	l := token.NewList()
+	l.PushStream(m.Receiver.Tokens())
+	l.PushKeyword(token.ObjectOperator)
+	l.PushStream(m.FunctionCallExpression.Tokens())
+	return l
+}
+
 type Visibility int
 
 const (
@@ -585,6 +709,18 @@ const (
 	Protected
 	Public
 )
+
+func (v Visibility) Token() token.Token {
+	switch v {
+	case Private:
+		return token.Private
+	case Protected:
+		return token.Protected
+	case Public:
+		return token.Public
+	}
+	panic("invalid visibility value")
+}
 
 type IfStmt struct {
 	Condition   Expression
@@ -632,6 +768,15 @@ func (s SwitchStmt) Children() []Node {
 type SwitchCase struct {
 	Expression Expression
 	Block      Block
+}
+
+func (s SwitchCase) Tokens() token.Stream {
+	l := token.NewList()
+	l.PushKeyword(token.Case)
+	l.PushStream(s.Expression.Tokens())
+	l.PushKeyword(token.TernaryOperator2)
+	l.PushStream(s.Block.Tokens())
+	return l
 }
 
 func (s SwitchCase) String() string {
@@ -723,6 +868,20 @@ func (t TryStmt) Children() []Node {
 	return n
 }
 
+func (t TryStmt) Tokens() token.Stream {
+	l := token.NewList()
+	l.PushKeyword(token.Try)
+	l.PushStream(t.TryBlock.Tokens())
+	for _, c := range t.CatchStmts {
+		l.PushStream(c.Tokens())
+	}
+	if t.FinallyBlock != nil {
+		l.PushKeyword(token.Finally)
+		l.PushStream(t.FinallyBlock.Tokens())
+	}
+	return l
+}
+
 type CatchStmt struct {
 	CatchBlock *Block
 	CatchType  string
@@ -735,6 +894,17 @@ func (c CatchStmt) String() string {
 
 func (c CatchStmt) Children() []Node {
 	return []Node{c.CatchBlock}
+}
+
+func (c CatchStmt) Tokens() token.Stream {
+	l := token.NewList()
+	l.PushKeyword(token.Catch)
+	l.PushKeyword(token.OpenParen)
+	l.Push(token.Item{Typ: token.Identifier, Val: c.CatchType})
+	l.PushStream(c.CatchVar.Tokens())
+	l.PushKeyword(token.CloseParen)
+	l.PushStream(c.CatchBlock.Tokens())
+	return l
 }
 
 type Literal struct {
@@ -787,6 +957,19 @@ func (a ArrayExpression) Children() []Node {
 	return n
 }
 
+func (a ArrayExpression) Tokens() token.Stream {
+	l := token.NewList()
+	l.PushKeyword(token.Array)
+	l.PushKeyword(token.OpenParen)
+	for i, pair := range a.Pairs {
+		if i > 0 {
+			l.PushKeyword(token.Comma)
+		}
+		l.PushStream(pair.Tokens())
+	}
+	return l
+}
+
 type ArrayPair struct {
 	Key   Expression
 	Value Expression
@@ -797,6 +980,20 @@ func (p ArrayPair) Children() []Node {
 		return []Node{p.Key, p.Value}
 	}
 	return []Node{p.Value}
+}
+
+func (p ArrayPair) Tokens() token.Stream {
+	l := token.NewList()
+	if p.Key != nil {
+		l.PushStream(p.Key.Tokens())
+		l.PushKeyword(token.ArrayKeyOperator)
+	}
+	l.PushStream(p.Value.Tokens())
+	return l
+}
+
+func (p ArrayPair) String() string {
+	return fmt.Sprintf("%s => %s", p.Key, p.Value)
 }
 
 func (a ArrayExpression) EvaluatesTo() Type {

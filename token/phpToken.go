@@ -117,7 +117,10 @@ const (
 	ArrayLookupOperatorRight
 	List
 	BitwiseShiftOperator
+	StrongEqualityOperator
+	StrongNotEqualityOperator
 	EqualityOperator
+	NotEqualityOperator
 	AmpersandOperator
 	BitwiseXorOperator
 	BitwiseOrOperator
@@ -156,8 +159,8 @@ var tokens = []string{
 	ArgumentType: "Function Argument Type",
 	ArgumentName: "Function Argument Name",
 	Comma:        "Function Argument Separator",
-	StatementEnd: "Statement End",
-	Echo:         "Echo",
+	StatementEnd: ";",
+	Echo:         "echo",
 	Print:        "Print",
 
 	Namespace: "namespace",

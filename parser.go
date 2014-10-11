@@ -14,10 +14,10 @@ type Parser struct {
 	PrintTokens bool // PrintTokens causes the parser to print all tokens received from the lexer to stdout.
 	MaxErrors   int  // Indicates the number of errors to allow before triggering a panic. The default is 10.
 
-	lexer      *lexer
-	previous   []Item
+	lexer      token.Stream
+	previous   []token.Item
 	idx        int
-	current    Item
+	current    token.Item
 	errors     []error
 	parenLevel int
 	errorMap   map[int]bool

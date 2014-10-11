@@ -6,6 +6,8 @@ import (
 )
 
 func (p *Parser) parseStmt() ast.Statement {
+	begin := p.current.pos
+
 	switch p.current.typ {
 	case token.BlockBegin:
 		p.backup()
@@ -29,6 +31,8 @@ func (p *Parser) parseStmt() ast.Statement {
 			p.next()
 		}
 		p.expectStmtEnd()
+		g.BaseNode.B = begin
+		g.BaseNode.E = p.current.pos
 		return g
 	case token.Namespace:
 		p.expect(token.Identifier)
@@ -87,10 +91,12 @@ func (p *Parser) parseStmt() ast.Statement {
 			requireParen = true
 		}
 		stmt := ast.Echo(p.parseNextExpression())
+		stmt.BaseNode.B = begin
 		if requireParen {
 			p.expect(token.CloseParen)
 		}
 		p.expectStmtEnd()
+		stmt.BaseNode.E = p.current.pos
 		return stmt
 	case token.Function:
 		return p.parseFunctionStmt()
@@ -116,7 +122,10 @@ func (p *Parser) parseStmt() ast.Statement {
 			exprs = append(exprs, p.parseNextExpression())
 		}
 		p.expectStmtEnd()
-		return ast.Echo(exprs...)
+		echo := ast.Echo(exprs...)
+		echo.BaseNode.B = begin
+		echo.BaseNode.E = p.current.pos
+		return echo
 	case token.If:
 		return p.parseIf()
 	case token.While:
@@ -171,6 +180,8 @@ func (p *Parser) parseStmt() ast.Statement {
 			p.expect(token.CloseParen)
 		}
 		p.expectStmtEnd()
+		stmt.BaseNode.B = begin
+		stmt.BaseNode.E = p.current.pos
 		return stmt
 	case token.Try:
 		stmt := &ast.TryStmt{}
