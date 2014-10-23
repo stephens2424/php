@@ -8,11 +8,22 @@ import (
 	"github.com/stephens2424/php/token"
 )
 
+// longestToken is length of the longest token string
+var longestToken = 0
+
 const shortPHPBegin = "<?"
 const longPHPBegin = "<?php"
 const phpEnd = "?>"
 
 const eof = -1
+
+func init() {
+	for k := range token.TokenMap {
+		if len(k) > longestToken {
+			longestToken = len(k)
+		}
+	}
+}
 
 // lexHTML consumes and emits an html t until it
 // finds a php begin
@@ -97,19 +108,19 @@ func lexPHP(l *lexer) stateFn {
 		return lexDoubleQuotedStringLiteral
 	}
 
-	for _, tokenString := range token.TokenList {
-		t := token.TokenMap[tokenString]
-		potentialToken := l.input[l.pos:]
-		if len(potentialToken) > len(tokenString) {
-			potentialToken = potentialToken[:len(tokenString)]
-		}
-		if strings.HasPrefix(strings.ToLower(potentialToken), tokenString) {
-			prev := l.previous()
-			if IsKeyword(t, tokenString) && prev == '$' {
+	tokenString := l.input[l.pos:]
+	if len(tokenString) > longestToken {
+		tokenString = tokenString[:longestToken]
+	}
+	tokenString = strings.ToLower(tokenString)
+	for ; tokenString != ""; tokenString = tokenString[:len(tokenString)-1] {
+		if t, ok := token.TokenMap[tokenString]; ok {
+			isKw := IsKeyword(t, tokenString)
+			if isKw && l.previous() == '$' {
 				break
 			}
 			l.pos += len(tokenString)
-			if IsKeyword(t, tokenString) && l.accept(alphabet+underscore+digits) {
+			if isKw && l.accept(alphabet+underscore+digits) {
 				l.backup() // to account for the character consumed by accept
 				l.pos -= len(tokenString)
 				break
