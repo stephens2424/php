@@ -40,16 +40,19 @@ func NewList(t ...Item) *ItemList {
 	return &ItemList{t, 0}
 }
 
-func (s *ItemList) Next() Item {
-	if s.Position+1 == len(s.Items) {
+func (s *ItemList) Next() (item Item) {
+	if s.Position == len(s.Items) {
 		return Item{}
 	}
-	s.Position += 1
-	return s.Items[s.Position]
+
+	item = s.Items[s.Position]
+	s.Position++
+
+	return
 }
 
 func (s *ItemList) Peek() Item {
-	return s.Items[s.Position+1]
+	return s.Items[s.Position]
 }
 
 func (s *ItemList) Push(i ...Item) {
@@ -61,7 +64,7 @@ func (s *ItemList) PushKeyword(t Token) {
 }
 
 func (s *ItemList) PushStream(i Stream) {
-	for item := i.Next(); item.Typ == EOF; item = i.Next() {
+	for item := i.Next(); item.Typ != EOF; item = i.Next() {
 		s.Push(item)
 	}
 }
