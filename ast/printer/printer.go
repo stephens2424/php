@@ -1,438 +1,574 @@
 package printer
 
 import (
-	"fmt"
 	"bytes"
+	"fmt"
 	"github.com/stephens2424/php/ast"
+	"io"
 )
 
-type Printer struct {}
+type Printer struct{}
 
-func (p *Printer) PrintNode(n ast.Node) string {
-	switch n.(type) {
+func (p *Printer) PrintNode(w io.Writer, node ast.Node) {
+	switch n := node.(type) {
+	case *ast.AnonymousFunction:
+		p.PrintAnonymousFunction(w, n)
+	case *ast.ArrayAppendExpression:
+		p.PrintArrayAppendExpression(w, n)
+	case *ast.ArrayExpression:
+		p.PrintArrayExpression(w, n)
+	case *ast.ArrayLookupExpression:
+		p.PrintArrayLookupExpression(w, n)
+	case *ast.ArrayPair:
+		p.PrintArrayPair(w, n)
+	case *ast.AssignmentExpression:
+		p.PrintAssignmentExpression(w, n)
+	case *ast.BinaryExpression:
+		p.PrintBinaryExpression(w, n)
+	case *ast.Block:
+		p.PrintBlock(w, n)
+	case *ast.BreakStmt:
+		p.PrintBreakStmt(w, n)
+	case *ast.CatchStmt:
+		p.PrintCatchStmt(w, n)
+	case *ast.Class:
+		p.PrintClass(w, n)
+	case *ast.ClassExpression:
+		p.PrintClassExpression(w, n)
+	case *ast.Constant:
+		p.PrintConstant(w, n)
+	case *ast.ConstantExpression:
+		p.PrintConstantExpression(w, n)
+	case *ast.ContinueStmt:
+		p.PrintContinueStmt(w, n)
+	case *ast.DeclareBlock:
+		p.PrintDeclareBlock(w, n)
+	case *ast.DoWhileStmt:
+		p.PrintDoWhileStmt(w, n)
+	case *ast.EchoStmt:
+		p.PrintEchoStmt(w, n)
+	case *ast.EmptyStatement:
+		p.PrintEmptyStatement(w, n)
+	case *ast.ExitStmt:
+		p.PrintExitStmt(w, n)
+	case *ast.ExpressionStmt:
+		p.PrintExpressionStmt(w, n)
+	case *ast.ForStmt:
+		p.PrintForStmt(w, n)
+	case *ast.ForeachStmt:
+		p.PrintForeachStmt(w, n)
+	case *ast.FunctionArgument:
+		p.PrintFunctionArgument(w, n)
+	case *ast.FunctionCallExpression:
+		p.PrintFunctionCallExpression(w, n)
+	case *ast.FunctionCallStmt:
+		p.PrintFunctionCallStmt(w, n)
+	case *ast.FunctionDefinition:
+		p.PrintFunctionDefinition(w, n)
+	case *ast.FunctionStmt:
+		p.PrintFunctionStmt(w, n)
+	case *ast.GlobalDeclaration:
+		p.PrintGlobalDeclaration(w, n)
+	case *ast.Identifier:
+		p.PrintIdentifier(w, n)
+	case *ast.IfStmt:
+		p.PrintIfStmt(w, n)
+	case *ast.Include:
+		p.PrintInclude(w, n)
+	case *ast.IncludeStmt:
+		p.PrintIncludeStmt(w, n)
+	case *ast.Interface:
+		p.PrintInterface(w, n)
+	case *ast.ListStatement:
+		p.PrintListStatement(w, n)
+	case *ast.Literal:
+		p.PrintLiteral(w, n)
+	case *ast.Method:
+		p.PrintMethod(w, n)
+	case *ast.MethodCallExpression:
+		p.PrintMethodCallExpression(w, n)
+	case *ast.NewExpression:
+		p.PrintNewExpression(w, n)
+	case *ast.Property:
+		p.PrintProperty(w, n)
+	case *ast.PropertyExpression:
+		p.PrintPropertyExpression(w, n)
+	case *ast.ReturnStmt:
+		p.PrintReturnStmt(w, n)
+	case *ast.ShellCommand:
+		p.PrintShellCommand(w, n)
+	case *ast.StaticVariableDeclaration:
+		p.PrintStaticVariableDeclaration(w, n)
+	case *ast.SwitchCase:
+		p.PrintSwitchCase(w, n)
+	case *ast.SwitchStmt:
+		p.PrintSwitchStmt(w, n)
+	case *ast.TernaryExpression:
+		p.PrintTernaryExpression(w, n)
+	case *ast.ThrowStmt:
+		p.PrintThrowStmt(w, n)
+	case *ast.TryStmt:
+		p.PrintTryStmt(w, n)
+	case *ast.UnaryExpression:
+		p.PrintUnaryExpression(w, n)
+	case *ast.Variable:
+		p.PrintVariable(w, n)
+	case *ast.WhileStmt:
+		p.PrintWhileStmt(w, n)
 	default:
-		return fmt.Sprintf(`/* Unsupported node type: %T */`, n)
+		fmt.Fprintf(w, `/* Unsupported node type: %T */`, n)
 	}
 }
 
-func (p *Printer) PrintIdentifier(i *ast.Identifier) string {
-	return i.Value
+func (p *Printer) PrintIdentifier(w io.Writer, i *ast.Identifier) {
+	io.WriteString(w, i.Value)
 }
 
-
-func (p *Printer) PrintVariable(v *ast.Variable) string {
-	return fmt.Sprintf("$%s", p.PrintNode(v.Name))
+func (p *Printer) PrintVariable(w io.Writer, v *ast.Variable) {
+	io.WriteString(w, "$")
+	p.PrintNode(w, v.Name)
 }
 
-func (p *Printer) PrintGlobalDeclaration(g *ast.GlobalDeclaration) string {
-	buf := bytes.NewBufferString("global ")
+func (p *Printer) PrintGlobalDeclaration(w io.Writer, g *ast.GlobalDeclaration) {
+	io.WriteString(w, "global ")
 	for i, id := range g.Identifiers {
-		buf.WriteString(p.PrintNode(id))
+		p.PrintNode(w, id)
 		if i+1 < len(g.Identifiers) {
-			buf.WriteString(", ")
+			io.WriteString(w, ", ")
 		}
 	}
-	return buf.String()
 }
 
-func (p *Printer) PrintEmptyStatement(e *ast.EmptyStatement) string { return ";" }
+func (p *Printer) PrintEmptyStatement(w io.Writer, e *ast.EmptyStatement) {}
 
-
-func (p *Printer) PrintBinaryExpression(b *ast.BinaryExpression) string {
-	return fmt.Sprintf("%s %s %s", b.Antecedent, b.Operator, b.Subsequent)
+func (p *Printer) PrintBinaryExpression(w io.Writer, b *ast.BinaryExpression) {
+	fmt.Fprintf(w, "%s %s %s", b.Antecedent, b.Operator, b.Subsequent)
 }
 
-
-func (p *Printer) PrintTernaryExpression(t *ast.TernaryExpression) string {
-	return fmt.Sprintf("%s ? %s : %s", t.Condition, t.True, t.False)
+func (p *Printer) PrintTernaryExpression(w io.Writer, t *ast.TernaryExpression) {
+	fmt.Fprintf(w, "%s ? %s : %s", t.Condition, t.True, t.False)
 }
-func (p *Printer) PrintUnaryExpression(u *ast.UnaryExpression) string {
+func (p *Printer) PrintUnaryExpression(w io.Writer, u *ast.UnaryExpression) {
 	if u.Preceding {
-		return fmt.Sprintf("%s%s", u.Operator, u.Operand)
+		fmt.Fprintf(w, "%s%s", u.Operator, u.Operand)
 	}
-	return fmt.Sprintf("%s%s", u.Operand, u.Operator)
+	fmt.Fprintf(w, "%s%s", u.Operand, u.Operator)
 }
-func (p *Printer) PrintEchoStmt(e *ast.EchoStmt) string {
-	buf := bytes.NewBufferString("echo ")
+
+func (p *Printer) PrintEchoStmt(w io.Writer, e *ast.EchoStmt) {
+	io.WriteString(w, "echo ")
 	for i, expr := range e.Expressions {
 		if i > 0 {
-			buf.WriteString(", ")
+			io.WriteString(w, ", ")
 		}
-		buf.WriteString(p.PrintNode(expr))
+		p.PrintNode(w, expr)
 	}
-	buf.WriteString(";")
-	return buf.String()
+	io.WriteString(w, ";")
 }
-func (p *Printer) PrintReturnStmt(r *ast.ReturnStmt) string {
-	buf := bytes.NewBufferString("return")
+
+func (p *Printer) PrintReturnStmt(w io.Writer, r *ast.ReturnStmt) {
+	io.WriteString(w, "return")
 	if r.Expression != nil {
-		fmt.Fprintf(buf, " %s", p.PrintNode(r.Expression))
+		p.PrintNode(w, r.Expression)
 	}
-	buf.WriteString(";")
-	return buf.String()
+	io.WriteString(w, ";")
 }
-func (p *Printer) PrintBreakStmt(b *ast.BreakStmt) string {
+func (p *Printer) PrintBreakStmt(w io.Writer, b *ast.BreakStmt) {
 	buf := bytes.NewBufferString("break")
 	if b.Expression != nil {
-		fmt.Fprintf(buf, " %s", p.PrintNode(b.Expression))
+		p.PrintNode(w, b.Expression)
 	}
-	buf.WriteString(";")
-	return buf.String()
+	io.WriteString(w, ";")
+
 }
-func (p *Printer) PrintContinueStmt(b *ast.ContinueStmt) string {
+func (p *Printer) PrintContinueStmt(w io.Writer, b *ast.ContinueStmt) {
 	buf := bytes.NewBufferString("continue")
 	if b.Expression != nil {
-		fmt.Fprintf(buf, " %s", p.PrintNode(b.Expression))
+		p.PrintNode(w, b.Expression)
 	}
-	buf.WriteString(";")
-	return buf.String()
+	io.WriteString(w, ";")
+
 }
-func (p *Printer) PrintThrowStmt(b *ast.ThrowStmt) string {
+func (p *Printer) PrintThrowStmt(w io.Writer, b *ast.ThrowStmt) {
 	buf := bytes.NewBufferString("throw")
 	if b.Expression != nil {
-		fmt.Fprintf(buf, " %s", p.PrintNode(b.Expression))
+		p.PrintNode(w, b.Expression)
 	}
-	buf.WriteString(";")
-	return buf.String()
+	io.WriteString(w, ";")
+
 }
-func (p *Printer) PrintInclude(e *ast.Include) string {
+func (p *Printer) PrintInclude(w io.Writer, e *ast.Include) {
 	buf := bytes.NewBufferString("include ")
 	for i, expr := range e.Expressions {
 		if i > 0 {
-			buf.WriteString(", ")
+			io.WriteString(w, ", ")
 		}
-		buf.WriteString(p.PrintNode(expr))
+		p.PrintNode(w, expr)
 	}
-	buf.WriteString(";")
-	return buf.String()
+	io.WriteString(w, ";")
+
 }
-func (p *Printer) PrintExitStmt(b *ast.ExitStmt) string {
+func (p *Printer) PrintExitStmt(w io.Writer, b *ast.ExitStmt) {
 	buf := bytes.NewBufferString("exit")
 	if b.Expression != nil {
-		fmt.Fprintf(buf, " %s", p.PrintNode(b.Expression))
+		p.PrintNode(w, b.Expression)
 	}
-	buf.WriteString(";")
-	return buf.String()
+	io.WriteString(w, ";")
+
 }
-func (p *Printer) PrintNewExpression(b *ast.NewExpression) string {
+func (p *Printer) PrintNewExpression(w io.Writer, b *ast.NewExpression) {
 	buf := bytes.NewBufferString("new ")
-	buf.WriteString(p.PrintNode(b.Class))
-	buf.WriteString("(")
+	p.PrintNode(w, b.Class)
+	io.WriteString(w, "(")
 	for i, arg := range b.Arguments {
 		if i > 0 {
-			buf.WriteString(",")
+			io.WriteString(w, ",")
 		}
-		buf.WriteString(p.PrintNode(arg))
+		p.PrintNode(w, arg)
 	}
-	buf.WriteString(")")
-	return buf.String()
+	io.WriteString(w, ")")
+
 }
-func (p *Printer) PrintAssignmentExpression(a *ast.AssignmentExpression) string {
-	buf := bytes.NewBufferString(p.PrintNode(a.Assignee))
-	buf.WriteString(" ")
-	buf.WriteString(a.Operator)
-	buf.WriteString(" ")
-	buf.WriteString(p.PrintNode(a.Value))
-	return buf.String()
+func (p *Printer) PrintAssignmentExpression(w io.Writer, a *ast.AssignmentExpression) {
+	p.PrintNode(w, a.Assignee)
+	io.WriteString(w, " ")
+	io.WriteString(w, a.Operator)
+	io.WriteString(w, " ")
+	p.PrintNode(w, a.Value)
 }
-func (p *Printer) PrintFunctionCallStmt(f *ast.FunctionCallStmt) string {
-	buf := bytes.NewBufferString(p.PrintNode(f.FunctionCallExpression))
-	buf.WriteString(";")
-	return buf.String()
+
+func (p *Printer) PrintFunctionCallStmt(w io.Writer, f *ast.FunctionCallStmt) {
+	p.PrintNode(w, f.FunctionCallExpression)
+	io.WriteString(w, ";")
+
 }
-func (p *Printer) PrintFunctionCallExpression(f *ast.FunctionCallExpression) string {
-	buf := bytes.NewBufferString(p.PrintNode(f.FunctionName))
-	buf.WriteString("(")
+func (p *Printer) PrintFunctionCallExpression(w io.Writer, f *ast.FunctionCallExpression) {
+	p.PrintNode(w, f.FunctionName)
+	io.WriteString(w, "(")
 	for i, arg := range f.Arguments {
 		if i > 0 {
-			buf.WriteString(",")
+			io.WriteString(w, ",")
 		}
-		buf.WriteString(p.PrintNode(arg))
+		p.PrintNode(w, arg)
 	}
-	buf.WriteString(")")
-	return buf.String()
+	io.WriteString(w, ")")
+
 }
 
-
-func (p *Printer) PrintBlock(b *ast.Block) string {
+func (p *Printer) PrintBlock(w io.Writer, b *ast.Block) {
 	buf := &bytes.Buffer{}
 	for _, s := range b.Statements {
-		buf.WriteString(p.PrintNode(s))
+		p.PrintNode(w, s)
+		io.WriteString(w, "\n")
 	}
-	return buf.String()
+
 }
-func (p *Printer) PrintFunctionStmt(f *ast.FunctionStmt) string {
-	return fmt.Sprintf("%s%s", p.PrintNode(f.FunctionDefinition), p.PrintNode(f.Body))
+func (p *Printer) PrintFunctionStmt(w io.Writer, f *ast.FunctionStmt) {
+	p.PrintNode(w, f.FunctionDefinition)
+	p.PrintNode(w, f.Body)
 }
-func (p *Printer) PrintAnonymousFunction(a *ast.AnonymousFunction) string {
+func (p *Printer) PrintAnonymousFunction(w io.Writer, a *ast.AnonymousFunction) {
 	buf := bytes.NewBufferString("function (")
 	for i, arg := range a.Arguments {
 		if i > 0 {
-			buf.WriteString(",")
+			io.WriteString(w, ",")
 		}
-		buf.WriteString(p.PrintNode(arg))
+		p.PrintNode(w, arg)
 	}
-	buf.WriteString(")")
+	io.WriteString(w, ")")
 	if len(a.ClosureVariables) > 0 {
 		fmt.Fprint(buf, " use (")
 		for i, arg := range a.ClosureVariables {
 			if i > 0 {
-				buf.WriteString(",")
+				io.WriteString(w, ",")
 			}
-			buf.WriteString(p.PrintNode(arg))
+			p.PrintNode(w, arg)
 		}
-		buf.WriteString(")")
+		io.WriteString(w, ")")
 	}
-	buf.WriteString(p.PrintNode(a.Body))
-	return buf.String()
+	p.PrintNode(w, a.Body)
+
 }
 
-func (p *Printer) PrintFunctionDefinition(fd *ast.FunctionDefinition) string {
+func (p *Printer) PrintFunctionDefinition(w io.Writer, fd *ast.FunctionDefinition) {
 	buf := bytes.NewBufferString("function ")
-	buf.WriteString(fd.Name)
-	buf.WriteString(" (")
+	io.WriteString(w, fd.Name)
+	io.WriteString(w, " (")
 	for i, arg := range fd.Arguments {
-		buf.WriteString(p.PrintNode(arg))
+		p.PrintNode(w, arg)
 		if i+1 < len(fd.Arguments) {
-			buf.WriteString(",")
+			io.WriteString(w, ",")
 		}
 	}
-	buf.WriteString(")")
-	return buf.String()
+	io.WriteString(w, ")")
+
 }
-func (p *Printer) PrintFunctionArgument(fa *ast.FunctionArgument) string {
+func (p *Printer) PrintFunctionArgument(w io.Writer, fa *ast.FunctionArgument) {
 	buf := &bytes.Buffer{}
 	if fa.TypeHint != "" {
 		fmt.Fprint(buf, fa.TypeHint, "")
 	}
-	buf.WriteString(p.PrintNode(fa.Variable))
+	p.PrintNode(w, fa.Variable)
 	if fa.Default != nil {
-		fmt.Fprint(buf, " =", p.PrintNode(fa.Default))
+		io.WriteString(w, " =")
+		p.PrintNode(w, fa.Default)
 	}
-	return buf.String()
+
 }
-func (p *Printer) PrintClass(c *ast.Class) string {
+func (p *Printer) PrintClass(w io.Writer, c *ast.Class) {
 	buf := bytes.NewBufferString("class ")
-	buf.WriteString(c.Name)
+	io.WriteString(w, c.Name)
 	if c.Extends != "" {
 		fmt.Fprintf(buf, " extends %s", c.Extends)
 	}
 	for i, imp := range c.Implements {
 		if i > 0 {
-			buf.WriteString(",")
+			io.WriteString(w, ",")
 		} else {
-			buf.WriteString("implements ")
+			io.WriteString(w, "implements ")
 		}
-		buf.WriteString(imp)
+		io.WriteString(w, imp)
 	}
-	buf.WriteString(" {\n")
+	io.WriteString(w, " {\n")
 	for _, c := range c.Constants {
-		buf.WriteString(p.PrintNode(c))
+		p.PrintNode(w, c)
 	}
 	for _, pr := range c.Properties {
-		buf.WriteString(p.PrintNode(pr))
+		p.PrintNode(w, pr)
 	}
 	for _, m := range c.Methods {
-		buf.WriteString(p.PrintNode(m))
+		p.PrintNode(w, m)
 	}
-	buf.WriteString("}")
-	return buf.String()
+	io.WriteString(w, "}")
+
 }
 
-func (p *Printer) PrintInterface(i *ast.Interface) string {
+func (p *Printer) PrintInterface(w io.Writer, i *ast.Interface) {
 	buf := bytes.NewBufferString("interface ")
-	buf.WriteString(i.Name)
+	io.WriteString(w, i.Name)
 
 	for i, imp := range i.Inherits {
 		if i > 0 {
-			buf.WriteString(", ")
+			io.WriteString(w, ", ")
 		} else {
-			buf.WriteString("implements ")
+			io.WriteString(w, "implements ")
 		}
-		buf.WriteString(imp)
+		io.WriteString(w, imp)
 	}
 
-	buf.WriteString(" {")
+	io.WriteString(w, " {")
 	for _, c := range i.Constants {
-		buf.WriteString(p.PrintNode(c))
+		p.PrintNode(w, c)
 	}
 
 	for _, m := range i.Methods {
-		buf.WriteString(p.PrintNode(m))
+		p.PrintNode(w, m)
 	}
 
-	buf.WriteString("}")
-	return buf.String()
+	io.WriteString(w, "}")
+
 }
-func (p *Printer) PrintProperty(pr *ast.Property) string {
+func (p *Printer) PrintProperty(w io.Writer, pr *ast.Property) {
 	buf := &bytes.Buffer{}
-	buf.WriteString(pr.Visibility.Token().String())
+	io.WriteString(w, pr.Visibility.Token().String())
 	fmt.Fprintf(buf, " %s", pr.Name)
 	if pr.Initialization != nil {
-		fmt.Fprintf(buf, " = %s", p.PrintNode(pr.Initialization))
+		p.PrintNode(w, pr.Initialization)
 	}
-	buf.WriteString(";")
-	return buf.String()
+	io.WriteString(w, ";")
+
 }
-func (p *Printer) PrintPropertyExpression(pr *ast.PropertyExpression) string {
-	return fmt.Sprintf("%s->%s", p.PrintNode(pr.Receiver), p.PrintNode(pr.Name))
+func (p *Printer) PrintPropertyExpression(w io.Writer, pr *ast.PropertyExpression) {
+	p.PrintNode(w, pr.Receiver)
+	io.WriteString(w, "->")
+	p.PrintNode(w, pr.Name)
 }
 
-func (p *Printer) PrintClassExpression(c *ast.ClassExpression) string {
-	return fmt.Sprintf("%s::%s", p.PrintNode(c.Receiver), p.PrintNode(c.Expression))
+func (p *Printer) PrintClassExpression(w io.Writer, c *ast.ClassExpression) {
+	p.PrintNode(w, c.Receiver)
+	io.WriteString(w, "::")
+	p.PrintNode(w, c.Expression)
 }
-func (p *Printer) PrintMethod(m *ast.Method) string {
-	return fmt.Sprintf("%s %s", m.Visibility.Token().String(), p.PrintNode(m.FunctionStmt))
+func (p *Printer) PrintMethod(w io.Writer, m *ast.Method) {
+	fmt.Fprintf(w, "%s ", m.Visibility.Token().String())
+	p.PrintNode(w, m.FunctionStmt)
 }
-func (p *Printer) PrintMethodCallExpression(m *ast.MethodCallExpression) string {
-	return fmt.Sprintf("%s->%s", p.PrintNode(m.Receiver), p.PrintNode(m.FunctionCallExpression))
+func (p *Printer) PrintMethodCallExpression(w io.Writer, m *ast.MethodCallExpression) {
+	p.PrintNode(w, m.Receiver)
+	io.WriteString(w, "->")
+	p.PrintNode(w, m.FunctionCallExpression)
 }
-func (p *Printer) PrintIfStmt(i *ast.IfStmt) string {
-	str := fmt.Sprintf("if (%s) {\n%s\n}", i.Condition, i.TrueBranch)
+func (p *Printer) PrintIfStmt(w io.Writer, i *ast.IfStmt) {
+	fmt.Fprintf(w, "if (%s) {\n%s\n}", i.Condition, i.TrueBranch)
 	if i.FalseBranch != nil {
-		str += fmt.Sprintf(" else {\n%s\n}", i.FalseBranch)
+		fmt.Fprintf(w, " else {\n%s\n}", i.FalseBranch)
 	}
-	return str
+
 }
 
-func (p *Printer) PrintSwitchStmt(s *ast.SwitchStmt) string {
-	str := fmt.Sprintf("switch (%s) {\n", s.Expression)
+func (p *Printer) PrintSwitchStmt(w io.Writer, s *ast.SwitchStmt) {
+	fmt.Fprintf(w, "switch (%s) {\n", s.Expression)
 	for _, c := range s.Cases {
-		str += fmt.Sprintf("%s\n", p.PrintNode(c))
+		p.PrintNode(w, c)
+		io.WriteString(w, "\n")
 	}
 	if s.DefaultCase != nil {
-		str += fmt.Sprintf("default:\n%s", p.PrintNode(s.DefaultCase))
+		fmt.Fprintf(w, "default:\n")
+		p.PrintNode(w, s.DefaultCase)
 	}
-	str += "}"
-	return str
+	io.WriteString(w, "}")
 }
-func (p *Printer) PrintSwitchCase(s *ast.SwitchCase) string {
-	return fmt.Sprintf("case %s:\n%s\n", s.Expression, s.Block)
+
+func (p *Printer) PrintSwitchCase(w io.Writer, s *ast.SwitchCase) {
+	io.WriteString(w, "case ")
+	p.PrintNode(w, s.Expression)
+	io.WriteString(w, ":\n")
+	p.PrintNode(w, s.Block)
+	io.WriteString(w, "\n")
 }
-func (p *Printer) PrintForStmt(f *ast.ForStmt) string {
-	str := fmt.Sprintf("for (")
+func (p *Printer) PrintForStmt(w io.Writer, f *ast.ForStmt) {
+	fmt.Fprintf(w, "for (")
 	for i, e := range f.Initialization {
 		if i > 0 {
-			str += ", "
+			io.WriteString(w, ", ")
 		}
-		str += p.PrintNode(e)
+		p.PrintNode(w, e)
 	}
 	for i, e := range f.Termination {
 		if i > 0 {
-			str += ", "
+			io.WriteString(w, ", ")
 		}
-		str += p.PrintNode(e)
+		p.PrintNode(w, e)
 	}
 	for i, e := range f.Iteration {
 		if i > 0 {
-			str += ", "
+			io.WriteString(w, ", ")
 		}
-		str += p.PrintNode(e)
+		p.PrintNode(w, e)
 	}
-			str += ") "
-			str += p.PrintNode(f.LoopBlock)
-			return str
+	io.WriteString(w, ") ")
+	p.PrintNode(w, f.LoopBlock)
+
 }
-func (p *Printer) PrintWhileStmt(w *ast.WhileStmt) string {
-	return fmt.Sprintf("while (%s) %s", w.Termination, w.LoopBlock)
+func (p *Printer) PrintWhileStmt(w io.Writer, wh *ast.WhileStmt) {
+	fmt.Fprintf(w, "while (%s) %s", wh.Termination, wh.LoopBlock)
 }
-func (p *Printer) PrintDoWhileStmt(w *ast.DoWhileStmt) string {
-	return fmt.Sprintf("do %s while (%s);", w.LoopBlock, w.Termination)
+func (p *Printer) PrintDoWhileStmt(w io.Writer, w *ast.DoWhileStmt) {
+	fmt.Fprintf(w, "do %s while (%s);", w.LoopBlock, w.Termination)
 }
-func (p *Printer) PrintTryStmt(t *ast.TryStmt) string {
-	str := fmt.Sprintf("try %s", p.PrintNode(t.TryBlock))
+func (p *Printer) PrintTryStmt(w io.Writer, t *ast.TryStmt) {
+	fmt.Fprintf(w, "try %s", p.PrintNode(w, t.TryBlock))
 	for _, c := range t.CatchStmts {
-		str += p.PrintNode(c)
+		str += p.PrintNode(w, c)
 	}
 	if t.FinallyBlock != nil {
-		str += fmt.Sprintf("finally %s", p.PrintNode(t.FinallyBlock))
+		fmt.Fprintf(w, "finally %s", p.PrintNode(w, t.FinallyBlock))
 	}
-	return str
+
 }
-func (p *Printer) PrintCatchStmt(c *ast.CatchStmt) string {
-	return fmt.Sprintf("catch (%s %s) %s", c.CatchType, p.PrintNode(c.CatchVar), p.PrintNode(c.CatchBlock))
+func (p *Printer) PrintCatchStmt(w io.Writer, c *ast.CatchStmt) {
+	fmt.Fprintf(w, "catch (%s %s) %s", c.CatchType, p.PrintNode(c.CatchVar), p.PrintNode(w, c.CatchBlock))
 }
-func (p *Printer) PrintLiteral(l *ast.Literal) string {
+func (p *Printer) PrintLiteral(w io.Writer, l *ast.Literal) {
 	switch l.Type {
 	case ast.String:
-		return  l.Value
+		return l.Value
 	case ast.Integer, ast.Float:
-		return  l.Value
+		return l.Value
 	case ast.Boolean:
-		return  l.Value
+		return l.Value
 	case ast.Null:
-		return  "null"
+		return "null"
 	}
 	panic("invalid literal type")
 }
-func (p *Printer) PrintForeachStmt(f *ast.ForeachStmt) string {
-	str := fmt.Sprintf("foreach (%s as ", f.Source)
+
+func (p *Printer) PrintForeachStmt(w io.Writer, f *ast.ForeachStmt) {
+	fmt.Fprintf(w, "foreach (%s as ", f.Source)
 	if f.Key != nil {
-		str += fmt.Sprintf("%s => ", f.Key)
+		fmt.Fprintf(w, "%s => ", f.Key)
 	}
-	str += fmt.Sprintf("%s) %s", p.PrintNode(f.Value), p.PrintNode(f.LoopBlock))
-	return str
-}
-func (p *Printer) PrintArrayExpression(a *ast.ArrayExpression) string {
-	str := fmt.Sprintf("array(")
-	for i, pair := range a.Pairs {
-		if i > 0 {
-			str += ", "
-		}
-		str += p.PrintNode(pair)
-	}
-	str += ")"
-	return str
-}
-func (p *Printer) PrintArrayPair(pr *ast.ArrayPair) string {
-	if pr.Key != nil {
-	return fmt.Sprintf("%s => %s", p.PrintNode(pr.Key), p.PrintNode(pr.Value))
-	}
-	return fmt.Sprintf("%s", p.PrintNode(pr.Value))
-}
-func (p *Printer) PrintArrayLookupExpression(a *ast.ArrayLookupExpression) string {
-	return fmt.Sprintf("%s[%s]", a.Array, p.PrintNode(a.Index))
-}
-func (p *Printer) PrintArrayAppendExpression(a *ast.ArrayAppendExpression) string {
-	return fmt.Sprintf("%s[]", a.Array)
-}
-func (p *Printer) PrintShellCommand(s *ast.ShellCommand) string {
-	return  s.Command
-}
-func (p *Printer) PrintListStatement(l *ast.ListStatement) string {
-	str := fmt.Sprintf("list(")
-	for i, a := range l.Assignees {
-		if i > 0 {
-			str += ", "
-		}
-		str += p.PrintNode(a)
-	}
-	str += fmt.Sprintf(") = ")
-	str += p.PrintNode(l.Value)
-	return str
+	fmt.Fprintf(w, "%s) %s", p.PrintNode(f.Value), p.PrintNode(w, f.LoopBlock))
+
 }
 
-func (p *Printer) PrintStaticVariableDeclaration(s *ast.StaticVariableDeclaration) string {
-	str := fmt.Sprintf("static ")
+func (p *Printer) PrintArrayExpression(w io.Writer, a *ast.ArrayExpression) {
+	fmt.Fprintf(w, "array(")
+	for i, pair := range a.Pairs {
+		if i > 0 {
+			io.WriteString(", ")
+		}
+		p.PrintNode(w, pair)
+	}
+	io.WriteString(w, ")")
+}
+
+func (p *Printer) PrintArrayPair(w io.Writer, pr *ast.ArrayPair) {
+	if pr.Key != nil {
+		fmt.Fprintf(w, "%s => %s", p.PrintNode(pr.Key), p.PrintNode(w, pr.Value))
+	}
+	fmt.Fprintf(w, "%s", p.PrintNode(w, pr.Value))
+}
+
+func (p *Printer) PrintArrayLookupExpression(w io.Writer, a *ast.ArrayLookupExpression) {
+	fmt.Fprintf(w, "%s[%s]", a.Array, p.PrintNode(w, a.Index))
+}
+
+func (p *Printer) PrintArrayAppendExpression(w io.Writer, a *ast.ArrayAppendExpression) {
+	fmt.Fprintf(w, "%s[]", a.Array)
+}
+
+func (p *Printer) PrintShellCommand(w io.Writer, s *ast.ShellCommand) {
+	io.WriteString(w, s.Command)
+}
+
+func (p *Printer) PrintListStatement(w io.Writer, l *ast.ListStatement) {
+	fmt.Fprintf(w, "list(")
+	for i, a := range l.Assignees {
+		if i > 0 {
+			io.WriteString(", ")
+		}
+		p.PrintNode(w, a)
+	}
+	io.WriteString(") =")
+	p.PrintNode(w, l.Value)
+}
+
+func (p *Printer) PrintStaticVariableDeclaration(w io.Writer, s *ast.StaticVariableDeclaration) {
+	fmt.Fprintf(w, "static ")
 	for i, d := range s.Declarations {
 		if i > 0 {
-			str += ", "
+			io.WriteString(w, ", ")
 		}
-		str += p.PrintNode(d)
+		str += p.PrintNode(w, d)
 	}
 	str += ";\n"
-	return str
 }
-func (p *Printer) PrintDeclareBlock(d *ast.DeclareBlock) string {
+func (p *Printer) PrintDeclareBlock(w io.Writer, d *ast.DeclareBlock) {
 	buf := bytes.NewBufferString("declare (")
 	for i, decl := range d.Declarations {
 		if i > 0 {
-			buf.WriteString(",")
+			io.WriteString(w, ",")
 		}
-		buf.WriteString(decl)
+		io.WriteString(w, decl)
 	}
-	buf.WriteString(") {")
-	buf.WriteString(p.PrintNode(d.Statements))
-	buf.WriteString("}")
-	return buf.String()
+	io.WriteString(w, ") {")
+	p.PrintNode(w, d.Statements)
+	io.WriteString(w, "}")
+}
+
+func (p *Printer) PrintConstant(w io.Writer, c *ast.Constant) {
+	p.PrintNode(w, c.Variable.Name)
+}
+
+func (p *Printer) PrintConstantExpression(w io.Writer, c *ast.ConstantExpression) {
+	p.PrintNode(w, c.Variable.Name)
+}
+
+func (p *Printer) PrintExpressionStmt(w io.Writer, c *ast.ExpressionStmt) {
+	p.PrintNode(w, c.Expression) + ";"
+}
+
+func (p *Printer) PrintIncludeStmt(w io.Writer, c *ast.IncludeStmt) {
+	p.PrintInclude(w, c.Include) + ";"
 }
