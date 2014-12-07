@@ -174,7 +174,7 @@ func (p *Printer) PrintReturnStmt(w io.Writer, r *ast.ReturnStmt) {
 	io.WriteString(w, ";")
 }
 func (p *Printer) PrintBreakStmt(w io.Writer, b *ast.BreakStmt) {
-	buf := bytes.NewBufferString("break")
+	io.WriteString(w, "break")
 	if b.Expression != nil {
 		p.PrintNode(w, b.Expression)
 	}
@@ -182,7 +182,7 @@ func (p *Printer) PrintBreakStmt(w io.Writer, b *ast.BreakStmt) {
 
 }
 func (p *Printer) PrintContinueStmt(w io.Writer, b *ast.ContinueStmt) {
-	buf := bytes.NewBufferString("continue")
+	io.WriteString(w, "continue")
 	if b.Expression != nil {
 		p.PrintNode(w, b.Expression)
 	}
@@ -190,7 +190,7 @@ func (p *Printer) PrintContinueStmt(w io.Writer, b *ast.ContinueStmt) {
 
 }
 func (p *Printer) PrintThrowStmt(w io.Writer, b *ast.ThrowStmt) {
-	buf := bytes.NewBufferString("throw")
+	io.WriteString(w, "throw")
 	if b.Expression != nil {
 		p.PrintNode(w, b.Expression)
 	}
@@ -198,7 +198,7 @@ func (p *Printer) PrintThrowStmt(w io.Writer, b *ast.ThrowStmt) {
 
 }
 func (p *Printer) PrintInclude(w io.Writer, e *ast.Include) {
-	buf := bytes.NewBufferString("include ")
+	io.WriteString(w, "include ")
 	for i, expr := range e.Expressions {
 		if i > 0 {
 			io.WriteString(w, ", ")
@@ -209,7 +209,7 @@ func (p *Printer) PrintInclude(w io.Writer, e *ast.Include) {
 
 }
 func (p *Printer) PrintExitStmt(w io.Writer, b *ast.ExitStmt) {
-	buf := bytes.NewBufferString("exit")
+	io.WriteString(w, "exit")
 	if b.Expression != nil {
 		p.PrintNode(w, b.Expression)
 	}
@@ -217,7 +217,7 @@ func (p *Printer) PrintExitStmt(w io.Writer, b *ast.ExitStmt) {
 
 }
 func (p *Printer) PrintNewExpression(w io.Writer, b *ast.NewExpression) {
-	buf := bytes.NewBufferString("new ")
+	io.WriteString(w, "new ")
 	p.PrintNode(w, b.Class)
 	io.WriteString(w, "(")
 	for i, arg := range b.Arguments {
@@ -256,7 +256,6 @@ func (p *Printer) PrintFunctionCallExpression(w io.Writer, f *ast.FunctionCallEx
 }
 
 func (p *Printer) PrintBlock(w io.Writer, b *ast.Block) {
-	buf := &bytes.Buffer{}
 	for _, s := range b.Statements {
 		p.PrintNode(w, s)
 		io.WriteString(w, "\n")
@@ -268,7 +267,7 @@ func (p *Printer) PrintFunctionStmt(w io.Writer, f *ast.FunctionStmt) {
 	p.PrintNode(w, f.Body)
 }
 func (p *Printer) PrintAnonymousFunction(w io.Writer, a *ast.AnonymousFunction) {
-	buf := bytes.NewBufferString("function (")
+	io.WriteString(w, "function (")
 	for i, arg := range a.Arguments {
 		if i > 0 {
 			io.WriteString(w, ",")
@@ -277,7 +276,7 @@ func (p *Printer) PrintAnonymousFunction(w io.Writer, a *ast.AnonymousFunction) 
 	}
 	io.WriteString(w, ")")
 	if len(a.ClosureVariables) > 0 {
-		fmt.Fprint(buf, " use (")
+		fmt.Fprint(w, " use (")
 		for i, arg := range a.ClosureVariables {
 			if i > 0 {
 				io.WriteString(w, ",")
@@ -291,7 +290,7 @@ func (p *Printer) PrintAnonymousFunction(w io.Writer, a *ast.AnonymousFunction) 
 }
 
 func (p *Printer) PrintFunctionDefinition(w io.Writer, fd *ast.FunctionDefinition) {
-	buf := bytes.NewBufferString("function ")
+	io.WriteString(w, "function ")
 	io.WriteString(w, fd.Name)
 	io.WriteString(w, " (")
 	for i, arg := range fd.Arguments {
@@ -316,10 +315,10 @@ func (p *Printer) PrintFunctionArgument(w io.Writer, fa *ast.FunctionArgument) {
 
 }
 func (p *Printer) PrintClass(w io.Writer, c *ast.Class) {
-	buf := bytes.NewBufferString("class ")
+	io.WriteString(w, "class ")
 	io.WriteString(w, c.Name)
 	if c.Extends != "" {
-		fmt.Fprintf(buf, " extends %s", c.Extends)
+		fmt.Fprintf(w, " extends %s", c.Extends)
 	}
 	for i, imp := range c.Implements {
 		if i > 0 {
@@ -344,7 +343,7 @@ func (p *Printer) PrintClass(w io.Writer, c *ast.Class) {
 }
 
 func (p *Printer) PrintInterface(w io.Writer, i *ast.Interface) {
-	buf := bytes.NewBufferString("interface ")
+	io.WriteString(w, "interface ")
 	io.WriteString(w, i.Name)
 
 	for i, imp := range i.Inherits {
@@ -453,32 +452,38 @@ func (p *Printer) PrintForStmt(w io.Writer, f *ast.ForStmt) {
 func (p *Printer) PrintWhileStmt(w io.Writer, wh *ast.WhileStmt) {
 	fmt.Fprintf(w, "while (%s) %s", wh.Termination, wh.LoopBlock)
 }
-func (p *Printer) PrintDoWhileStmt(w io.Writer, w *ast.DoWhileStmt) {
-	fmt.Fprintf(w, "do %s while (%s);", w.LoopBlock, w.Termination)
+func (p *Printer) PrintDoWhileStmt(w io.Writer, wh *ast.DoWhileStmt) {
+	fmt.Fprintf(w, "do %s while (%s);", wh.LoopBlock, wh.Termination)
 }
 func (p *Printer) PrintTryStmt(w io.Writer, t *ast.TryStmt) {
-	fmt.Fprintf(w, "try %s", p.PrintNode(w, t.TryBlock))
+	fmt.Fprintf(w, "try ")
+	p.PrintNode(w, t.TryBlock)
 	for _, c := range t.CatchStmts {
-		str += p.PrintNode(w, c)
+		p.PrintNode(w, c)
 	}
 	if t.FinallyBlock != nil {
-		fmt.Fprintf(w, "finally %s", p.PrintNode(w, t.FinallyBlock))
+		fmt.Fprintf(w, "finally ")
+		p.PrintNode(w, t.FinallyBlock)
 	}
 
 }
 func (p *Printer) PrintCatchStmt(w io.Writer, c *ast.CatchStmt) {
-	fmt.Fprintf(w, "catch (%s %s) %s", c.CatchType, p.PrintNode(c.CatchVar), p.PrintNode(w, c.CatchBlock))
+	fmt.Fprintf(w, "catch (%s ", c.CatchType)
+	p.PrintNode(w, c.CatchVar)
+	io.WriteString(w, ") ")
+	p.PrintNode(w, c.CatchBlock)
 }
+
 func (p *Printer) PrintLiteral(w io.Writer, l *ast.Literal) {
 	switch l.Type {
 	case ast.String:
-		return l.Value
+		io.WriteString(w, l.Value)
 	case ast.Integer, ast.Float:
-		return l.Value
+		io.WriteString(w, l.Value)
 	case ast.Boolean:
-		return l.Value
+		io.WriteString(w, l.Value)
 	case ast.Null:
-		return "null"
+		io.WriteString(w, "null")
 	}
 	panic("invalid literal type")
 }
@@ -488,15 +493,16 @@ func (p *Printer) PrintForeachStmt(w io.Writer, f *ast.ForeachStmt) {
 	if f.Key != nil {
 		fmt.Fprintf(w, "%s => ", f.Key)
 	}
-	fmt.Fprintf(w, "%s) %s", p.PrintNode(f.Value), p.PrintNode(w, f.LoopBlock))
-
+	p.PrintNode(w, f.Value)
+	io.WriteString(w, ") ")
+	p.PrintNode(w, f.LoopBlock)
 }
 
 func (p *Printer) PrintArrayExpression(w io.Writer, a *ast.ArrayExpression) {
 	fmt.Fprintf(w, "array(")
 	for i, pair := range a.Pairs {
 		if i > 0 {
-			io.WriteString(", ")
+			io.WriteString(w, ", ")
 		}
 		p.PrintNode(w, pair)
 	}
@@ -505,13 +511,18 @@ func (p *Printer) PrintArrayExpression(w io.Writer, a *ast.ArrayExpression) {
 
 func (p *Printer) PrintArrayPair(w io.Writer, pr *ast.ArrayPair) {
 	if pr.Key != nil {
-		fmt.Fprintf(w, "%s => %s", p.PrintNode(pr.Key), p.PrintNode(w, pr.Value))
+		p.PrintNode(w, pr.Key)
+		fmt.Fprintf(w, " => ")
+		p.PrintNode(w, pr.Value)
 	}
-	fmt.Fprintf(w, "%s", p.PrintNode(w, pr.Value))
+	p.PrintNode(w, pr.Value)
 }
 
 func (p *Printer) PrintArrayLookupExpression(w io.Writer, a *ast.ArrayLookupExpression) {
-	fmt.Fprintf(w, "%s[%s]", a.Array, p.PrintNode(w, a.Index))
+	p.PrintNode(w, a.Array)
+	io.WriteString(w, "[")
+	p.PrintNode(w, a.Index)
+	io.WriteString(w, "]")
 }
 
 func (p *Printer) PrintArrayAppendExpression(w io.Writer, a *ast.ArrayAppendExpression) {
@@ -526,11 +537,11 @@ func (p *Printer) PrintListStatement(w io.Writer, l *ast.ListStatement) {
 	fmt.Fprintf(w, "list(")
 	for i, a := range l.Assignees {
 		if i > 0 {
-			io.WriteString(", ")
+			io.WriteString(w, ", ")
 		}
 		p.PrintNode(w, a)
 	}
-	io.WriteString(") =")
+	io.WriteString(w, ") =")
 	p.PrintNode(w, l.Value)
 }
 
@@ -540,12 +551,12 @@ func (p *Printer) PrintStaticVariableDeclaration(w io.Writer, s *ast.StaticVaria
 		if i > 0 {
 			io.WriteString(w, ", ")
 		}
-		str += p.PrintNode(w, d)
+		p.PrintNode(w, d)
 	}
-	str += ";\n"
+	io.WriteString(w, ";\n")
 }
 func (p *Printer) PrintDeclareBlock(w io.Writer, d *ast.DeclareBlock) {
-	buf := bytes.NewBufferString("declare (")
+	io.WriteString(w, "declare (")
 	for i, decl := range d.Declarations {
 		if i > 0 {
 			io.WriteString(w, ",")
@@ -566,9 +577,11 @@ func (p *Printer) PrintConstantExpression(w io.Writer, c *ast.ConstantExpression
 }
 
 func (p *Printer) PrintExpressionStmt(w io.Writer, c *ast.ExpressionStmt) {
-	p.PrintNode(w, c.Expression) + ";"
+	p.PrintNode(w, c.Expression)
+	io.WriteString(w, ";")
 }
 
 func (p *Printer) PrintIncludeStmt(w io.Writer, c *ast.IncludeStmt) {
-	p.PrintInclude(w, c.Include) + ";"
+	p.PrintInclude(w, &c.Include)
+	io.WriteString(w, ";")
 }
