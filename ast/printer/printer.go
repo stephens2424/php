@@ -5,14 +5,33 @@ import (
 	"fmt"
 	"github.com/stephens2424/php/ast"
 	"io"
+	"strings"
 )
 
 type Printer struct {
-	w io.Writer
+	w         io.Writer
+	tabLevel  int
+	tabString string
 }
 
 func NewPrinter(w io.Writer) *Printer {
-	return &Printer{w}
+	return &Printer{
+		w:         w,
+		tabLevel:  0,
+		tabString: "\t",
+	}
+}
+
+func (p *Printer) tab() {
+	io.WriteString(p.w, strings.Repeat(p.tabString, p.tabLevel))
+}
+
+func (p *Printer) entab() {
+	p.tabLevel += 1
+}
+
+func (p *Printer) detab() {
+	p.tabLevel -= 1
 }
 
 func (p *Printer) PrintNode(node ast.Node) {
@@ -173,7 +192,7 @@ func (p *Printer) PrintEchoStmt(e *ast.EchoStmt) {
 }
 
 func (p *Printer) PrintReturnStmt(r *ast.ReturnStmt) {
-	io.WriteString(p.w, "return")
+	io.WriteString(p.w, "return ")
 	if r.Expression != nil {
 		p.PrintNode(r.Expression)
 	}
@@ -262,12 +281,18 @@ func (p *Printer) PrintFunctionCallExpression(f *ast.FunctionCallExpression) {
 }
 
 func (p *Printer) PrintBlock(b *ast.Block) {
+	io.WriteString(p.w, "{\n")
+	p.entab()
 	for _, s := range b.Statements {
+		p.tab()
 		p.PrintNode(s)
 		io.WriteString(p.w, "\n")
 	}
-
+	p.detab()
+	p.tab()
+	io.WriteString(p.w, "}")
 }
+
 func (p *Printer) PrintFunctionStmt(f *ast.FunctionStmt) {
 	p.PrintNode(f.FunctionDefinition)
 	p.PrintNode(f.Body)
@@ -280,32 +305,31 @@ func (p *Printer) PrintAnonymousFunction(a *ast.AnonymousFunction) {
 		}
 		p.PrintNode(arg)
 	}
-	io.WriteString(p.w, ")")
+	io.WriteString(p.w, ") ")
 	if len(a.ClosureVariables) > 0 {
-		fmt.Fprint(p.w, " use (")
+		fmt.Fprint(p.w, "use (")
 		for i, arg := range a.ClosureVariables {
 			if i > 0 {
 				io.WriteString(p.w, ",")
 			}
 			p.PrintNode(arg)
 		}
-		io.WriteString(p.w, ")")
+		io.WriteString(p.w, ") ")
 	}
 	p.PrintNode(a.Body)
-
 }
 
 func (p *Printer) PrintFunctionDefinition(fd *ast.FunctionDefinition) {
 	io.WriteString(p.w, "function ")
 	io.WriteString(p.w, fd.Name)
-	io.WriteString(p.w, " (")
+	io.WriteString(p.w, "(")
 	for i, arg := range fd.Arguments {
 		p.PrintNode(arg)
 		if i+1 < len(fd.Arguments) {
 			io.WriteString(p.w, ",")
 		}
 	}
-	io.WriteString(p.w, ")")
+	io.WriteString(p.w, ") ")
 
 }
 func (p *Printer) PrintFunctionArgument(fa *ast.FunctionArgument) {
@@ -335,15 +359,24 @@ func (p *Printer) PrintClass(c *ast.Class) {
 		io.WriteString(p.w, imp)
 	}
 	io.WriteString(p.w, " {\n")
+	p.entab()
 	for _, c := range c.Constants {
+		p.tab()
 		p.PrintNode(c)
+		io.WriteString(p.w, "\n")
 	}
 	for _, pr := range c.Properties {
+		p.tab()
 		p.PrintNode(pr)
+		io.WriteString(p.w, "\n")
 	}
 	for _, m := range c.Methods {
+		p.tab()
 		p.PrintNode(m)
+		io.WriteString(p.w, "\n")
 	}
+	p.detab()
+	p.tab()
 	io.WriteString(p.w, "}")
 
 }
@@ -373,9 +406,10 @@ func (p *Printer) PrintInterface(i *ast.Interface) {
 	io.WriteString(p.w, "}")
 
 }
+
 func (p *Printer) PrintProperty(pr *ast.Property) {
 	buf := &bytes.Buffer{}
-	io.WriteString(p.w, pr.Visibility.Token().String())
+	p.PrintVisibility(pr.Visibility)
 	fmt.Fprintf(buf, " %s", pr.Name)
 	if pr.Initialization != nil {
 		p.PrintNode(pr.Initialization)
@@ -395,7 +429,8 @@ func (p *Printer) PrintClassExpression(c *ast.ClassExpression) {
 	p.PrintNode(c.Expression)
 }
 func (p *Printer) PrintMethod(m *ast.Method) {
-	fmt.Fprintf(p.w, "%s ", m.Visibility.Token().String())
+	p.PrintVisibility(m.Visibility)
+	io.WriteString(p.w, " ")
 	p.PrintNode(m.FunctionStmt)
 }
 func (p *Printer) PrintMethodCallExpression(m *ast.MethodCallExpression) {
@@ -490,8 +525,9 @@ func (p *Printer) PrintLiteral(l *ast.Literal) {
 		io.WriteString(p.w, l.Value)
 	case ast.Null:
 		io.WriteString(p.w, "null")
+	default:
+		io.WriteString(p.w, l.Value)
 	}
-	io.WriteString(p.w, l.Value)
 }
 
 func (p *Printer) PrintForeachStmt(f *ast.ForeachStmt) {
@@ -559,7 +595,7 @@ func (p *Printer) PrintStaticVariableDeclaration(s *ast.StaticVariableDeclaratio
 		}
 		p.PrintNode(d)
 	}
-	io.WriteString(p.w, ";\n")
+	io.WriteString(p.w, ";")
 }
 func (p *Printer) PrintDeclareBlock(d *ast.DeclareBlock) {
 	io.WriteString(p.w, "declare (")
@@ -590,4 +626,15 @@ func (p *Printer) PrintExpressionStmt(c *ast.ExpressionStmt) {
 func (p *Printer) PrintIncludeStmt(c *ast.IncludeStmt) {
 	p.PrintInclude(&c.Include)
 	io.WriteString(p.w, ";")
+}
+
+func (p *Printer) PrintVisibility(v ast.Visibility) {
+	switch v {
+	case ast.Public:
+		io.WriteString(p.w, "public")
+	case ast.Protected:
+		io.WriteString(p.w, "protected")
+	case ast.Private:
+		io.WriteString(p.w, "private")
+	}
 }
