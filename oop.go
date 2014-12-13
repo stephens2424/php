@@ -72,7 +72,7 @@ func (p *Parser) parseObjectLookup(r ast.Expression) (expr ast.Expression) {
 	case token.VariableOperator:
 		prop.Name = p.parseExpression()
 	case token.Identifier:
-		prop.Name = ast.Identifier{Value: p.current.Val}
+		prop.Name = &ast.Identifier{Value: p.current.Val}
 	}
 	expr = prop
 	switch pk := p.peek(); pk.Typ {

@@ -491,7 +491,7 @@ func (p *Printer) PrintLiteral(l *ast.Literal) {
 	case ast.Null:
 		io.WriteString(p.w, "null")
 	}
-	panic("invalid literal type")
+	io.WriteString(p.w, l.Value)
 }
 
 func (p *Printer) PrintForeachStmt(f *ast.ForeachStmt) {

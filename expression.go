@@ -352,7 +352,7 @@ func (p *Parser) parseIdentifier() (expr ast.Expression) {
 	case token.OpenParen:
 		// Function calls are okay here because we know they came with
 		// a non-dynamic identifier.
-		expr = p.parseFunctionCall(ast.Identifier{Value: p.current.Val})
+		expr = p.parseFunctionCall(&ast.Identifier{Value: p.current.Val})
 		p.next()
 	case token.ScopeResolutionOperator:
 		classIdent := p.current.Val

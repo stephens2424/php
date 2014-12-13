@@ -166,7 +166,7 @@ func TestFunction(t *testing.T) {
 			ast.AssignmentExpression{
 				Assignee: ast.NewVariable("var"),
 				Value: &ast.FunctionCallExpression{
-					FunctionName: ast.Identifier{Value: "TestFn"},
+					FunctionName: &ast.Identifier{Value: "TestFn"},
 					Arguments: []ast.Expression{
 						&ast.Literal{Type: ast.String, Value: `"world"`},
 						&ast.Literal{Type: ast.Float, Value: "0"},
@@ -363,7 +363,7 @@ func TestMethodCall(t *testing.T) {
 		Value: &ast.MethodCallExpression{
 			Receiver: ast.NewVariable("var"),
 			FunctionCallExpression: &ast.FunctionCallExpression{
-				FunctionName: ast.Identifier{Value: "go"},
+				FunctionName: &ast.Identifier{Value: "go"},
 				Arguments:    make([]ast.Expression, 0),
 			},
 		},
@@ -389,7 +389,7 @@ func TestProperty(t *testing.T) {
 		Operator: "=",
 		Value: &ast.PropertyExpression{
 			Receiver: ast.NewVariable("var"),
-			Name:     ast.Identifier{Value: "go"},
+			Name:     &ast.Identifier{Value: "go"},
 		},
 	}}
 	if !assertEquals(a[0], tree) {
@@ -399,7 +399,7 @@ func TestProperty(t *testing.T) {
 	tree = ast.ExpressionStmt{ast.AssignmentExpression{
 		Assignee: &ast.PropertyExpression{
 			Receiver: ast.NewVariable("var"),
-			Name:     ast.Identifier{Value: "go"},
+			Name:     &ast.Identifier{Value: "go"},
 		},
 		Operator: "=",
 		Value:    ast.NewVariable("res"),
@@ -539,7 +539,7 @@ func TestWhileLoopWithAssignment(t *testing.T) {
 		Termination: ast.AssignmentExpression{
 			Assignee: ast.NewVariable("var"),
 			Value: &ast.FunctionCallExpression{
-				FunctionName: ast.Identifier{Value: "mysql_assoc"},
+				FunctionName: &ast.Identifier{Value: "mysql_assoc"},
 				Arguments:    make([]ast.Expression, 0),
 			},
 			Operator: "=",
@@ -582,7 +582,7 @@ func TestArrayLookup(t *testing.T) {
 				Assignee: ast.ArrayAppendExpression{
 					Array: &ast.PropertyExpression{
 						Receiver: ast.NewVariable("var"),
-						Name:     ast.Identifier{Value: "arr"},
+						Name:     &ast.Identifier{Value: "arr"},
 					},
 				},
 				Operator: "=",
@@ -714,9 +714,9 @@ func TestScopeResolutionOperator(t *testing.T) {
 	tree := []ast.Node{
 		ast.ExpressionStmt{
 			&ast.ClassExpression{
-				Receiver: ast.Identifier{Value: "MyClass"},
+				Receiver: &ast.Identifier{Value: "MyClass"},
 				Expression: &ast.FunctionCallExpression{
-					FunctionName: ast.Identifier{Value: "myfunc"},
+					FunctionName: &ast.Identifier{Value: "myfunc"},
 					Arguments: []ast.Expression{
 						ast.NewVariable("var"),
 					},
@@ -724,7 +724,7 @@ func TestScopeResolutionOperator(t *testing.T) {
 			},
 		},
 		ast.Echo(&ast.ClassExpression{
-			Receiver: ast.Identifier{Value: "MyClass"},
+			Receiver: &ast.Identifier{Value: "MyClass"},
 			Expression: ast.ConstantExpression{
 				ast.NewVariable("myconst"),
 			},
@@ -732,7 +732,7 @@ func TestScopeResolutionOperator(t *testing.T) {
 		ast.Echo(&ast.ClassExpression{
 			Receiver: ast.NewVariable("var"),
 			Expression: &ast.FunctionCallExpression{
-				FunctionName: ast.Identifier{Value: "myfunc"},
+				FunctionName: &ast.Identifier{Value: "myfunc"},
 				Arguments:    []ast.Expression{},
 			},
 		}),

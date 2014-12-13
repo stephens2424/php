@@ -569,7 +569,7 @@ type ClassExpression struct {
 
 func NewClassExpression(r string, e Expression) *ClassExpression {
 	return &ClassExpression{
-		Receiver:   Identifier{Value: r},
+		Receiver:   &Identifier{Value: r},
 		Expression: e,
 	}
 }
