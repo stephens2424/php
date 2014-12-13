@@ -110,7 +110,7 @@ func TestClass(t *testing.T) {
 					Body: &ast.Block{
 						Statements: []ast.Statement{
 							ast.Echo(ast.NewVariable("arg")),
-							ast.ReturnStmt{Expression: ast.NewVariable("arg")},
+							&ast.ReturnStmt{Expression: ast.NewVariable("arg")},
 						},
 					},
 				},

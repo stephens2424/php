@@ -134,7 +134,7 @@ func (p *Parser) parseStmt() ast.Statement {
 		return p.parseInterface()
 	case token.Return:
 		p.next()
-		stmt := ast.ReturnStmt{}
+		stmt := &ast.ReturnStmt{}
 		if p.current.Typ != token.StatementEnd {
 			stmt.Expression = p.parseExpression()
 			p.expectStmtEnd()
@@ -142,7 +142,7 @@ func (p *Parser) parseStmt() ast.Statement {
 		return stmt
 	case token.Break:
 		p.next()
-		stmt := ast.BreakStmt{}
+		stmt := &ast.BreakStmt{}
 		if p.current.Typ != token.StatementEnd {
 			stmt.Expression = p.parseExpression()
 			p.expectStmtEnd()
@@ -150,7 +150,7 @@ func (p *Parser) parseStmt() ast.Statement {
 		return stmt
 	case token.Continue:
 		p.next()
-		stmt := ast.ContinueStmt{}
+		stmt := &ast.ContinueStmt{}
 		if p.current.Typ != token.StatementEnd {
 			stmt.Expression = p.parseExpression()
 			p.expectStmtEnd()
@@ -161,7 +161,7 @@ func (p *Parser) parseStmt() ast.Statement {
 		p.expectStmtEnd()
 		return stmt
 	case token.Exit:
-		stmt := ast.ExitStmt{}
+		stmt := &ast.ExitStmt{}
 		if p.peek().Typ == token.OpenParen {
 			p.expect(token.OpenParen)
 			if p.peek().Typ != token.CloseParen {
