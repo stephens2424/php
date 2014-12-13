@@ -111,8 +111,8 @@ func (p *Parser) parseAbstract() bool {
 
 func (p *Parser) parseClassFields(c *ast.Class) *ast.Class {
 	// Starting on BlockBegin
-	c.Methods = make([]ast.Method, 0)
-	c.Properties = make([]ast.Property, 0)
+	c.Methods = make([]*ast.Method, 0)
+	c.Properties = make([]*ast.Property, 0)
 	for p.peek().Typ != token.BlockEnd {
 		vis, _, _, abstract := p.parseClassMemberSettings()
 		p.next()
@@ -120,14 +120,14 @@ func (p *Parser) parseClassFields(c *ast.Class) *ast.Class {
 		case token.Function:
 			if abstract {
 				f := p.parseFunctionDefinition()
-				m := ast.Method{
+				m := &ast.Method{
 					Visibility:   vis,
 					FunctionStmt: &ast.FunctionStmt{FunctionDefinition: f},
 				}
 				c.Methods = append(c.Methods, m)
 				p.expect(token.StatementEnd)
 			} else {
-				c.Methods = append(c.Methods, ast.Method{
+				c.Methods = append(c.Methods, &ast.Method{
 					Visibility:   vis,
 					FunctionStmt: p.parseFunctionStmt(),
 				})
@@ -138,7 +138,7 @@ func (p *Parser) parseClassFields(c *ast.Class) *ast.Class {
 		case token.VariableOperator:
 			for {
 				p.expect(token.Identifier)
-				prop := ast.Property{
+				prop := &ast.Property{
 					Visibility: vis,
 					Name:       "$" + p.current.Val,
 				}
@@ -154,7 +154,7 @@ func (p *Parser) parseClassFields(c *ast.Class) *ast.Class {
 				p.expect(token.VariableOperator)
 			}
 		case token.Const:
-			constant := ast.Constant{}
+			constant := &ast.Constant{}
 			p.expect(token.Identifier)
 			constant.Variable = ast.NewVariable(p.current.Val)
 			if p.peek().Typ == token.AssignmentOperator {

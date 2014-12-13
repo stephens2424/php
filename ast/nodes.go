@@ -34,6 +34,7 @@ func (i Identifier) String() string {
 func (i Identifier) Children() []Node {
 	return nil
 }
+
 type Variable struct {
 
 	// Name is the identifier for the variable, which may be
@@ -49,6 +50,7 @@ func (v Variable) String() string {
 func (v Variable) Children() []Node {
 	return []Node{v.Name}
 }
+
 type GlobalDeclaration struct {
 	Identifiers []*Variable
 }
@@ -125,6 +127,7 @@ func (b BinaryExpression) String() string {
 func (b BinaryExpression) EvaluatesTo() Type {
 	return b.Type
 }
+
 type TernaryExpression struct {
 	Condition, True, False Expression
 	Type                   Type
@@ -141,6 +144,7 @@ func (t TernaryExpression) String() string {
 func (t TernaryExpression) EvaluatesTo() Type {
 	return t.Type
 }
+
 // UnaryExpression is an expression that applies an operator to only one operand. The
 // operator may precede or follow the operand.
 type UnaryExpression struct {
@@ -163,6 +167,7 @@ func (u UnaryExpression) String() string {
 func (u UnaryExpression) EvaluatesTo() Type {
 	return Unknown
 }
+
 type ExpressionStmt struct {
 	Expression
 }
@@ -203,6 +208,7 @@ func (e EchoStmt) Children() []Node {
 	}
 	return nodes
 }
+
 // ReturnStmt represents a function return.
 type ReturnStmt struct {
 	Expression
@@ -218,6 +224,7 @@ func (r ReturnStmt) Children() []Node {
 	}
 	return []Node{r.Expression}
 }
+
 type BreakStmt struct {
 	Expression
 }
@@ -232,6 +239,7 @@ func (b BreakStmt) Children() []Node {
 func (b BreakStmt) String() string {
 	return "break"
 }
+
 type ContinueStmt struct {
 	Expression
 }
@@ -246,6 +254,7 @@ func (c ContinueStmt) Children() []Node {
 	}
 	return nil
 }
+
 type ThrowStmt struct {
 	Expression
 }
@@ -272,6 +281,7 @@ func (i Include) String() string {
 func (i Include) EvaluatesTo() Type {
 	return AnyType
 }
+
 type ExitStmt struct {
 	Expression Expression
 }
@@ -283,6 +293,7 @@ func (e ExitStmt) Children() []Node {
 func (e ExitStmt) String() string {
 	return "exit"
 }
+
 type NewExpression struct {
 	Class     Expression
 	Arguments []Expression
@@ -304,6 +315,7 @@ func (c NewExpression) Children() []Node {
 	}
 	return n
 }
+
 type AssignmentExpression struct {
 	Assignee Assignable
 	Value    Expression
@@ -324,6 +336,7 @@ func (a AssignmentExpression) Children() []Node {
 func (a AssignmentExpression) EvaluatesTo() Type {
 	return a.Value.EvaluatesTo()
 }
+
 type Assignable interface {
 	Node
 	AssignableType() Type
@@ -369,6 +382,7 @@ func (b Block) Children() []Node {
 	}
 	return n
 }
+
 type FunctionStmt struct {
 	*FunctionDefinition
 	Body *Block
@@ -388,6 +402,7 @@ func (f FunctionStmt) Children() []Node {
 	}
 	return n
 }
+
 type AnonymousFunction struct {
 	ClosureVariables []FunctionArgument
 	Arguments        []FunctionArgument
@@ -429,6 +444,7 @@ func (fd FunctionDefinition) Children() []Node {
 func (fd FunctionDefinition) String() string {
 	return fmt.Sprintf("function %s( %s )", fd.Name, fd.Arguments)
 }
+
 type FunctionArgument struct {
 	TypeHint string
 	Default  Expression
@@ -448,13 +464,14 @@ func (fa FunctionArgument) Children() []Node {
 	}
 	return n
 }
+
 type Class struct {
 	Name       string
 	Extends    string
 	Implements []string
-	Methods    []Method
-	Properties []Property
-	Constants  []Constant
+	Methods    []*Method
+	Properties []*Property
+	Constants  []*Constant
 }
 
 func (c Class) String() string {
@@ -472,6 +489,7 @@ func (c Class) Children() []Node {
 	}
 	return n
 }
+
 type Constant struct {
 	*Variable
 	Value interface{}
@@ -499,6 +517,7 @@ func (i Interface) Children() []Node {
 	}
 	return n
 }
+
 type Property struct {
 	Name           string
 	Visibility     Visibility
@@ -517,6 +536,7 @@ func (p Property) AssignableType() Type {
 func (p Property) Children() []Node {
 	return []Node{p.Initialization}
 }
+
 type PropertyExpression struct {
 	Receiver Expression
 	Name     Expression
@@ -540,6 +560,7 @@ func (p PropertyExpression) Children() []Node {
 		p.Receiver,
 	}
 }
+
 type ClassExpression struct {
 	Receiver   Expression
 	Expression Expression
@@ -568,6 +589,7 @@ func (c ClassExpression) Children() []Node {
 func (c ClassExpression) AssignableType() Type {
 	return c.Type
 }
+
 type Method struct {
 	*FunctionStmt
 	Visibility Visibility
@@ -580,6 +602,7 @@ func (m Method) String() string {
 func (m Method) Children() []Node {
 	return m.FunctionStmt.Children()
 }
+
 type MethodCallExpression struct {
 	Receiver Expression
 	*FunctionCallExpression
@@ -595,6 +618,7 @@ func (m MethodCallExpression) Children() []Node {
 func (m MethodCallExpression) String() string {
 	return fmt.Sprintf("%s->", m.Receiver)
 }
+
 type Visibility int
 
 const (
@@ -634,6 +658,7 @@ func (i IfStmt) Children() []Node {
 	}
 	return n
 }
+
 type SwitchStmt struct {
 	Expression  Expression
 	Cases       []*SwitchCase
@@ -656,10 +681,12 @@ func (s SwitchStmt) Children() []Node {
 	}
 	return n
 }
+
 type SwitchCase struct {
 	Expression Expression
 	Block      Block
 }
+
 func (s SwitchCase) String() string {
 	return "case"
 }
@@ -711,6 +738,7 @@ func (w WhileStmt) Children() []Node {
 		w.LoopBlock,
 	}
 }
+
 type DoWhileStmt struct {
 	Termination Expression
 	LoopBlock   Statement
@@ -726,6 +754,7 @@ func (d DoWhileStmt) Children() []Node {
 		d.Termination,
 	}
 }
+
 type TryStmt struct {
 	TryBlock     *Block
 	FinallyBlock *Block
@@ -746,6 +775,7 @@ func (t TryStmt) Children() []Node {
 	}
 	return n
 }
+
 type CatchStmt struct {
 	CatchBlock *Block
 	CatchType  string
@@ -759,6 +789,7 @@ func (c CatchStmt) String() string {
 func (c CatchStmt) Children() []Node {
 	return []Node{c.CatchBlock}
 }
+
 type Literal struct {
 	Type  Type
 	Value string
@@ -775,6 +806,7 @@ func (l Literal) EvaluatesTo() Type {
 func (l Literal) Children() []Node {
 	return nil
 }
+
 type ForeachStmt struct {
 	Source    Expression
 	Key       *Variable
@@ -794,6 +826,7 @@ func (f ForeachStmt) Children() []Node {
 	n = append(n, f.Value, f.LoopBlock)
 	return n
 }
+
 type ArrayExpression struct {
 	ArrayType
 	Pairs []ArrayPair
@@ -810,6 +843,7 @@ func (a ArrayExpression) Children() []Node {
 	}
 	return n
 }
+
 type ArrayPair struct {
 	Key   Expression
 	Value Expression
@@ -853,6 +887,7 @@ func (a ArrayLookupExpression) EvaluatesTo() Type {
 func (a ArrayLookupExpression) AssignableType() Type {
 	return AnyType
 }
+
 type ArrayAppendExpression struct {
 	Array Expression
 }
@@ -872,6 +907,7 @@ func (a ArrayAppendExpression) Children() []Node {
 func (a ArrayAppendExpression) String() string {
 	return a.Array.String() + "[]"
 }
+
 type ShellCommand struct {
 	Command string
 }
@@ -904,6 +940,7 @@ func (l ListStatement) String() string {
 func (l ListStatement) Children() []Node {
 	return []Node{l.Value}
 }
+
 type StaticVariableDeclaration struct {
 	Declarations []Expression
 }
@@ -934,4 +971,3 @@ func (d DeclareBlock) Children() []Node {
 func (d DeclareBlock) String() string {
 	return "declare{}"
 }
-

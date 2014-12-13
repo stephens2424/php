@@ -33,13 +33,13 @@ func TestClass(t *testing.T) {
 	}
 	tree := &ast.Class{
 		Name: "TestClass",
-		Constants: []ast.Constant{
+		Constants: []*ast.Constant{
 			{
 				Variable: ast.NewVariable("my_const"),
 				Value:    &ast.Literal{Type: ast.String, Value: `"test"`},
 			},
 		},
-		Properties: []ast.Property{
+		Properties: []*ast.Property{
 			{
 				Visibility: ast.Public,
 				Name:       "$myProp",
@@ -59,7 +59,7 @@ func TestClass(t *testing.T) {
 				},
 			},
 		},
-		Methods: []ast.Method{
+		Methods: []*ast.Method{
 			{
 				Visibility: ast.Public,
 				FunctionStmt: &ast.FunctionStmt{
