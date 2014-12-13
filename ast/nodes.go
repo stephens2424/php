@@ -404,8 +404,8 @@ func (f FunctionStmt) Children() []Node {
 }
 
 type AnonymousFunction struct {
-	ClosureVariables []FunctionArgument
-	Arguments        []FunctionArgument
+	ClosureVariables []*FunctionArgument
+	Arguments        []*FunctionArgument
 	Body             *Block
 }
 
@@ -430,7 +430,7 @@ func (a AnonymousFunction) String() string {
 
 type FunctionDefinition struct {
 	Name      string
-	Arguments []FunctionArgument
+	Arguments []*FunctionArgument
 }
 
 func (fd FunctionDefinition) Children() []Node {

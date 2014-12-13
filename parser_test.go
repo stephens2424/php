@@ -152,7 +152,7 @@ func TestFunction(t *testing.T) {
 		&ast.FunctionStmt{
 			FunctionDefinition: &ast.FunctionDefinition{
 				Name: "TestFn",
-				Arguments: []ast.FunctionArgument{
+				Arguments: []*ast.FunctionArgument{
 					{
 						Variable: ast.NewVariable("arg"),
 					},
@@ -786,7 +786,7 @@ func TestInterface(t *testing.T) {
 				FunctionStmt: &ast.FunctionStmt{
 					FunctionDefinition: &ast.FunctionDefinition{
 						Name:      "TheirFunc",
-						Arguments: []ast.FunctionArgument{},
+						Arguments: []*ast.FunctionArgument{},
 					},
 				},
 			},
@@ -795,7 +795,7 @@ func TestInterface(t *testing.T) {
 				FunctionStmt: &ast.FunctionStmt{
 					FunctionDefinition: &ast.FunctionDefinition{
 						Name:      "MyFunc",
-						Arguments: []ast.FunctionArgument{},
+						Arguments: []*ast.FunctionArgument{},
 					},
 				},
 			},

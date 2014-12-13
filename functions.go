@@ -26,7 +26,7 @@ func (p *Parser) parseFunctionDefinition() *ast.FunctionDefinition {
 		}
 	}
 	def.Name = p.current.Val
-	def.Arguments = make([]ast.FunctionArgument, 0)
+	def.Arguments = make([]*ast.FunctionArgument, 0)
 	p.expect(token.OpenParen)
 	if p.peek().Typ == token.CloseParen {
 		p.expect(token.CloseParen)
@@ -48,8 +48,8 @@ func (p *Parser) parseFunctionDefinition() *ast.FunctionDefinition {
 	}
 }
 
-func (p *Parser) parseFunctionArgument() ast.FunctionArgument {
-	arg := ast.FunctionArgument{}
+func (p *Parser) parseFunctionArgument() *ast.FunctionArgument {
+	arg := &ast.FunctionArgument{}
 	switch p.peek().Typ {
 	case token.Identifier, token.Array, token.Self:
 		p.next()
@@ -98,8 +98,8 @@ func (p *Parser) parseFunctionArguments(expr *ast.FunctionCallExpression) *ast.F
 
 func (p *Parser) parseAnonymousFunction() ast.Expression {
 	f := &ast.AnonymousFunction{}
-	f.Arguments = make([]ast.FunctionArgument, 0)
-	f.ClosureVariables = make([]ast.FunctionArgument, 0)
+	f.Arguments = make([]*ast.FunctionArgument, 0)
+	f.ClosureVariables = make([]*ast.FunctionArgument, 0)
 	p.expect(token.OpenParen)
 	if p.peek().Typ != token.CloseParen {
 		f.Arguments = append(f.Arguments, p.parseFunctionArgument())

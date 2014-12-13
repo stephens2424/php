@@ -65,7 +65,7 @@ func TestClass(t *testing.T) {
 				FunctionStmt: &ast.FunctionStmt{
 					FunctionDefinition: &ast.FunctionDefinition{
 						Name: "method0",
-						Arguments: []ast.FunctionArgument{
+						Arguments: []*ast.FunctionArgument{
 							{
 								Variable: ast.NewVariable("arg"),
 							},
@@ -78,7 +78,7 @@ func TestClass(t *testing.T) {
 				FunctionStmt: &ast.FunctionStmt{
 					FunctionDefinition: &ast.FunctionDefinition{
 						Name: "method1",
-						Arguments: []ast.FunctionArgument{
+						Arguments: []*ast.FunctionArgument{
 							{
 								Variable: ast.NewVariable("arg"),
 							},
@@ -96,7 +96,7 @@ func TestClass(t *testing.T) {
 				FunctionStmt: &ast.FunctionStmt{
 					FunctionDefinition: &ast.FunctionDefinition{
 						Name: "method2",
-						Arguments: []ast.FunctionArgument{
+						Arguments: []*ast.FunctionArgument{
 							{
 								TypeHint: "TestClass",
 								Variable: ast.NewVariable("arg"),
