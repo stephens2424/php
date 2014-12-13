@@ -79,7 +79,7 @@ func (i Variable) EvaluatesTo() Type {
 // identifier and its type set to AnyType. The name argument should not
 // include the $ operator.
 func NewVariable(name string) *Variable {
-	return &Variable{Name: Identifier{Value: name}, Type: AnyType}
+	return &Variable{Name: &Identifier{Value: name}, Type: AnyType}
 }
 
 // A statement is an executable piece of code. It may be as simple as
