@@ -4,9 +4,11 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"os"
 
-	"github.com/stephens2424/php/passes/format"
+	"github.com/stephens2424/php"
+	"github.com/stephens2424/php/ast/printer"
 )
 
 func main() {
@@ -21,10 +23,13 @@ func main() {
 			fmt.Println(err)
 			continue
 		}
-		f := format.NewFormatter(os.Stdout)
-		err = f.Format(string(src))
-		if err != nil {
-			fmt.Println(err)
+		p := printer.NewPrinter(os.Stdout)
+		nodes, errs := php.NewParser(string(src)).Parse()
+		if len(errs) != 0 {
+			log.Fatal(errs)
+		}
+		for _, node := range nodes {
+			p.PrintNode(node)
 		}
 	}
 }
