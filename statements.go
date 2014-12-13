@@ -65,8 +65,9 @@ func (p *Parser) parseStmt() ast.Statement {
 				default:
 					s.Declarations = append(s.Declarations, &ast.AssignmentExpression{Assignee: v, Value: p.parseLiteral(), Operator: op})
 				}
+			} else {
+				s.Declarations = append(s.Declarations, v)
 			}
-			s.Declarations = append(s.Declarations, v)
 			if p.peek().Typ != token.Comma {
 				break
 			}
