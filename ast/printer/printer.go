@@ -11,6 +11,10 @@ type Printer struct {
 	w io.Writer
 }
 
+func NewPrinter(w io.Writer) *Printer {
+	return &Printer{w}
+}
+
 func (p *Printer) PrintNode(node ast.Node) {
 	switch n := node.(type) {
 	case *ast.AnonymousFunction:

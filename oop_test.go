@@ -31,7 +31,7 @@ func TestClass(t *testing.T) {
 	if len(a) != 1 {
 		t.Fatalf("Class did not correctly parse")
 	}
-	tree := ast.Class{
+	tree := &ast.Class{
 		Name: "TestClass",
 		Constants: []ast.Constant{
 			{
