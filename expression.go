@@ -55,16 +55,13 @@ func (p *Parser) parseExpression() (expr ast.Expression) {
 		return p.parseNextExpression()
 	case token.List:
 		expr = p.parseList()
-	case
-		token.UnaryOperator,
+	case token.AmpersandOperator, token.SubtractionOperator:
+		expr := p.parseUnaryExpressionRight(p.parseOperand(), p.current)
+		return p.parseOperation(originalParenLev, expr)
+	case token.UnaryOperator,
 		token.NegationOperator,
-		token.AmpersandOperator,
 		token.CastOperator,
-		token.SubtractionOperator,
-		token.BitwiseNotOperator:
-		op := p.current
-		expr = p.parseUnaryExpressionRight(p.parseNextExpression(), op)
-	case
+		token.BitwiseNotOperator,
 		token.ArrayLookupOperatorLeft,
 		token.Function,
 		token.NewOperator,

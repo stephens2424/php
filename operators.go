@@ -22,7 +22,10 @@ func operationTypeForToken(t token.Token) operationType {
 	switch t {
 	case token.IgnoreErrorOperator:
 		return ignoreErrorOperation
-	case token.UnaryOperator, token.BitwiseNotOperator:
+	case token.UnaryOperator,
+		token.NegationOperator,
+		token.CastOperator,
+		token.BitwiseNotOperator:
 		return unaryOperation
 	case token.AdditionOperator,
 		token.SubtractionOperator,
