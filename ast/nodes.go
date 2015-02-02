@@ -154,14 +154,14 @@ type UnaryExpression struct {
 }
 
 func (u UnaryExpression) Children() []Node {
-	return nil
+	return []Node{Operand}
 }
 
 func (u UnaryExpression) String() string {
 	if u.Preceding {
-		return u.Operator + u.Operand.String()
+		return u.Operator + " (preceding)"
 	}
-	return u.Operand.String() + u.Operator
+	return u.Operator
 }
 
 func (u UnaryExpression) EvaluatesTo() Type {
