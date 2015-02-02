@@ -154,7 +154,7 @@ type UnaryExpression struct {
 }
 
 func (u UnaryExpression) Children() []Node {
-	return []Node{Operand}
+	return []Node{u.Operand}
 }
 
 func (u UnaryExpression) String() string {
