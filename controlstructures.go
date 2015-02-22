@@ -140,7 +140,7 @@ func (p *Parser) parseSwitch() ast.Statement {
 		case token.BlockEnd, token.EndSwitch:
 			return stmt
 		default:
-			p.errorf("Unexpected token. in switch statement:", p.current)
+			p.errorf("Unexpected token. in switch statement: %s", p.current)
 			return nil
 		}
 	}
@@ -169,7 +169,7 @@ stmtLoop:
 		default:
 			stmt := p.parseStmt()
 			if stmt == nil {
-				p.errorf("Invalid statement in switch block", p.current)
+				p.errorf("Invalid statement in switch block: %s", p.current)
 				break stmtLoop
 			}
 			block.Statements = append(block.Statements, stmt)

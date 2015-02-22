@@ -277,7 +277,6 @@ func (p *Parser) parseOperandComponent(lhs ast.Expression) (expr ast.Expression)
 			return
 		}
 	}
-	return
 }
 
 func (p *Parser) parseLiteral() ast.Expression {

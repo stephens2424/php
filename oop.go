@@ -255,5 +255,4 @@ func (p *Parser) parseClassMemberSettings() (vis ast.Visibility, static, final, 
 			return
 		}
 	}
-	return
 }
