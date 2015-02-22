@@ -89,12 +89,15 @@ func TestIf(t *testing.T) {
 	p := NewParser(testStr)
 	a, _ := p.Parse()
 	tree := &ast.IfStmt{
-		Condition:  &ast.Literal{Type: ast.Boolean, Value: "true"},
-		TrueBranch: ast.Echo(&ast.Literal{Type: ast.String, Value: `"hello world"`}),
-		FalseBranch: &ast.IfStmt{
-			Condition:   &ast.Literal{Type: ast.Boolean, Value: "false"},
-			TrueBranch:  ast.Echo(&ast.Literal{Type: ast.String, Value: `"no hello world"`}),
-			FalseBranch: ast.Block{},
+		Branches: []ast.IfBranch{
+			{
+				Condition: &ast.Literal{Type: ast.Boolean, Value: "true"},
+				Block:     ast.Echo(&ast.Literal{Type: ast.String, Value: `"hello world"`}),
+			},
+			{
+				Condition: &ast.Literal{Type: ast.Boolean, Value: "false"},
+				Block:     ast.Echo(&ast.Literal{Type: ast.String, Value: `"no hello world"`}),
+			},
 		},
 	}
 	if !assertEquals(a[0], tree) {
@@ -112,16 +115,19 @@ func TestIfBraces(t *testing.T) {
 	p := NewParser(testStr)
 	a, _ := p.Parse()
 	tree := &ast.IfStmt{
-		Condition: &ast.Literal{Type: ast.Boolean, Value: "true"},
-		TrueBranch: &ast.Block{
-			Statements: []ast.Statement{ast.Echo(&ast.Literal{Type: ast.String, Value: `"hello world"`})},
-		},
-		FalseBranch: &ast.IfStmt{
-			Condition: &ast.Literal{Type: ast.Boolean, Value: "false"},
-			TrueBranch: &ast.Block{
-				Statements: []ast.Statement{ast.Echo(&ast.Literal{Type: ast.String, Value: `"no hello world"`})},
+		Branches: []ast.IfBranch{
+			{
+				Condition: &ast.Literal{Type: ast.Boolean, Value: "true"},
+				Block: &ast.Block{
+					Statements: []ast.Statement{ast.Echo(&ast.Literal{Type: ast.String, Value: `"hello world"`})},
+				},
 			},
-			FalseBranch: ast.Block{},
+			{
+				Condition: &ast.Literal{Type: ast.Boolean, Value: "false"},
+				Block: &ast.Block{
+					Statements: []ast.Statement{ast.Echo(&ast.Literal{Type: ast.String, Value: `"no hello world"`})},
+				},
+			},
 		},
 	}
 	if !assertEquals(a[0], tree) {
@@ -192,19 +198,22 @@ func TestExpressionParsing(t *testing.T) {
     echo "good"; `)
 	a, _ := p.Parse()
 	ifStmt := ast.IfStmt{
-		Condition: ast.BinaryExpression{
-			Antecedent: ast.BinaryExpression{
-				Antecedent: &ast.Literal{Type: ast.Float, Value: "1"},
-				Subsequent: &ast.Literal{Type: ast.Float, Value: "2"},
-				Type:       ast.Numeric,
-				Operator:   "+",
+		Branches: []ast.IfBranch{
+			{
+				Condition: ast.BinaryExpression{
+					Antecedent: ast.BinaryExpression{
+						Antecedent: &ast.Literal{Type: ast.Float, Value: "1"},
+						Subsequent: &ast.Literal{Type: ast.Float, Value: "2"},
+						Type:       ast.Numeric,
+						Operator:   "+",
+					},
+					Subsequent: &ast.Literal{Type: ast.Float, Value: "3"},
+					Type:       ast.Boolean,
+					Operator:   ">",
+				},
+				Block: ast.Echo(&ast.Literal{Type: ast.String, Value: `"good"`}),
 			},
-			Subsequent: &ast.Literal{Type: ast.Float, Value: "3"},
-			Type:       ast.Boolean,
-			Operator:   ">",
 		},
-		TrueBranch:  ast.Echo(&ast.Literal{Type: ast.String, Value: `"good"`}),
-		FalseBranch: ast.Block{},
 	}
 	if len(a) != 1 {
 		t.Fatalf("If did not correctly parse")
@@ -222,19 +231,22 @@ func TestExpressionParsing(t *testing.T) {
   `)
 	a, _ = p.Parse()
 	ifStmt = ast.IfStmt{
-		Condition: ast.BinaryExpression{
-			Subsequent: ast.BinaryExpression{
-				Antecedent: &ast.Literal{Type: ast.Float, Value: "5"},
-				Subsequent: &ast.Literal{Type: ast.Float, Value: "6"},
-				Type:       ast.Numeric,
-				Operator:   "*",
+		Branches: []ast.IfBranch{
+			{
+				Condition: ast.BinaryExpression{
+					Subsequent: ast.BinaryExpression{
+						Antecedent: &ast.Literal{Type: ast.Float, Value: "5"},
+						Subsequent: &ast.Literal{Type: ast.Float, Value: "6"},
+						Type:       ast.Numeric,
+						Operator:   "*",
+					},
+					Antecedent: &ast.Literal{Type: ast.Float, Value: "4"},
+					Type:       ast.Numeric,
+					Operator:   "+",
+				},
+				Block: ast.Echo(&ast.Literal{Type: ast.String, Value: `"bad"`}),
 			},
-			Antecedent: &ast.Literal{Type: ast.Float, Value: "4"},
-			Type:       ast.Numeric,
-			Operator:   "+",
 		},
-		TrueBranch:  ast.Echo(&ast.Literal{Type: ast.String, Value: `"bad"`}),
-		FalseBranch: ast.Block{},
 	}
 	if len(a) != 1 {
 		t.Fatalf("If did not correctly parse")
@@ -252,24 +264,27 @@ func TestExpressionParsing(t *testing.T) {
   `)
 	a, _ = p.Parse()
 	ifStmt = ast.IfStmt{
-		Condition: ast.BinaryExpression{
-			Antecedent: &ast.Literal{Type: ast.Float, Value: `1`},
-			Subsequent: ast.BinaryExpression{
-				Antecedent: ast.BinaryExpression{
-					Antecedent: &ast.Literal{Type: ast.Float, Value: `2`},
-					Subsequent: &ast.Literal{Type: ast.Float, Value: `3`},
-					Type:       ast.Numeric,
-					Operator:   "*",
+		Branches: []ast.IfBranch{
+			{
+				Condition: ast.BinaryExpression{
+					Antecedent: &ast.Literal{Type: ast.Float, Value: `1`},
+					Subsequent: ast.BinaryExpression{
+						Antecedent: ast.BinaryExpression{
+							Antecedent: &ast.Literal{Type: ast.Float, Value: `2`},
+							Subsequent: &ast.Literal{Type: ast.Float, Value: `3`},
+							Type:       ast.Numeric,
+							Operator:   "*",
+						},
+						Subsequent: &ast.Literal{Type: ast.Float, Value: `4`},
+						Operator:   "+",
+						Type:       ast.Numeric,
+					},
+					Type:     ast.Boolean,
+					Operator: ">",
 				},
-				Subsequent: &ast.Literal{Type: ast.Float, Value: `4`},
-				Operator:   "+",
-				Type:       ast.Numeric,
+				Block: ast.Echo(&ast.Literal{Type: ast.String, Value: `"good"`}),
 			},
-			Type:     ast.Boolean,
-			Operator: ">",
 		},
-		TrueBranch:  ast.Echo(&ast.Literal{Type: ast.String, Value: `"good"`}),
-		FalseBranch: ast.Block{},
 	}
 	if len(a) != 1 {
 		t.Fatalf("If did not correctly parse")
