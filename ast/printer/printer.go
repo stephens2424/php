@@ -3,9 +3,10 @@ package printer
 import (
 	"bytes"
 	"fmt"
-	"github.com/stephens2424/php/ast"
 	"io"
 	"strings"
+
+	"github.com/stephens2424/php/ast"
 )
 
 type Printer struct {
@@ -439,11 +440,17 @@ func (p *Printer) PrintMethodCallExpression(m *ast.MethodCallExpression) {
 	p.PrintNode(m.FunctionCallExpression)
 }
 func (p *Printer) PrintIfStmt(i *ast.IfStmt) {
-	fmt.Fprintf(p.w, "if (%s) {\n%s\n}", i.Condition, i.TrueBranch)
-	if i.FalseBranch != nil {
-		fmt.Fprintf(p.w, " else {\n%s\n}", i.FalseBranch)
+	if len(i.Branches) == 0 {
+		return
 	}
 
+	fmt.Fprintf(p.w, "if (%s) {\n%s\n}", i.Branches[0].Condition, i.Branches[0].Block)
+	for _, branch := range i.Branches[1:] {
+		fmt.Fprintf(p.w, " else if (%s) {\n%s\n}", branch.Condition, branch.Block)
+	}
+	if i.ElseBlock != nil {
+		fmt.Fprintf(p.w, " else {\n%s\n}", i.ElseBlock)
+	}
 }
 
 func (p *Printer) PrintSwitchStmt(s *ast.SwitchStmt) {
