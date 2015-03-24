@@ -22,7 +22,7 @@ func (p *Parser) parseFunctionDefinition() *ast.FunctionDefinition {
 	if !p.accept(token.Identifier) {
 		p.next()
 		if !lexer.IsKeyword(p.current.Typ, p.current.Val) {
-			p.errorf("bad function name", p.current.Val)
+			p.errorf("bad function name: %s", p.current.Val)
 		}
 	}
 	def.Name = p.current.Val
@@ -42,7 +42,7 @@ func (p *Parser) parseFunctionDefinition() *ast.FunctionDefinition {
 			p.expect(token.CloseParen)
 			return def
 		default:
-			p.errorf("unexpected argument separator:", p.current)
+			p.errorf("unexpected argument separator: %s", p.current)
 			return def
 		}
 	}
@@ -114,7 +114,7 @@ Loop:
 		case token.CloseParen:
 			break Loop
 		default:
-			p.errorf("unexpected argument separator:", p.current)
+			p.errorf("unexpected argument separator: %s", p.current)
 			return f
 		}
 	}
@@ -134,7 +134,7 @@ Loop:
 			case token.CloseParen:
 				break ClosureLoop
 			default:
-				p.errorf("unexpected argument separator:", p.current)
+				p.errorf("unexpected argument separator: %s", p.current)
 				return f
 			}
 		}

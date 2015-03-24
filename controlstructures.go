@@ -6,40 +6,40 @@ import (
 )
 
 func (p *Parser) parseIf() *ast.IfStmt {
+	n := &ast.IfStmt{Branches: make([]ast.IfBranch, 0, 1)}
+
+	n.Branches = append(n.Branches, p.parseIfBranch())
+
+	for {
+		switch p.current.Typ {
+		case token.ElseIf:
+			n.Branches = append(n.Branches, p.parseIfBranch())
+		case token.Else:
+			p.next()
+			if p.current.Typ == token.If {
+				n.Branches = append(n.Branches, p.parseIfBranch())
+			} else {
+				n.ElseBlock = p.parseControlBlock(token.EndIf)
+				return n
+			}
+		default:
+			if p.current.Typ != token.EndIf {
+				p.backup()
+			}
+			return n
+		}
+	}
+}
+
+func (p *Parser) parseIfBranch() ast.IfBranch {
+	b := ast.IfBranch{}
 	p.expect(token.OpenParen)
-	n := &ast.IfStmt{}
-	n.Condition = p.parseNextExpression()
+	b.Condition = p.parseNextExpression()
 	p.expect(token.CloseParen)
 
 	p.next()
-	n.TrueBranch = p.parseControlBlock(token.EndIf, token.ElseIf, token.Else)
-	n.FalseBranch = ast.Block{}
-
-	blockStyle := false
-	switch p.current.Typ {
-	case token.ElseIf, token.Else, token.EndIf:
-	default:
-		p.next()
-		blockStyle = true
-	}
-
-	switch p.current.Typ {
-	case token.ElseIf:
-		n.FalseBranch = p.parseIf()
-	case token.Else:
-		p.next()
-		if p.current.Typ == token.If {
-			n.FalseBranch = p.parseIf()
-		} else {
-			n.FalseBranch = p.parseControlBlock(token.EndIf)
-		}
-	default:
-		if blockStyle {
-			p.backup()
-		}
-	}
-
-	return n
+	b.Block = p.parseControlBlock(token.EndIf, token.ElseIf, token.Else)
+	return b
 }
 
 func (p *Parser) parseWhile() ast.Statement {
@@ -88,7 +88,9 @@ func (p *Parser) parseControlBlock(end ...token.Token) ast.Statement {
 	if len(end) > 0 && p.current.Typ == token.TernaryOperator2 {
 		return p.parseStatementsUntil(end...)
 	}
-	return p.parseStmt()
+	stmt := p.parseStmt()
+	p.next()
+	return stmt
 }
 
 func (p *Parser) parseFor() ast.Statement {
@@ -100,6 +102,7 @@ func (p *Parser) parseFor() ast.Statement {
 	p.expectCurrent(token.CloseParen)
 	p.next()
 	stmt.LoopBlock = p.parseControlBlock(token.EndFor)
+	p.backup()
 	return stmt
 }
 
@@ -140,7 +143,7 @@ func (p *Parser) parseSwitch() ast.Statement {
 		case token.BlockEnd, token.EndSwitch:
 			return stmt
 		default:
-			p.errorf("Unexpected token. in switch statement:", p.current)
+			p.errorf("Unexpected token. in switch statement: %s", p.current)
 			return nil
 		}
 	}
@@ -169,7 +172,7 @@ stmtLoop:
 		default:
 			stmt := p.parseStmt()
 			if stmt == nil {
-				p.errorf("Invalid statement in switch block", p.current)
+				p.errorf("Invalid statement in switch block: %s", p.current)
 				break stmtLoop
 			}
 			block.Statements = append(block.Statements, stmt)

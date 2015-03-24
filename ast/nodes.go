@@ -640,9 +640,21 @@ func (v Visibility) Token() token.Token {
 }
 
 type IfStmt struct {
-	Condition   Expression
-	TrueBranch  Statement
-	FalseBranch Statement
+	Branches  []IfBranch
+	ElseBlock Statement
+}
+
+type IfBranch struct {
+	Condition Expression
+	Block     Statement
+}
+
+func (i IfBranch) String() string {
+	return i.Condition.String()
+}
+
+func (i IfBranch) Children() []Node {
+	return []Node{i.Block}
 }
 
 func (i IfStmt) String() string {
@@ -651,10 +663,11 @@ func (i IfStmt) String() string {
 
 func (i IfStmt) Children() []Node {
 	n := make([]Node, 0, 3)
-	n = append(n, i.Condition)
-	n = append(n, i.TrueBranch)
-	if i.FalseBranch != nil {
-		n = append(n, i.FalseBranch)
+	for _, branch := range i.Branches {
+		n = append(n, branch)
+	}
+	if i.ElseBlock != nil {
+		n = append(n, i.ElseBlock)
 	}
 	return n
 }
