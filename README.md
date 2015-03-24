@@ -15,13 +15,15 @@ Test console:
 
 This project is under heavy development, though some pieces are more or less stable. Listed here are components that in progress or are ideas for future development
 
-- Lexer and Parser: these pieces are quite useable and haven't seen more than minor changes for a while. They do have notable gaps, though (e.g. namespaces).
-- Code search and symbol lookup: basic idea implemented, many many details missing
-- Code formatting: basic idea implemented, formatting needs to narrow down to PSR-2
-- Transpilation to Go: not begun.
-- Scoping: not begun.
-- Type inferencing: not begun.
-- Dead code analysis: not begun.
+Feature                       |Status
+------------------------------|------
+Lexer and Parser              |these pieces are quite useable and haven't seen more than minor changes for a while. They do have notable gaps, though (e.g. namespaces)
+Code search and symbol lookup | basic idea implemented, many many details missing
+Code formatting               | basic idea implemented, formatting needs to narrow down to PSR-2
+Transpilation to Go           | basic idea implemented, need follow through with more node types
+Scoping                       |not begun
+Type inferencing              |not begun
+Dead code analysis            |not begun
 
 ## Project Components
 
