@@ -3,9 +3,10 @@ package printer
 import (
 	"bytes"
 	"fmt"
-	"github.com/stephens2424/php/ast"
 	"io"
 	"strings"
+
+	"github.com/stephens2424/php/ast"
 )
 
 type Printer struct {
@@ -46,6 +47,8 @@ func (p *Printer) PrintNode(node ast.Node) {
 		p.PrintArrayLookupExpression(n)
 	case *ast.ArrayPair:
 		p.PrintArrayPair(n)
+	case ast.AssignmentExpression:
+		p.PrintAssignmentExpression(&n)
 	case *ast.AssignmentExpression:
 		p.PrintAssignmentExpression(n)
 	case *ast.BinaryExpression:
@@ -76,6 +79,8 @@ func (p *Printer) PrintNode(node ast.Node) {
 		p.PrintEmptyStatement(n)
 	case *ast.ExitStmt:
 		p.PrintExitStmt(n)
+	case ast.ExpressionStmt:
+		p.PrintExpressionStmt(&n)
 	case *ast.ExpressionStmt:
 		p.PrintExpressionStmt(n)
 	case *ast.ForStmt:
