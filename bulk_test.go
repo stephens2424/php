@@ -8,7 +8,7 @@ import (
 )
 
 func TestFiles(t *testing.T) {
-	files, err := ioutil.ReadDir("testfiles")
+	files, err := ioutil.ReadDir("testdata")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -18,7 +18,7 @@ func TestFiles(t *testing.T) {
 		if strings.HasPrefix(filename, ".") || !strings.HasSuffix(filename, ".php") {
 			continue
 		}
-		src, err := ioutil.ReadFile(path.Join("testfiles", filename))
+		src, err := ioutil.ReadFile(path.Join("testdata", filename))
 		if err != nil {
 			t.Error(err)
 			continue
