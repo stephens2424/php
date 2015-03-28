@@ -2,35 +2,68 @@ package togo
 
 import (
 	"bytes"
-	"fmt"
 	goast "go/ast"
+	"go/build"
 	"go/format"
 	"go/token"
+	"io/ioutil"
+	"os"
+	"path"
+	"path/filepath"
 	"testing"
 
 	"github.com/stephens2424/php"
 )
 
-func TestIf(t *testing.T) {
-	phpNodes, errs := php.NewParser(`<?php
-	if ("hello" == "world") {
-	}`).Parse()
-	if len(errs) != 0 {
-		t.Fatalf("found errors during parsing:", errs)
+func TestTranslation(t *testing.T) {
+	testsDir := path.Join(build.Default.GOPATH, "src", "github.com/stephens2424/php/passes/togo/tests")
+	phpFiles, err := filepath.Glob(testsDir + "/*.php")
+	if err != nil {
+		t.Fatal(err)
 	}
+
+	for _, phpFile := range phpFiles {
+		phpStr, err := readFile(phpFile)
+		if err != nil {
+			t.Fatal("couldn't read file", phpFile, err)
+		}
+		parseFile(t, phpFile, phpStr)
+	}
+}
+
+func readFile(p string) (string, error) {
+	f, err := os.Open(p)
+	if err != nil {
+		return "", err
+	}
+	b, err := ioutil.ReadAll(f)
+	return string(b), err
+}
+
+func parseFile(t *testing.T, phpFilename, phpStr string) {
+	file, errs := php.NewParser().Parse(phpFilename, phpStr)
+	if len(errs) != 0 {
+		t.Errorf("found errors while parsing %s: %s", phpFilename, errs)
+		return
+	}
+
 	buf := &bytes.Buffer{}
 
 	nodes := []goast.Node{}
-	for _, phpNode := range phpNodes {
+	for _, phpNode := range file.Nodes {
 		nodes = append(nodes, ToGo(phpNode))
 	}
 
 	err := format.Node(buf, token.NewFileSet(), File(nodes...))
 	if err != nil {
-		t.Fatal(err)
+		t.Errorf("error while formatting %s: %s", phpFilename, err)
+		return
 	}
 
-	fmt.Println(buf.String())
+	goStr, err := readFile(phpFilename[:len(phpFilename)-3] + "go")
+	if err == nil && buf.String() != goStr {
+		t.Errorf("mistranlation:\n\n===php===\n\n%s\n\n===expected===\n\n%s\n\n===got===\n\n%s\n\n", phpStr, goStr, buf.String())
+	}
 }
 
 func File(nodes ...goast.Node) *goast.File {

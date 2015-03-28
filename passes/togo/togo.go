@@ -42,7 +42,29 @@ func ToGo(php phpast.Node) goast.Node {
 	case phpast.ExitStmt:
 	case phpast.ExpressionStmt:
 	case phpast.ForStmt:
+		f := &goast.ForStmt{}
+		if len(n.Initialization) == 1 {
+			f.Init = ToGoStmt(n.Initialization[0])
+		}
+
+		// TODO Make sure all the termination expressions are *executed*, even though only the last one
+		// is used to determine loop termination.
+		if len(n.Termination) > 0 {
+			f.Cond = ToGoExpr(n.Termination[len(n.Termination)-1])
+		}
+		f.Body = ToGoBlock(n.LoopBlock)
+
+		// TODO Make sure all the iteration statements are *executed*
+		if len(n.Iteration) > 0 {
+			f.Post = ToGoStmt(n.Iteration[0])
+		}
+		return f
 	case phpast.ForeachStmt:
+		r := &goast.RangeStmt{}
+		r.Key = ToGoExpr(n.Key)
+		r.Value = ToGoExpr(n.Value)
+		r.X = ToGoExpr(n.Source)
+		r.Body = ToGoBlock(n.LoopBlock)
 	case phpast.FunctionArgument:
 	case phpast.FunctionCallExpression:
 	case phpast.FunctionCallStmt:
@@ -79,6 +101,10 @@ func ToGo(php phpast.Node) goast.Node {
 	case phpast.TryStmt:
 	case phpast.Variable:
 	case phpast.WhileStmt:
+		f := &goast.ForStmt{}
+		f.Cond = ToGoExpr(n.Termination)
+		f.Body = ToGoBlock(n.LoopBlock)
+		return f
 	}
 
 	return PHPEval(php)
