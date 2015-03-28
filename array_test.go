@@ -10,8 +10,8 @@ func TestList(t *testing.T) {
 	testStr := `<?
     list($one, $two) = array(1, 2);`
 
-	p := NewParser(testStr)
-	a, errs := p.Parse()
+	p := NewParser()
+	a, errs := p.Parse("test.php", testStr)
 	if len(errs) != 0 {
 		t.Fatalf("Did not parse list correctly: %s", errs)
 	}
@@ -30,7 +30,7 @@ func TestList(t *testing.T) {
 		},
 	}}
 
-	if !assertEquals(a[0], tree) {
+	if !assertEquals(a.Nodes[0], tree) {
 		t.Fatalf("Array bracked did not parse correctly")
 	}
 }
@@ -40,8 +40,8 @@ func TestArrayBracket(t *testing.T) {
     $arr = ["one", "two"];
     $arr2 = ["one" => 1, "two" => 2];`
 
-	p := NewParser(testStr)
-	a, errs := p.Parse()
+	p := NewParser()
+	a, errs := p.Parse("test.php", testStr)
 	if len(errs) != 0 {
 		t.Fatalf("Did not parse array bracket correctly: %s", errs)
 	}
@@ -75,10 +75,10 @@ func TestArrayBracket(t *testing.T) {
 		}},
 	}
 
-	if !assertEquals(a[0], tree[0]) {
+	if !assertEquals(a.Nodes[0], tree[0]) {
 		t.Fatalf("Array bracked did not parse correctly")
 	}
-	if !assertEquals(a[1], tree[1]) {
+	if !assertEquals(a.Nodes[1], tree[1]) {
 		t.Fatalf("Array bracked did not parse correctly")
 	}
 }

@@ -14,6 +14,7 @@ type Parser struct {
 	Debug       bool // Debug causes the parser to print all errors to stdout and relay any panic upon internal panic recovery.
 	PrintTokens bool // PrintTokens causes the parser to print all tokens received from the lexer to stdout.
 	MaxErrors   int  // Indicates the number of errors to allow before triggering a panic. The default is 10.
+	FileSet     ast.FileSet
 
 	lexer      token.Stream
 	previous   []token.Item
@@ -27,19 +28,21 @@ type Parser struct {
 	instantiation bool
 }
 
-// NewParser readies a parser object for the given input string.
-func NewParser(input string) *Parser {
+// NewParser readies a parser
+func NewParser() *Parser {
 	p := &Parser{
 		idx:       -1,
 		MaxErrors: 10,
-		lexer:     lexer.NewLexer(input),
 		errorMap:  make(map[int]bool),
 	}
 	return p
 }
 
 // Parse consumes the input string to produce an AST that represents it.
-func (p *Parser) Parse() (nodes []ast.Node, errors []error) {
+func (p *Parser) Parse(filepath, input string) (*ast.File, []error) {
+	var errors []error
+	file := &ast.File{}
+	p.lexer = lexer.NewLexer(input)
 	defer func() {
 		if r := recover(); r != nil {
 			errors = append([]error{fmt.Errorf("%s", r)}, p.errors...)
@@ -52,7 +55,7 @@ func (p *Parser) Parse() (nodes []ast.Node, errors []error) {
 		}
 	}()
 	// expecting either token.HTML or token.PHPBegin
-	nodes = make([]ast.Node, 0, 1)
+	file.Nodes = make([]ast.Node, 0, 1)
 TokenLoop:
 	for {
 		p.next()
@@ -62,12 +65,12 @@ TokenLoop:
 		default:
 			n := p.parseNode()
 			if n != nil {
-				nodes = append(nodes, n)
+				file.Nodes = append(file.Nodes, n)
 			}
 		}
 	}
 	errors = p.errors
-	return nodes, errors
+	return file, errors
 }
 
 func (p *Parser) parseNode() ast.Node {

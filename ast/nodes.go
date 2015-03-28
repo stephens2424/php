@@ -14,6 +14,19 @@ type Node interface {
 	Children() []Node
 }
 
+type Declaration interface {
+	Node
+	Declares() DeclarationType
+}
+
+type DeclarationType int
+
+const (
+	VariableDeclaration DeclarationType = iota
+	FunctionDeclaration
+	ClassDeclaration
+)
+
 type Format struct{}
 
 // An Identifier is a raw string that can be used to identify
@@ -983,4 +996,20 @@ func (d DeclareBlock) Children() []Node {
 
 func (d DeclareBlock) String() string {
 	return "declare{}"
+}
+
+type File struct {
+	Name      string
+	Namespace Namespace
+	Nodes     []Node
+}
+
+type FileSet struct {
+	Files      map[string]File
+	Namespaces map[string]Namespace
+}
+
+type Namespace struct {
+	Name  string
+	Decls []Declaration
 }

@@ -22,13 +22,13 @@ func TestClass(t *testing.T) {
         return $arg;
       }
     }`
-	p := NewParser(testStr)
+	p := NewParser()
 	p.Debug = true
-	a, errs := p.Parse()
+	a, errs := p.Parse("test.php", testStr)
 	if len(errs) > 0 {
 		t.Fatal(errs)
 	}
-	if len(a) != 1 {
+	if len(a.Nodes) != 1 {
 		t.Fatalf("Class did not correctly parse")
 	}
 	tree := &ast.Class{
@@ -117,7 +117,7 @@ func TestClass(t *testing.T) {
 			},
 		},
 	}
-	if !assertEquals(a[0], tree) {
+	if !assertEquals(a.Nodes[0], tree) {
 		t.Fatalf("Class did not parse correctly")
 	}
 }
@@ -129,8 +129,8 @@ func TestExtraModifiers(t *testing.T) {
     }
   }`
 
-	p := NewParser(testStr)
-	_, errs := p.Parse()
+	p := NewParser()
+	_, errs := p.Parse("test.php", testStr)
 	if len(errs) != 1 {
 		t.Fatalf("Did not correctly error that a function has two public modifiers")
 	}
@@ -139,8 +139,8 @@ func TestExtraModifiers(t *testing.T) {
 func TestInstantiation(t *testing.T) {
 	testStr := `<?
   $obj = new Obj::$classes['obj']($arg);`
-	p := NewParser(testStr)
-	a, errs := p.Parse()
+	p := NewParser()
+	a, errs := p.Parse("test.php", testStr)
 	if len(errs) != 0 {
 		t.Fatalf("Did not parse instantiation correctly: %s", errs)
 	}
@@ -157,7 +157,7 @@ func TestInstantiation(t *testing.T) {
 			},
 		},
 	}}
-	if !assertEquals(a[0], tree) {
+	if !assertEquals(a.Nodes[0], tree) {
 		t.Fatalf("Instantiation did not parse correctly")
 	}
 }

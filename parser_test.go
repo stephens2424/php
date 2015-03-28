@@ -47,10 +47,10 @@ func findDifference(found, expected ast.Node) {
 
 func TestPHPParserHW(t *testing.T) {
 	testStr := `hello world`
-	p := NewParser(testStr)
-	a, _ := p.Parse()
+	p := NewParser()
+	a, _ := p.Parse("test.php", testStr)
 	tree := ast.Echo(ast.Literal{Type: ast.String, Value: `hello world`})
-	if !assertEquals(a[0], tree) {
+	if !assertEquals(a.Nodes[0], tree) {
 		t.Fatalf("Hello world did not correctly parse")
 	}
 }
@@ -58,13 +58,13 @@ func TestPHPParserHW(t *testing.T) {
 func TestPHPParserHWPHP(t *testing.T) {
 	testStr := `<?php
     echo "hello world", "!";`
-	p := NewParser(testStr)
-	a, _ := p.Parse()
+	p := NewParser()
+	a, _ := p.Parse("test.php", testStr)
 	tree := ast.Echo(
 		&ast.Literal{Type: ast.String, Value: `"hello world"`},
 		&ast.Literal{Type: ast.String, Value: `"!"`},
 	)
-	if !assertEquals(a[0], tree) {
+	if !assertEquals(a.Nodes[0], tree) {
 		t.Fatalf("Hello world did not correctly parse")
 	}
 }
@@ -72,8 +72,8 @@ func TestPHPParserHWPHP(t *testing.T) {
 func TestInclude(t *testing.T) {
 	testStr := `<?php
   include "test.php"; ?>`
-	p := NewParser(testStr)
-	_, errs := p.Parse()
+	p := NewParser()
+	_, errs := p.Parse("test.php", testStr)
 	if len(errs) > 0 {
 		fmt.Println(errs)
 		t.Fatalf("Did not parse include correctly")
@@ -86,8 +86,8 @@ func TestIf(t *testing.T) {
       echo "hello world";
     else if (false)
       echo "no hello world";`
-	p := NewParser(testStr)
-	a, _ := p.Parse()
+	p := NewParser()
+	a, _ := p.Parse("test.php", testStr)
 	tree := &ast.IfStmt{
 		Branches: []ast.IfBranch{
 			{
@@ -100,7 +100,7 @@ func TestIf(t *testing.T) {
 			},
 		},
 	}
-	if !assertEquals(a[0], tree) {
+	if !assertEquals(a.Nodes[0], tree) {
 		t.Fatalf("If did not correctly parse")
 	}
 }
@@ -112,8 +112,8 @@ func TestIfBraces(t *testing.T) {
     } else if (false) {
       echo "no hello world";
     }`
-	p := NewParser(testStr)
-	a, _ := p.Parse()
+	p := NewParser()
+	a, _ := p.Parse("test.php", testStr)
 	tree := &ast.IfStmt{
 		Branches: []ast.IfBranch{
 			{
@@ -130,7 +130,7 @@ func TestIfBraces(t *testing.T) {
 			},
 		},
 	}
-	if !assertEquals(a[0], tree) {
+	if !assertEquals(a.Nodes[0], tree) {
 		t.Fatalf("If with braces did not correctly parse")
 	}
 }
@@ -139,9 +139,9 @@ func TestAssignment(t *testing.T) {
 	testStr := `<?php
     $test = "hello world";
     echo $test;`
-	p := NewParser(testStr)
-	a, _ := p.Parse()
-	if len(a) != 2 {
+	p := NewParser()
+	a, _ := p.Parse("test.php", testStr)
+	if len(a.Nodes) != 2 {
 		t.Fatalf("Assignment did not correctly parse")
 	}
 }
@@ -152,8 +152,8 @@ func TestFunction(t *testing.T) {
       echo $arg;
     }
     $var = TestFn("world", 0);`
-	p := NewParser(testStr)
-	a, _ := p.Parse()
+	p := NewParser()
+	a, _ := p.Parse("test.php", testStr)
 	tree := []ast.Node{
 		&ast.FunctionStmt{
 			FunctionDefinition: &ast.FunctionDefinition{
@@ -182,21 +182,22 @@ func TestFunction(t *testing.T) {
 			},
 		},
 	}
-	if len(a) != 2 {
+	if len(a.Nodes) != 2 {
 		t.Fatalf("Function did not correctly parse")
 	}
-	if !assertEquals(a[0], tree[0]) {
+	if !assertEquals(a.Nodes[0], tree[0]) {
 		t.Fatalf("Function did not correctly parse")
 	}
-	if !assertEquals(a[1], tree[1]) {
+	if !assertEquals(a.Nodes[1], tree[1]) {
 		t.Fatalf("Function assignment did not correctly parse")
 	}
 }
 
 func TestExpressionParsing(t *testing.T) {
-	p := NewParser(`<? if (1 + 2 > 3)
-    echo "good"; `)
-	a, _ := p.Parse()
+	p := NewParser()
+	testStr := `<? if (1 + 2 > 3)
+    echo "good"; `
+	a, _ := p.Parse("test.php", testStr)
 	ifStmt := ast.IfStmt{
 		Branches: []ast.IfBranch{
 			{
@@ -215,10 +216,10 @@ func TestExpressionParsing(t *testing.T) {
 			},
 		},
 	}
-	if len(a) != 1 {
+	if len(a.Nodes) != 1 {
 		t.Fatalf("If did not correctly parse")
 	}
-	parsedIf, ok := a[0].(*ast.IfStmt)
+	parsedIf, ok := a.Nodes[0].(*ast.IfStmt)
 	if !ok {
 		t.Fatalf("If did not correctly parse")
 	}
@@ -226,10 +227,11 @@ func TestExpressionParsing(t *testing.T) {
 		t.Fatalf("If did not correctly parse")
 	}
 
-	p = NewParser(`<? if (4 + 5 * 6)
+	p = NewParser()
+	testStr = `<? if (4 + 5 * 6)
     echo "bad";
-  `)
-	a, _ = p.Parse()
+  `
+	a, _ = p.Parse("test.php", testStr)
 	ifStmt = ast.IfStmt{
 		Branches: []ast.IfBranch{
 			{
@@ -248,10 +250,10 @@ func TestExpressionParsing(t *testing.T) {
 			},
 		},
 	}
-	if len(a) != 1 {
+	if len(a.Nodes) != 1 {
 		t.Fatalf("If did not correctly parse")
 	}
-	parsedIf, ok = a[0].(*ast.IfStmt)
+	parsedIf, ok = a.Nodes[0].(*ast.IfStmt)
 	if !ok {
 		t.Fatalf("If did not correctly parse")
 	}
@@ -259,10 +261,11 @@ func TestExpressionParsing(t *testing.T) {
 		t.Fatalf("If did not correctly parse")
 	}
 
-	p = NewParser(`<? if (1 > 2 * 3 + 4)
+	p = NewParser()
+	testStr = `<? if (1 > 2 * 3 + 4)
     echo "good";
-  `)
-	a, _ = p.Parse()
+  `
+	a, _ = p.Parse("test.php", testStr)
 	ifStmt = ast.IfStmt{
 		Branches: []ast.IfBranch{
 			{
@@ -286,10 +289,10 @@ func TestExpressionParsing(t *testing.T) {
 			},
 		},
 	}
-	if len(a) != 1 {
+	if len(a.Nodes) != 1 {
 		t.Fatalf("If did not correctly parse")
 	}
-	parsedIf, ok = a[0].(*ast.IfStmt)
+	parsedIf, ok = a.Nodes[0].(*ast.IfStmt)
 	if !ok {
 		t.Fatalf("If did not correctly parse")
 	}
@@ -297,12 +300,13 @@ func TestExpressionParsing(t *testing.T) {
 		t.Fatalf("If did not correctly parse")
 	}
 
-	p = NewParser(`<? if ($var = &$var2 > 2 * (3 + 4) - 2 & 3 && 4 ^ 8 or 14 xor 10 and 13 >> 18 << 10 ? true : false)
+	p = NewParser()
+	testStr = `<? if ($var = &$var2 > 2 * (3 + 4) - 2 & 3 && 4 ^ 8 or 14 xor 10 and 13 >> 18 << 10 ? true : false)
     echo "good";
-  `)
+  `
 	p.Debug = true
-	a, _ = p.Parse()
-	if len(a) != 1 {
+	a, _ = p.Parse("test.php", testStr)
+	if len(a.Nodes) != 1 {
 		t.Fatalf("Expression did not correctly parse")
 	}
 }
@@ -310,10 +314,10 @@ func TestExpressionParsing(t *testing.T) {
 func TestArray(t *testing.T) {
 	testStr := `<?
   $var = array("one", "two", "three");`
-	p := NewParser(testStr)
+	p := NewParser()
 	p.Debug = true
-	a, _ := p.Parse()
-	if len(a) == 0 {
+	a, _ := p.Parse("test.php", testStr)
+	if len(a.Nodes) == 0 {
 		t.Fatalf("Array did not correctly parse")
 	}
 	tree := ast.ExpressionStmt{
@@ -330,8 +334,8 @@ func TestArray(t *testing.T) {
 			},
 		},
 	}
-	if !reflect.DeepEqual(a[0], tree) {
-		fmt.Printf("Found:    %+v\n", a[0])
+	if !reflect.DeepEqual(a.Nodes[0], tree) {
+		fmt.Printf("Found:    %+v\n", a.Nodes[0])
 		fmt.Printf("Expected: %+v\n", tree)
 		t.Fatalf("Array did not correctly parse")
 	}
@@ -340,9 +344,9 @@ func TestArray(t *testing.T) {
 func TestArrayKeys(t *testing.T) {
 	testStr := `<?
   $var = array(1 => "one", 2 => "two", 3 => "three");`
-	p := NewParser(testStr)
-	a, _ := p.Parse()
-	if len(a) == 0 {
+	p := NewParser()
+	a, _ := p.Parse("test.php", testStr)
+	if len(a.Nodes) == 0 {
 		t.Fatalf("Array did not correctly parse")
 	}
 	tree := ast.ExpressionStmt{ast.AssignmentExpression{
@@ -357,7 +361,7 @@ func TestArrayKeys(t *testing.T) {
 			},
 		},
 	}}
-	if !assertEquals(a[0], tree) {
+	if !assertEquals(a.Nodes[0], tree) {
 		t.Fatalf("Array did not correctly parse")
 	}
 }
@@ -365,11 +369,11 @@ func TestArrayKeys(t *testing.T) {
 func TestMethodCall(t *testing.T) {
 	testStr := `<?
   $res = $var->go();`
-	p := NewParser(testStr)
+	p := NewParser()
 	p.Debug = true
 	p.MaxErrors = 0
-	a, _ := p.Parse()
-	if len(a) == 0 {
+	a, _ := p.Parse("test.php", testStr)
+	if len(a.Nodes) == 0 {
 		t.Fatalf("Method call did not correctly parse")
 	}
 	tree := ast.ExpressionStmt{ast.AssignmentExpression{
@@ -383,7 +387,7 @@ func TestMethodCall(t *testing.T) {
 			},
 		},
 	}}
-	if !assertEquals(a[0], tree) {
+	if !assertEquals(a.Nodes[0], tree) {
 		t.Fatalf("Method call did not correctly parse")
 	}
 }
@@ -392,11 +396,11 @@ func TestProperty(t *testing.T) {
 	testStr := `<?
   $res = $var->go;
   $var->go = $res;`
-	p := NewParser(testStr)
+	p := NewParser()
 	p.Debug = true
 	p.MaxErrors = 0
-	a, _ := p.Parse()
-	if len(a) != 2 {
+	a, _ := p.Parse("test.php", testStr)
+	if len(a.Nodes) != 2 {
 		t.Fatalf("Property did not correctly parse")
 	}
 	tree := ast.ExpressionStmt{ast.AssignmentExpression{
@@ -407,7 +411,7 @@ func TestProperty(t *testing.T) {
 			Name:     &ast.Identifier{Value: "go"},
 		},
 	}}
-	if !assertEquals(a[0], tree) {
+	if !assertEquals(a.Nodes[0], tree) {
 		t.Fatalf("Property did not correctly parse")
 	}
 
@@ -419,7 +423,7 @@ func TestProperty(t *testing.T) {
 		Operator: "=",
 		Value:    ast.NewVariable("res"),
 	}}
-	if !assertEquals(a[1], tree) {
+	if !assertEquals(a.Nodes[1], tree) {
 		t.Fatalf("Property did not correctly parse")
 	}
 }
@@ -429,9 +433,9 @@ func TestDoLoop(t *testing.T) {
   do {
     echo $var;
   } while ($otherVar);`
-	p := NewParser(testStr)
-	a, _ := p.Parse()
-	if len(a) == 0 {
+	p := NewParser()
+	a, _ := p.Parse("test.php", testStr)
+	if len(a.Nodes) == 0 {
 		t.Fatalf("Do loop did not correctly parse")
 	}
 	tree := &ast.DoWhileStmt{
@@ -442,7 +446,7 @@ func TestDoLoop(t *testing.T) {
 			},
 		},
 	}
-	if !assertEquals(a[0], tree) {
+	if !assertEquals(a.Nodes[0], tree) {
 		t.Fatalf("TestLoop did not correctly parse")
 	}
 }
@@ -452,9 +456,9 @@ func TestWhileLoop(t *testing.T) {
   while ($otherVar) {
     echo $var;
   }`
-	p := NewParser(testStr)
-	a, _ := p.Parse()
-	if len(a) == 0 {
+	p := NewParser()
+	a, _ := p.Parse("test.php", testStr)
+	if len(a.Nodes) == 0 {
 		t.Fatalf("While loop did not correctly parse")
 	}
 	tree := &ast.WhileStmt{
@@ -465,7 +469,7 @@ func TestWhileLoop(t *testing.T) {
 			},
 		},
 	}
-	if !assertEquals(a[0], tree) {
+	if !assertEquals(a.Nodes[0], tree) {
 		t.Fatalf("TestLoop did not correctly parse")
 	}
 }
@@ -475,9 +479,9 @@ func TestForeachLoop(t *testing.T) {
   foreach ($arr as $key => $val) {
     echo $key . $val;
   } ?>`
-	p := NewParser(testStr)
-	a, _ := p.Parse()
-	if len(a) == 0 {
+	p := NewParser()
+	a, _ := p.Parse("test.php", testStr)
+	if len(a.Nodes) == 0 {
 		t.Fatalf("While loop did not correctly parse")
 	}
 	tree := &ast.ForeachStmt{
@@ -493,7 +497,7 @@ func TestForeachLoop(t *testing.T) {
 			})},
 		},
 	}
-	if !assertEquals(a[0], tree) {
+	if !assertEquals(a.Nodes[0], tree) {
 		t.Fatalf("Foreach did not correctly parse")
 	}
 }
@@ -503,11 +507,11 @@ func TestForLoop(t *testing.T) {
   for ($i = 0; $i < 10; $i++) {
     echo $i;
   }`
-	p := NewParser(testStr)
+	p := NewParser()
 	p.Debug = true
 	p.MaxErrors = 0
-	a, _ := p.Parse()
-	if len(a) == 0 {
+	a, _ := p.Parse("test.php", testStr)
+	if len(a.Nodes) == 0 {
 		t.Fatalf("For loop did not correctly parse")
 	}
 	tree := &ast.ForStmt{
@@ -533,7 +537,7 @@ func TestForLoop(t *testing.T) {
 			},
 		},
 	}
-	if !assertEquals(a[0], tree) {
+	if !assertEquals(a.Nodes[0], tree) {
 		t.Fatalf("For did not correctly parse")
 	}
 }
@@ -543,11 +547,11 @@ func TestWhileLoopWithAssignment(t *testing.T) {
   while ($var = mysql_assoc()) {
     echo $var;
   }`
-	p := NewParser(testStr)
+	p := NewParser()
 	p.Debug = true
 	p.MaxErrors = 0
-	a, _ := p.Parse()
-	if len(a) == 0 {
+	a, _ := p.Parse("test.php", testStr)
+	if len(a.Nodes) == 0 {
 		t.Fatalf("While loop did not correctly parse")
 	}
 	tree := &ast.WhileStmt{
@@ -565,7 +569,7 @@ func TestWhileLoopWithAssignment(t *testing.T) {
 			},
 		},
 	}
-	if !assertEquals(a[0], tree) {
+	if !assertEquals(a.Nodes[0], tree) {
 		t.Fatalf("While loop with assignment did not correctly parse")
 	}
 }
@@ -575,11 +579,11 @@ func TestArrayLookup(t *testing.T) {
   echo $arr['one'][$two];
   $var->arr[] = 2;
   echo $arr[2 + 1];`
-	p := NewParser(testStr)
+	p := NewParser()
 	p.Debug = true
 	p.MaxErrors = 0
-	a, _ := p.Parse()
-	if len(a) == 0 {
+	a, _ := p.Parse("test.php", testStr)
+	if len(a.Nodes) == 0 {
 		t.Fatalf("Array lookup did not correctly parse")
 	}
 	tree := []ast.Node{
@@ -605,10 +609,10 @@ func TestArrayLookup(t *testing.T) {
 			},
 		},
 	}
-	if !assertEquals(a[0], tree[0]) {
+	if !assertEquals(a.Nodes[0], tree[0]) {
 		t.Fatalf("Array lookup did not correctly parse")
 	}
-	if !assertEquals(a[1], tree[1]) {
+	if !assertEquals(a.Nodes[1], tree[1]) {
 		t.Fatalf("Array append expression did not correctly parse")
 	}
 }
@@ -624,9 +628,9 @@ func TestSwitch(t *testing.T) {
   default:
     echo "def";
   }`
-	p := NewParser(testStr)
-	a, _ := p.Parse()
-	if len(a) == 0 {
+	p := NewParser()
+	a, _ := p.Parse("test.php", testStr)
+	if len(a.Nodes) == 0 {
 		t.Fatalf("Array lookup did not correctly parse")
 	}
 	tree := ast.SwitchStmt{
@@ -655,7 +659,7 @@ func TestSwitch(t *testing.T) {
 			},
 		},
 	}
-	if !assertEquals(a[0], tree) {
+	if !assertEquals(a.Nodes[0], tree) {
 		t.Fatalf("Switch did not correctly parse")
 	}
 }
@@ -666,9 +670,9 @@ func TestLiterals(t *testing.T) {
   $var = 2;
   $var = true;
   $var = null;`
-	p := NewParser(testStr)
-	a, _ := p.Parse()
-	if len(a) != 4 {
+	p := NewParser()
+	a, _ := p.Parse("test.php", testStr)
+	if len(a.Nodes) != 4 {
 		t.Fatalf("Literals did not correctly parse")
 	}
 	tree := []ast.Node{
@@ -693,7 +697,7 @@ func TestLiterals(t *testing.T) {
 			Operator: "=",
 		}},
 	}
-	if !reflect.DeepEqual(a, tree) {
+	if !reflect.DeepEqual(a.Nodes, tree) {
 		fmt.Printf("Found:    %+v\n", a)
 		fmt.Printf("Expected: %+v\n", tree)
 		t.Fatalf("Literals did not correctly parse")
@@ -710,9 +714,9 @@ func TestComments(t *testing.T) {
 	tree := []ast.Node{
 		ast.Echo(ast.Literal{Type: ast.String, Value: "html"}),
 	}
-	p := NewParser(testStr)
-	a, _ := p.Parse()
-	if !reflect.DeepEqual(a, tree) {
+	p := NewParser()
+	a, _ := p.Parse("test.php", testStr)
+	if !reflect.DeepEqual(a.Nodes, tree) {
 		fmt.Printf("Found:    %+v\n", a)
 		fmt.Printf("Expected: %+v\n", tree)
 		t.Fatalf("Literals did not correctly parse")
@@ -724,8 +728,8 @@ func TestScopeResolutionOperator(t *testing.T) {
   MyClass::myfunc($var);
   echo MyClass::myconst;
   echo $var::myfunc();`
-	p := NewParser(testStr)
-	a, _ := p.Parse()
+	p := NewParser()
+	a, _ := p.Parse("test.php", testStr)
 	tree := []ast.Node{
 		ast.ExpressionStmt{
 			&ast.ClassExpression{
@@ -752,13 +756,13 @@ func TestScopeResolutionOperator(t *testing.T) {
 			},
 		}),
 	}
-	if !assertEquals(a[0], tree[0]) {
+	if !assertEquals(a.Nodes[0], tree[0]) {
 		t.Fatalf("Scope resolution operator function call did not correctly parse")
 	}
-	if !assertEquals(a[1], tree[1]) {
+	if !assertEquals(a.Nodes[1], tree[1]) {
 		t.Fatalf("Scope resolution operator expression did not correctly parse")
 	}
-	if !assertEquals(a[2], tree[2]) {
+	if !assertEquals(a.Nodes[2], tree[2]) {
 		t.Fatalf("Scope resolution operator function call on identifier did not correctly parse")
 	}
 }
@@ -766,8 +770,8 @@ func TestScopeResolutionOperator(t *testing.T) {
 func TestCastOperator(t *testing.T) {
 	testStr := `<?
   $var = (double) 1.0; ?>`
-	p := NewParser(testStr)
-	a, _ := p.Parse()
+	p := NewParser()
+	a, _ := p.Parse("test.php", testStr)
 	tree := []ast.Node{
 		ast.ExpressionStmt{ast.AssignmentExpression{
 			Assignee: ast.NewVariable("var"),
@@ -779,7 +783,7 @@ func TestCastOperator(t *testing.T) {
 			Operator: "=",
 		}},
 	}
-	if !assertEquals(a[0], tree[0]) {
+	if !assertEquals(a.Nodes[0], tree[0]) {
 		t.Fatalf("Cast operator parsing failed")
 	}
 }
@@ -790,8 +794,8 @@ func TestInterface(t *testing.T) {
     public function TheirFunc();
     private function MyFunc();
   }`
-	p := NewParser(testStr)
-	a, _ := p.Parse()
+	p := NewParser()
+	a, _ := p.Parse("test.php", testStr)
 	tree := &ast.Interface{
 		Name:     "MyInterface",
 		Inherits: []string{"YourInterface", "HerInterface"},
@@ -816,7 +820,7 @@ func TestInterface(t *testing.T) {
 			},
 		},
 	}
-	if !assertEquals(a[0], tree) {
+	if !assertEquals(a.Nodes[0], tree) {
 		t.Fatalf("Interface did not parse correctly")
 	}
 }
@@ -824,15 +828,15 @@ func TestInterface(t *testing.T) {
 func TestGlobal(t *testing.T) {
 	testStr := `<?
   global $var, $otherVar;`
-	p := NewParser(testStr)
-	a, _ := p.Parse()
+	p := NewParser()
+	a, _ := p.Parse("test.php", testStr)
 	tree := &ast.GlobalDeclaration{
 		Identifiers: []*ast.Variable{
 			ast.NewVariable("var"),
 			ast.NewVariable("otherVar"),
 		},
 	}
-	if !assertEquals(a[0], tree) {
+	if !assertEquals(a.Nodes[0], tree) {
 		t.Fatalf("Global did not parse correctly")
 	}
 }
