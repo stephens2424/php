@@ -14,17 +14,32 @@ type Node interface {
 	Children() []Node
 }
 
-type Declaration interface {
+// A statement is an executable piece of code. It may be as simple as
+// a function call or a variable assignment. It also includes things like
+// "if".
+type Statement interface {
 	Node
 	Declares() DeclarationType
 }
 
+// DeclarationType identifies the type of declarative statements.
 type DeclarationType int
 
 const (
-	VariableDeclaration DeclarationType = iota
+	// NoDeclaration identifies a statement which declares nothing in the local namespace.
+	NoDeclaration DeclarationType = iota
+
+	// ConstantDeclaration identifies a statement which declares a constant in the local namespace.
+	ConstantDeclaration
+
+	// FunctionDeclaration identfies a statement which declares a function in the local namespace.
 	FunctionDeclaration
+
+	// ClassDeclaration identfies a statement which declares a class in the local namespace.
 	ClassDeclaration
+
+	// InterfaceDeclaration identfies a statement which declares a interface in the local namespace.
+	InterfaceDeclaration
 )
 
 type Format struct{}
@@ -35,6 +50,8 @@ type Identifier struct {
 	Parent Node
 	Value  string
 }
+
+func (i Identifier) Declares() DeclarationType { return NoDeclaration }
 
 func (i Identifier) EvaluatesTo() Type {
 	return String
@@ -49,11 +66,17 @@ func (i Identifier) Children() []Node {
 }
 
 type Variable struct {
-
 	// Name is the identifier for the variable, which may be
 	// a dynamic expression.
 	Name Expression
 	Type Type
+}
+
+// NewVariable intializes a variable node with its name being a simple
+// identifier and its type set to AnyType. The name argument should not
+// include the $ operator.
+func NewVariable(name string) *Variable {
+	return &Variable{Name: &Identifier{Value: name}, Type: AnyType}
 }
 
 func (v Variable) String() string {
@@ -63,6 +86,17 @@ func (v Variable) String() string {
 func (v Variable) Children() []Node {
 	return []Node{v.Name}
 }
+
+func (v Variable) AssignableType() Type {
+	return v.Type
+}
+
+// EvaluatesTo returns the known type of the variable.
+func (v Variable) EvaluatesTo() Type {
+	return v.Type
+}
+
+func (v Variable) Declares() DeclarationType { return NoDeclaration }
 
 type GlobalDeclaration struct {
 	Identifiers []*Variable
@@ -79,41 +113,21 @@ func (g GlobalDeclaration) Children() []Node {
 func (g GlobalDeclaration) String() string {
 	return "global"
 }
-func (i Variable) AssignableType() Type {
-	return i.Type
-}
 
-// EvaluatesTo returns the known type of the variable.
-func (i Variable) EvaluatesTo() Type {
-	return i.Type
-}
-
-// NewVariable intializes a variable node with its name being a simple
-// identifier and its type set to AnyType. The name argument should not
-// include the $ operator.
-func NewVariable(name string) *Variable {
-	return &Variable{Name: &Identifier{Value: name}, Type: AnyType}
-}
-
-// A statement is an executable piece of code. It may be as simple as
-// a function call or a variable assignment. It also includes things like
-// "if".
-type Statement interface {
-	Node
-}
+func (g GlobalDeclaration) Declares() DeclarationType { return NoDeclaration }
 
 // EmptyStatement represents a statement that does nothing.
-type EmptyStatement struct {
-}
+type EmptyStatement struct{}
 
-func (e EmptyStatement) String() string        { return "" }
-func (e EmptyStatement) Children() []Node      { return nil }
-func (e EmptyStatement) Print(f Format) string { return ";" }
+func (e EmptyStatement) String() string            { return "" }
+func (e EmptyStatement) Children() []Node          { return nil }
+func (e EmptyStatement) Print(f Format) string     { return ";" }
+func (e EmptyStatement) Declares() DeclarationType { return NoDeclaration }
 
 // An Expression is a snippet of code that evaluates to a single value when run
 // and does not represent a program instruction.
 type Expression interface {
-	Node
+	Statement
 	EvaluatesTo() Type
 }
 
@@ -141,6 +155,8 @@ func (b BinaryExpression) EvaluatesTo() Type {
 	return b.Type
 }
 
+func (b BinaryExpression) Declares() DeclarationType { return NoDeclaration }
+
 type TernaryExpression struct {
 	Condition, True, False Expression
 	Type                   Type
@@ -157,6 +173,8 @@ func (t TernaryExpression) String() string {
 func (t TernaryExpression) EvaluatesTo() Type {
 	return t.Type
 }
+
+func (t TernaryExpression) Declares() DeclarationType { return NoDeclaration }
 
 // UnaryExpression is an expression that applies an operator to only one operand. The
 // operator may precede or follow the operand.
@@ -181,6 +199,8 @@ func (u UnaryExpression) EvaluatesTo() Type {
 	return Unknown
 }
 
+func (u UnaryExpression) Declares() DeclarationType { return NoDeclaration }
+
 type ExpressionStmt struct {
 	Expression
 }
@@ -198,6 +218,8 @@ func (e ExpressionStmt) Children() []Node {
 	}
 	return nil
 }
+
+func (e ExpressionStmt) Declares() DeclarationType { return NoDeclaration }
 
 // Echo returns a new echo statement.
 func Echo(exprs ...Expression) EchoStmt {
@@ -222,6 +244,8 @@ func (e EchoStmt) Children() []Node {
 	return nodes
 }
 
+func (e EchoStmt) Declares() DeclarationType { return NoDeclaration }
+
 // ReturnStmt represents a function return.
 type ReturnStmt struct {
 	Expression
@@ -237,6 +261,8 @@ func (r ReturnStmt) Children() []Node {
 	}
 	return []Node{r.Expression}
 }
+
+func (r ReturnStmt) Declares() DeclarationType { return NoDeclaration }
 
 type BreakStmt struct {
 	Expression
@@ -271,6 +297,9 @@ func (c ContinueStmt) Children() []Node {
 type ThrowStmt struct {
 	Expression
 }
+
+func (t ThrowStmt) Declares() DeclarationType { return NoDeclaration }
+
 type IncludeStmt struct {
 	Include
 }
@@ -295,6 +324,8 @@ func (i Include) EvaluatesTo() Type {
 	return AnyType
 }
 
+func (i Include) Declares() DeclarationType { return NoDeclaration }
+
 type ExitStmt struct {
 	Expression Expression
 }
@@ -306,6 +337,8 @@ func (e ExitStmt) Children() []Node {
 func (e ExitStmt) String() string {
 	return "exit"
 }
+
+func (e ExitStmt) Declares() DeclarationType { return NoDeclaration }
 
 type NewExpression struct {
 	Class     Expression
@@ -329,6 +362,8 @@ func (c NewExpression) Children() []Node {
 	return n
 }
 
+func (n NewExpression) Declares() DeclarationType { return NoDeclaration }
+
 type AssignmentExpression struct {
 	Assignee Assignable
 	Value    Expression
@@ -350,6 +385,8 @@ func (a AssignmentExpression) EvaluatesTo() Type {
 	return a.Value.EvaluatesTo()
 }
 
+func (a AssignmentExpression) Declares() DeclarationType { return NoDeclaration }
+
 type Assignable interface {
 	Node
 	AssignableType() Type
@@ -358,6 +395,7 @@ type Assignable interface {
 type FunctionCallStmt struct {
 	FunctionCallExpression
 }
+
 type FunctionCallExpression struct {
 	FunctionName Expression
 	Arguments    []Expression
@@ -379,6 +417,8 @@ func (f FunctionCallExpression) Children() []Node {
 	return n
 }
 
+func (f FunctionCallExpression) Declares() DeclarationType { return NoDeclaration }
+
 type Block struct {
 	Statements []Statement
 	Scope      Scope
@@ -396,10 +436,14 @@ func (b Block) Children() []Node {
 	return n
 }
 
+func (_ Block) Declares() DeclarationType { return NoDeclaration }
+
 type FunctionStmt struct {
 	*FunctionDefinition
 	Body *Block
 }
+
+func (f FunctionStmt) Declares() DeclarationType { return FunctionDeclaration }
 
 func (f FunctionStmt) String() string {
 	return fmt.Sprintf("Func: %s", f.Name)
@@ -440,6 +484,8 @@ func (a AnonymousFunction) Children() []Node {
 func (a AnonymousFunction) String() string {
 	return "anonymous function"
 }
+
+func (a AnonymousFunction) Declares() DeclarationType { return FunctionDeclaration }
 
 type FunctionDefinition struct {
 	Name      string
@@ -503,6 +549,8 @@ func (c Class) Children() []Node {
 	return n
 }
 
+func (c Class) Declares() DeclarationType { return ClassDeclaration }
+
 type Constant struct {
 	*Variable
 	Value interface{}
@@ -511,6 +559,8 @@ type Constant struct {
 type ConstantExpression struct {
 	*Variable
 }
+
+func (c Constant) Declares() DeclarationType { return ConstantDeclaration }
 
 type Interface struct {
 	Name      string
@@ -530,6 +580,8 @@ func (i Interface) Children() []Node {
 	}
 	return n
 }
+
+func (i Interface) Declares() DeclarationType { return InterfaceDeclaration }
 
 type Property struct {
 	Name           string
@@ -574,6 +626,8 @@ func (p PropertyExpression) Children() []Node {
 	}
 }
 
+func (p PropertyExpression) Declares() DeclarationType { return NoDeclaration }
+
 type ClassExpression struct {
 	Receiver   Expression
 	Expression Expression
@@ -602,6 +656,8 @@ func (c ClassExpression) Children() []Node {
 func (c ClassExpression) AssignableType() Type {
 	return c.Type
 }
+
+func (c ClassExpression) Declares() DeclarationType { return NoDeclaration }
 
 type Method struct {
 	*FunctionStmt
@@ -685,6 +741,8 @@ func (i IfStmt) Children() []Node {
 	return n
 }
 
+func (i IfStmt) Declares() DeclarationType { return NoDeclaration }
+
 type SwitchStmt struct {
 	Expression  Expression
 	Cases       []*SwitchCase
@@ -707,6 +765,8 @@ func (s SwitchStmt) Children() []Node {
 	}
 	return n
 }
+
+func (_ SwitchStmt) Declares() DeclarationType { return NoDeclaration }
 
 type SwitchCase struct {
 	Expression Expression
@@ -749,6 +809,8 @@ func (f ForStmt) Children() []Node {
 	return nodes
 }
 
+func (_ ForStmt) Declares() DeclarationType { return NoDeclaration }
+
 type WhileStmt struct {
 	Termination Expression
 	LoopBlock   Statement
@@ -765,6 +827,8 @@ func (w WhileStmt) Children() []Node {
 	}
 }
 
+func (_ WhileStmt) Declares() DeclarationType { return NoDeclaration }
+
 type DoWhileStmt struct {
 	Termination Expression
 	LoopBlock   Statement
@@ -780,6 +844,8 @@ func (d DoWhileStmt) Children() []Node {
 		d.Termination,
 	}
 }
+
+func (_ DoWhileStmt) Declares() DeclarationType { return NoDeclaration }
 
 type TryStmt struct {
 	TryBlock     *Block
@@ -801,6 +867,8 @@ func (t TryStmt) Children() []Node {
 	}
 	return n
 }
+
+func (_ TryStmt) Declares() DeclarationType { return NoDeclaration }
 
 type CatchStmt struct {
 	CatchBlock *Block
@@ -833,6 +901,8 @@ func (l Literal) Children() []Node {
 	return nil
 }
 
+func (_ Literal) Declares() DeclarationType { return NoDeclaration }
+
 type ForeachStmt struct {
 	Source    Expression
 	Key       *Variable
@@ -853,6 +923,8 @@ func (f ForeachStmt) Children() []Node {
 	return n
 }
 
+func (_ ForeachStmt) Declares() DeclarationType { return NoDeclaration }
+
 type ArrayExpression struct {
 	ArrayType
 	Pairs []ArrayPair
@@ -870,6 +942,8 @@ func (a ArrayExpression) Children() []Node {
 	return n
 }
 
+func (_ ArrayExpression) Declares() DeclarationType { return NoDeclaration }
+
 type ArrayPair struct {
 	Key   Expression
 	Value Expression
@@ -881,6 +955,7 @@ func (p ArrayPair) Children() []Node {
 	}
 	return []Node{p.Value}
 }
+
 func (p ArrayPair) String() string {
 	return fmt.Sprintf("%s => %s", p.Key, p.Value)
 }
@@ -897,6 +972,8 @@ type ArrayLookupExpression struct {
 	Array Expression
 	Index Expression
 }
+
+func (_ ArrayLookupExpression) Declares() DeclarationType { return NoDeclaration }
 
 func (a ArrayLookupExpression) String() string {
 	return fmt.Sprintf("%s[", a.Array)
@@ -934,6 +1011,8 @@ func (a ArrayAppendExpression) String() string {
 	return a.Array.String() + "[]"
 }
 
+func (_ ArrayAppendExpression) Declares() DeclarationType { return NoDeclaration }
+
 type ShellCommand struct {
 	Command string
 }
@@ -948,6 +1027,8 @@ func (s ShellCommand) EvaluatesTo() Type {
 func (s ShellCommand) Children() []Node {
 	return nil
 }
+
+func (_ ShellCommand) Declares() DeclarationType { return NoDeclaration }
 
 type ListStatement struct {
 	Assignees []Assignable
@@ -967,6 +1048,8 @@ func (l ListStatement) Children() []Node {
 	return []Node{l.Value}
 }
 
+func (_ ListStatement) Declares() DeclarationType { return NoDeclaration }
+
 type StaticVariableDeclaration struct {
 	Declarations []Expression
 }
@@ -974,6 +1057,7 @@ type StaticVariableDeclaration struct {
 func (s StaticVariableDeclaration) Children() []Node {
 	return nil
 }
+
 func (s StaticVariableDeclaration) String() string {
 	buf := bytes.NewBufferString("static ")
 	for i, d := range s.Declarations {
@@ -984,6 +1068,8 @@ func (s StaticVariableDeclaration) String() string {
 	}
 	return buf.String()
 }
+
+func (s StaticVariableDeclaration) Declares() DeclarationType { return NoDeclaration }
 
 type DeclareBlock struct {
 	Statements   *Block
@@ -998,6 +1084,8 @@ func (d DeclareBlock) String() string {
 	return "declare{}"
 }
 
+func (p DeclareBlock) Declares() DeclarationType { return NoDeclaration }
+
 type File struct {
 	Name      string
 	Namespace Namespace
@@ -1010,6 +1098,8 @@ type FileSet struct {
 }
 
 type Namespace struct {
-	Name  string
-	Decls []Declaration
+	Name                 string
+	ClassesAndInterfaces map[string]Statement
+	Constants            map[string]Constant
+	Functions            map[string]FunctionStmt
 }
