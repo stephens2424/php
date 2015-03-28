@@ -44,13 +44,14 @@ func main() {
 			continue
 		}
 		walker := printing.NewWalker()
-		Parser := php.NewParser(string(fBytes))
+		Parser := php.NewParser()
 		if *debugMode {
 			Parser.Debug = true
 			Parser.MaxErrors = 0
 			Parser.PrintTokens = true
 		}
-		nodes, errs := Parser.Parse()
+		file, errs := Parser.Parse("test.php", string(fBytes))
+		nodes := file.Nodes
 		if *ast && len(nodes) != 0 && nodes[0] != nil {
 			for _, node := range nodes {
 				walker.Walk(node)

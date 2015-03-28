@@ -62,9 +62,9 @@ func (g *gatherer) walkFile(path string, info os.FileInfo, err error) error {
 	}
 	defer f.Close()
 	src, err := ioutil.ReadAll(f)
-	p := php.NewParser(string(src))
-	nodes, _ := p.Parse()
+	p := php.NewParser()
+	file, _ := p.Parse("test.php", string(src))
 
-	g.nodes = append(g.nodes, nodes...)
+	g.nodes = append(g.nodes, file.Nodes...)
 	return nil
 }
