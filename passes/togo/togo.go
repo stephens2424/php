@@ -9,9 +9,9 @@ import (
 	phpast "github.com/stephens2424/php/ast"
 )
 
-func ToGo(php phpast.Node) goast.Node {
+func ToGoStmt(php phpast.Statement) goast.Stmt {
 	if v := reflect.ValueOf(php); v.Kind() == reflect.Ptr {
-		php = v.Elem().Interface().(phpast.Node)
+		php = v.Elem().Interface().(phpast.Statement)
 	}
 
 	switch n := php.(type) {
@@ -19,18 +19,10 @@ func ToGo(php phpast.Node) goast.Node {
 	case phpast.ArrayAppendExpression:
 	case phpast.ArrayExpression:
 	case phpast.ArrayLookupExpression:
-	case phpast.ArrayPair:
 	case phpast.Assignable:
 	case phpast.AssignmentExpression:
 	case phpast.Block:
 	case phpast.BreakStmt:
-	case phpast.BinaryExpression:
-		return &goast.BinaryExpr{
-			X:  ToGoExpr(n.Antecedent),
-			Y:  ToGoExpr(n.Subsequent),
-			Op: ToGoOperator(n.Operator),
-		}
-	case phpast.CatchStmt:
 	case phpast.Class:
 	case phpast.ClassExpression:
 	case phpast.Constant:
@@ -65,10 +57,8 @@ func ToGo(php phpast.Node) goast.Node {
 		r.Value = ToGoExpr(n.Value)
 		r.X = ToGoExpr(n.Source)
 		r.Body = ToGoBlock(n.LoopBlock)
-	case phpast.FunctionArgument:
 	case phpast.FunctionCallExpression:
 	case phpast.FunctionCallStmt:
-	case phpast.FunctionDefinition:
 	case phpast.FunctionStmt:
 	case phpast.GlobalDeclaration:
 	case phpast.Identifier:
@@ -78,24 +68,15 @@ func ToGo(php phpast.Node) goast.Node {
 	case phpast.IncludeStmt:
 	case phpast.Interface:
 	case phpast.ListStatement:
-	case phpast.Literal:
-		switch n.Type {
-		case phpast.String:
-			return &goast.BasicLit{Kind: token.STRING, Value: n.Value}
-		default:
-			return &goast.BasicLit{Value: n.Value}
-		}
 	case phpast.Method:
 	case phpast.MethodCallExpression:
 	case phpast.NewExpression:
 	case phpast.Node:
-	case phpast.Property:
 	case phpast.PropertyExpression:
 	case phpast.ReturnStmt:
 	case phpast.ShellCommand:
 	case phpast.Statement:
 	case phpast.StaticVariableDeclaration:
-	case phpast.SwitchCase:
 	case phpast.SwitchStmt:
 	case phpast.ThrowStmt:
 	case phpast.TryStmt:
@@ -107,10 +88,14 @@ func ToGo(php phpast.Node) goast.Node {
 		return f
 	}
 
-	return PHPEval(php)
+	return PHPEvalStmt(php)
 }
 
-func PHPEval(p phpast.Node) goast.Node {
+func PHPEvalStmt(p phpast.Node) goast.Stmt {
+	return &goast.ExprStmt{PHPEval(p)}
+}
+
+func PHPEval(p phpast.Node) goast.Expr {
 	return &goast.CallExpr{
 		Fun: goast.NewIdent("PHPEval"),
 		Args: []goast.Expr{
@@ -120,10 +105,41 @@ func PHPEval(p phpast.Node) goast.Node {
 }
 
 func ToGoExpr(p phpast.Expression) goast.Expr {
-	if e := ToGo(p); e != nil {
-		return e.(goast.Expr)
+
+	switch n := p.(type) {
+	case phpast.AnonymousFunction:
+	case phpast.ArrayAppendExpression:
+	case phpast.ArrayExpression:
+	case phpast.ArrayLookupExpression:
+	case phpast.AssignmentExpression:
+	case phpast.BinaryExpression:
+		return &goast.BinaryExpr{
+			X:  ToGoExpr(n.Antecedent),
+			Y:  ToGoExpr(n.Subsequent),
+			Op: ToGoOperator(n.Operator),
+		}
+	case phpast.ClassExpression:
+	case phpast.Constant:
+	case phpast.ConstantExpression:
+	case phpast.FunctionCallExpression:
+	case phpast.Identifier:
+	case phpast.Include:
+	case phpast.IncludeStmt:
+	case phpast.Literal:
+		switch n.Type {
+		case phpast.String:
+			return &goast.BasicLit{Kind: token.STRING, Value: n.Value}
+		default:
+			return &goast.BasicLit{Value: n.Value}
+		}
+	case phpast.MethodCallExpression:
+	case phpast.NewExpression:
+	case phpast.PropertyExpression:
+	case phpast.ShellCommand:
+	case phpast.Variable:
 	}
-	return nil
+
+	return PHPEval(p)
 }
 
 func ToGoBlock(p phpast.Statement) *goast.BlockStmt {
@@ -138,10 +154,6 @@ func ToGoBlock(p phpast.Statement) *goast.BlockStmt {
 		g.List = []goast.Stmt{ToGoStmt(p)}
 	}
 	return g
-}
-
-func ToGoStmt(p phpast.Statement) goast.Stmt {
-	return ToGo(p).(goast.Stmt)
 }
 
 func TranslateIf(p phpast.IfStmt) *goast.IfStmt {

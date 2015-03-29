@@ -13,10 +13,11 @@ import (
 	"testing"
 
 	"github.com/stephens2424/php"
+	"github.com/stephens2424/php/ast"
 )
 
 func TestTranslation(t *testing.T) {
-	testsDir := path.Join(build.Default.GOPATH, "src", "github.com/stephens2424/php/passes/togo/tests")
+	testsDir := path.Join(build.Default.GOPATH, "src", "github.com/stephens2424/php/passes/togo/testdata")
 	phpFiles, err := filepath.Glob(testsDir + "/*.php")
 	if err != nil {
 		t.Fatal(err)
@@ -51,7 +52,7 @@ func parseFile(t *testing.T, phpFilename, phpStr string) {
 
 	nodes := []goast.Node{}
 	for _, phpNode := range file.Nodes {
-		nodes = append(nodes, ToGo(phpNode))
+		nodes = append(nodes, ToGoStmt(phpNode.(ast.Statement)))
 	}
 
 	err := format.Node(buf, token.NewFileSet(), File(nodes...))
