@@ -2,6 +2,7 @@ package togo
 
 import (
 	"bytes"
+	"flag"
 	goast "go/ast"
 	"go/build"
 	"go/format"
@@ -15,6 +16,12 @@ import (
 	"github.com/stephens2424/php"
 	"github.com/stephens2424/php/ast"
 )
+
+var failTranspilation bool
+
+func init() {
+	flag.BoolVar(&failTranspilation, "fail-transpilation", false, "require all transpilation tests to pass")
+}
 
 func TestTranslation(t *testing.T) {
 	testsDir := path.Join(build.Default.GOPATH, "src", "github.com/stephens2424/php/passes/togo/testdata")
@@ -62,8 +69,15 @@ func parseFile(t *testing.T, phpFilename, phpStr string) {
 	}
 
 	goStr, err := readFile(phpFilename[:len(phpFilename)-3] + "go")
+	if err != nil {
+		t.Error(err)
+	}
 	if err == nil && buf.String() != goStr {
-		t.Errorf("mistranlation:\n\n===php===\n\n%s\n\n===expected===\n\n%s\n\n===got===\n\n%s\n\n", phpStr, goStr, buf.String())
+		failFunc := t.Skipf
+		if failTranspilation {
+			failFunc = t.Errorf
+		}
+		failFunc("mistranlation %s:\n\n===php===\n\n%s\n\n===expected===\n\n%s\n\n===got===\n\n%s\n\n", phpFilename, phpStr, goStr, buf.String())
 	}
 }
 

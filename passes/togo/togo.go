@@ -19,8 +19,12 @@ func ToGoStmt(php phpast.Statement) goast.Stmt {
 	case phpast.ArrayAppendExpression:
 	case phpast.ArrayExpression:
 	case phpast.ArrayLookupExpression:
-	case phpast.Assignable:
 	case phpast.AssignmentExpression:
+		return &goast.AssignStmt{
+			Lhs: []goast.Expr{ToGoExpr(n.Assignee)},
+			Rhs: []goast.Expr{ToGoExpr(n.Value)},
+			Tok: ToGoOperator(n.Operator),
+		}
 	case phpast.Block:
 	case phpast.BreakStmt:
 	case phpast.Class:
@@ -33,6 +37,11 @@ func ToGoStmt(php phpast.Statement) goast.Stmt {
 	case phpast.EmptyStatement:
 	case phpast.ExitStmt:
 	case phpast.ExpressionStmt:
+		switch expr := n.Expression.(type) {
+		case phpast.AssignmentExpression:
+			return ToGoStmt(expr)
+		}
+		return &goast.ExprStmt{ToGoExpr(n.Expression)}
 	case phpast.ForStmt:
 		f := &goast.ForStmt{}
 		if len(n.Initialization) == 1 {
@@ -105,17 +114,24 @@ func PHPEval(p phpast.Node) goast.Expr {
 }
 
 func ToGoExpr(p phpast.Expression) goast.Expr {
+	if v := reflect.ValueOf(p); v.Kind() == reflect.Ptr {
+		p = v.Elem().Interface().(phpast.Expression)
+	}
 
 	switch n := p.(type) {
 	case phpast.AnonymousFunction:
 	case phpast.ArrayAppendExpression:
 	case phpast.ArrayExpression:
 	case phpast.ArrayLookupExpression:
-	case phpast.AssignmentExpression:
 	case phpast.BinaryExpression:
 		return &goast.BinaryExpr{
 			X:  ToGoExpr(n.Antecedent),
 			Y:  ToGoExpr(n.Subsequent),
+			Op: ToGoOperator(n.Operator),
+		}
+	case phpast.UnaryExpression:
+		return &goast.UnaryExpr{
+			X:  ToGoExpr(n.Operand),
 			Op: ToGoOperator(n.Operator),
 		}
 	case phpast.ClassExpression:
@@ -123,6 +139,7 @@ func ToGoExpr(p phpast.Expression) goast.Expr {
 	case phpast.ConstantExpression:
 	case phpast.FunctionCallExpression:
 	case phpast.Identifier:
+		return goast.NewIdent(n.Value)
 	case phpast.Include:
 	case phpast.IncludeStmt:
 	case phpast.Literal:
@@ -137,6 +154,7 @@ func ToGoExpr(p phpast.Expression) goast.Expr {
 	case phpast.PropertyExpression:
 	case phpast.ShellCommand:
 	case phpast.Variable:
+		return ToGoExpr(n.Name)
 	}
 
 	return PHPEval(p)

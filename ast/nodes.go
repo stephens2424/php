@@ -388,7 +388,7 @@ func (a AssignmentExpression) EvaluatesTo() Type {
 func (a AssignmentExpression) Declares() DeclarationType { return NoDeclaration }
 
 type Assignable interface {
-	Node
+	Expression
 	AssignableType() Type
 }
 
