@@ -9,11 +9,7 @@ type SuperGlobalScope struct {
 // defined. This is always within a namespace, but in many cases that may just
 // be the default global namespace ("\")
 type GlobalScope struct {
-	Functions  []FunctionStmt
-	Classes    []Class
-	Interfaces []Interface
-	Cconstants []Constant
-	Namespace  string
+	*Namespace
 	*Scope
 }
 

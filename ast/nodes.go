@@ -552,15 +552,20 @@ func (c Class) Children() []Node {
 func (c Class) Declares() DeclarationType { return ClassDeclaration }
 
 type Constant struct {
-	*Variable
+	Name  string
 	Value interface{}
 }
+
+func (c Constant) Children() []Node { return nil }
+func (c Constant) String() string   { return c.Name }
 
 type ConstantExpression struct {
 	*Variable
 }
 
 func (c Constant) Declares() DeclarationType { return ConstantDeclaration }
+
+func (c Constant) EvaluatesTo() Type { return AnyType }
 
 type Interface struct {
 	Name      string
@@ -1095,6 +1100,7 @@ type File struct {
 type FileSet struct {
 	Files      map[string]File
 	Namespaces map[string]Namespace
+	Scope
 }
 
 type Namespace struct {
@@ -1103,3 +1109,11 @@ type Namespace struct {
 	Constants            map[string]Constant
 	Functions            map[string]FunctionStmt
 }
+
+type Classer interface {
+	Node
+	ClassName() string
+}
+
+func (c Class) ClassName() string     { return c.Name }
+func (i Interface) ClassName() string { return i.Name }

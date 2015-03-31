@@ -156,7 +156,7 @@ func (p *Parser) parseClassFields(c *ast.Class) *ast.Class {
 		case token.Const:
 			constant := &ast.Constant{}
 			p.expect(token.Identifier)
-			constant.Variable = ast.NewVariable(p.current.Val)
+			constant.Name = p.current.Val
 			if p.peek().Typ == token.AssignmentOperator {
 				p.expect(token.AssignmentOperator)
 				constant.Value = p.parseNextExpression()
@@ -208,7 +208,7 @@ func (p *Parser) parseInterface() *ast.Interface {
 		case token.Const:
 			constant := ast.Constant{}
 			p.expect(token.Identifier)
-			constant.Variable = ast.NewVariable(p.current.Val)
+			constant.Name = p.current.Val
 			if p.peek().Typ == token.AssignmentOperator {
 				p.expect(token.AssignmentOperator)
 				constant.Value = p.parseNextExpression()

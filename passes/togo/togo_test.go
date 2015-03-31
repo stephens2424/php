@@ -59,7 +59,7 @@ func parseFile(t *testing.T, phpFilename, phpStr string) {
 
 	nodes := []goast.Node{}
 	for _, phpNode := range file.Nodes {
-		nodes = append(nodes, ToGoStmt(phpNode.(ast.Statement)))
+		nodes = append(nodes, ToGoStmt(phpNode.(ast.Statement), ast.Scope{}))
 	}
 
 	err := format.Node(buf, token.NewFileSet(), File(nodes...))

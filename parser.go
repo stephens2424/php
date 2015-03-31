@@ -25,6 +25,9 @@ type Parser struct {
 	errorMap   map[int]bool
 	errorCount int
 
+	namespace ast.Namespace
+	scope     ast.Scope
+
 	instantiation bool
 }
 

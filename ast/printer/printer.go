@@ -622,11 +622,11 @@ func (p *Printer) PrintDeclareBlock(d *ast.DeclareBlock) {
 }
 
 func (p *Printer) PrintConstant(c *ast.Constant) {
-	p.PrintNode(c.Variable.Name)
+	io.WriteString(p.w, c.Name)
 }
 
 func (p *Printer) PrintConstantExpression(c *ast.ConstantExpression) {
-	p.PrintNode(c.Variable.Name)
+	p.PrintNode(c.Name)
 }
 
 func (p *Printer) PrintExpressionStmt(c *ast.ExpressionStmt) {
