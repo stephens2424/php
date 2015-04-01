@@ -16,10 +16,10 @@ var toGoOperators = map[string]token.Token{
 	"--": token.DEC,
 }
 
-func ToGoOperator(php string) token.Token {
-	t, ok := toGoOperators[php]
+func (t *Togo) ToGoOperator(php string) token.Token {
+	tk, ok := toGoOperators[php]
 	if !ok {
 		return token.ILLEGAL
 	}
-	return t
+	return tk
 }

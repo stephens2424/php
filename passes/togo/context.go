@@ -10,7 +10,7 @@ type context struct {
 	Scope phpast.Scope
 }
 
-func ResolveDynamicVar(varName phpast.Expression, scope phpast.Scope) goast.Node {
+func (t *Togo) ResolveDynamicVar(varName phpast.Expression) goast.Node {
 	switch e := varName.(type) {
 	case phpast.Identifier:
 		return goast.NewIdent(e.Value)
@@ -21,11 +21,11 @@ func ResolveDynamicVar(varName phpast.Expression, scope phpast.Scope) goast.Node
 			Sel: goast.NewIdent("ctx"),
 			X:   goast.NewIdent("GetDynamic"),
 		},
-		Args: []goast.Expr{ToGoExpr(varName, scope)},
+		Args: []goast.Expr{t.ToGoExpr(varName)},
 	}
 }
 
-func ResolveDynamicProperty(rcvr goast.Expr, propName phpast.Expression, scope phpast.Scope) goast.Expr {
+func (t *Togo) ResolveDynamicProperty(rcvr goast.Expr, propName phpast.Expression) goast.Expr {
 	switch e := propName.(type) {
 	case phpast.Identifier:
 		return &goast.SelectorExpr{
@@ -39,6 +39,6 @@ func ResolveDynamicProperty(rcvr goast.Expr, propName phpast.Expression, scope p
 			Sel: goast.NewIdent("phpctx"),
 			X:   goast.NewIdent("GetDynamicProperty"),
 		},
-		Args: []goast.Expr{rcvr, ToGoExpr(propName, scope)},
+		Args: []goast.Expr{rcvr, t.ToGoExpr(propName)},
 	}
 }
