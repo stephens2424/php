@@ -300,24 +300,26 @@ func (p *Parser) parseLiteral() ast.Expression {
 }
 
 func (p *Parser) parseVariable() ast.Expression {
+	var expr *ast.Variable
 	p.expectCurrent(token.VariableOperator)
 	switch p.next(); {
 	case lexer.IsKeyword(p.current.Typ, p.current.Val):
 		// keywords are all valid variable names
 		fallthrough
 	case p.current.Typ == token.Identifier:
-		expr := ast.NewVariable(p.current.Val)
-		return expr
+		expr = ast.NewVariable(p.current.Val)
 	case p.current.Typ == token.BlockBegin:
-		expr := &ast.Variable{Name: p.parseNextExpression()}
+		expr = &ast.Variable{Name: p.parseNextExpression()}
 		p.expect(token.BlockEnd)
-		return expr
 	case p.current.Typ == token.VariableOperator:
-		return &ast.Variable{Name: p.parseVariable()}
+		expr = &ast.Variable{Name: p.parseVariable()}
 	default:
 		p.errorf("unexpected variable operand %s", p.current)
 		return nil
 	}
+
+	p.scope.Variable(expr)
+	return expr
 }
 
 func (p *Parser) parseInclude() ast.Expression {
@@ -357,9 +359,12 @@ func (p *Parser) parseIdentifier() (expr ast.Expression) {
 		expr = ast.NewClassExpression(classIdent, p.parseOperand())
 		p.next()
 	default:
+		name := p.current.Val
+		v := ast.NewVariable(p.current.Val)
 		expr = ast.ConstantExpression{
-			Variable: ast.NewVariable(p.current.Val),
+			Variable: v,
 		}
+		p.namespace.Constants[name] = append(p.namespace.Constants[name], v)
 		p.next()
 	}
 	return expr

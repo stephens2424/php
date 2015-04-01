@@ -9,7 +9,10 @@ import (
 func (p *Parser) parseFunctionStmt() *ast.FunctionStmt {
 	stmt := &ast.FunctionStmt{}
 	stmt.FunctionDefinition = p.parseFunctionDefinition()
+	p.namespace.Functions[stmt.Name] = stmt
+	p.scope = ast.NewScope(p.scope, p.FileSet.GlobalScope, p.FileSet.SuperGlobalScope)
 	stmt.Body = p.parseBlock()
+	p.scope = p.scope.EnclosingScope
 	return stmt
 }
 
@@ -141,6 +144,8 @@ Loop:
 		p.expect(token.CloseParen)
 	}
 
+	p.scope = ast.NewScope(p.scope, p.FileSet.GlobalScope, p.FileSet.SuperGlobalScope)
 	f.Body = p.parseBlock()
+	p.scope = p.scope.EnclosingScope
 	return f
 }

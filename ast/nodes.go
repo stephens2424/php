@@ -1090,30 +1090,3 @@ func (d DeclareBlock) String() string {
 }
 
 func (p DeclareBlock) Declares() DeclarationType { return NoDeclaration }
-
-type File struct {
-	Name      string
-	Namespace Namespace
-	Nodes     []Node
-}
-
-type FileSet struct {
-	Files      map[string]File
-	Namespaces map[string]Namespace
-	Scope
-}
-
-type Namespace struct {
-	Name                 string
-	ClassesAndInterfaces map[string]Statement
-	Constants            map[string]Constant
-	Functions            map[string]FunctionStmt
-}
-
-type Classer interface {
-	Node
-	ClassName() string
-}
-
-func (c Class) ClassName() string     { return c.Name }
-func (i Interface) ClassName() string { return i.Name }
