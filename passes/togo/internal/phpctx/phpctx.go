@@ -3,7 +3,9 @@ package phpctx
 import (
 	"errors"
 	"io"
+	"os/exec"
 	"reflect"
+	"strings"
 )
 
 var (
@@ -46,4 +48,15 @@ func GetDynamicProperty(rcvr interface{}, field string) (interface{}, error) {
 		return f.Interface(), nil
 	}
 	return nil, ErrNoStruct
+}
+
+func Shell(cmd string) ([]byte, error) {
+	cmdName, args := strings.SplitN(cmd, " ", 2)
+	c := exec.Command(cmdName, args...)
+	err := c.Run()
+	if err != nil {
+		return "", err
+	}
+
+	return c.Output()
 }

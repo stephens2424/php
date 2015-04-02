@@ -16,13 +16,7 @@ func (t *Togo) ResolveDynamicVar(varName phpast.Expression) goast.Node {
 		return goast.NewIdent(e.Value)
 	}
 
-	return &goast.CallExpr{
-		Fun: &goast.SelectorExpr{
-			Sel: goast.NewIdent("ctx"),
-			X:   goast.NewIdent("GetDynamic"),
-		},
-		Args: []goast.Expr{t.ToGoExpr(varName)},
-	}
+	return t.CtxFuncCall("GetDynamic", []goast.Expr{t.ToGoExpr(varName)})
 }
 
 func (t *Togo) ResolveDynamicProperty(rcvr goast.Expr, propName phpast.Expression) goast.Expr {
@@ -34,11 +28,15 @@ func (t *Togo) ResolveDynamicProperty(rcvr goast.Expr, propName phpast.Expressio
 		}
 	}
 
+	return t.CtxFuncCall("GetDynamicProperty", []goast.Expr{rcvr, t.ToGoExpr(propName)})
+}
+
+func (t *Togo) CtxFuncCall(funcName string, args []goast.Expr) *goast.CallExpr {
 	return &goast.CallExpr{
 		Fun: &goast.SelectorExpr{
-			Sel: goast.NewIdent("phpctx"),
-			X:   goast.NewIdent("GetDynamicProperty"),
+			X:   goast.NewIdent("phpctx"),
+			Sel: goast.NewIdent(funcName),
 		},
-		Args: []goast.Expr{rcvr, t.ToGoExpr(propName)},
+		Args: args,
 	}
 }

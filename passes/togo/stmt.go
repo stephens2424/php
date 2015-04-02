@@ -154,6 +154,7 @@ func (t *Togo) ToGoExpr(p phpast.Expression) goast.Expr {
 	case phpast.PropertyExpression:
 		return t.ResolveDynamicProperty(t.ToGoExpr(n.Receiver), n.Name)
 	case phpast.ShellCommand:
+		return t.CtxFuncCall("Shell", []goast.Expr{&goast.BasicLit{Kind: token.STRING, Value: n.Command}})
 	case phpast.Variable:
 		return t.ToGoExpr(n.Name)
 	}

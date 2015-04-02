@@ -13,6 +13,8 @@ import (
 	"path/filepath"
 	"testing"
 
+	"golang.org/x/tools/imports"
+
 	"github.com/stephens2424/php"
 	"github.com/stephens2424/php/ast"
 )
@@ -55,8 +57,6 @@ func parseFile(t *testing.T, phpFilename, phpStr string) {
 		return
 	}
 
-	buf := &bytes.Buffer{}
-
 	tg := Togo{}
 
 	nodes := []goast.Node{}
@@ -64,22 +64,32 @@ func parseFile(t *testing.T, phpFilename, phpStr string) {
 		nodes = append(nodes, tg.ToGoStmt(phpNode.(ast.Statement)))
 	}
 
+	buf := &bytes.Buffer{}
 	err := format.Node(buf, token.NewFileSet(), File(nodes...))
 	if err != nil {
 		t.Errorf("error while formatting %s: %s", phpFilename, err)
 		return
 	}
 
-	goStr, err := readFile(phpFilename[:len(phpFilename)-3] + "go")
+	goFilename := phpFilename[:len(phpFilename)-3] + "go"
+
+	imported, err := imports.Process(goFilename, buf.Bytes(), nil)
+	if err != nil {
+		t.Errorf("error while getting imports for %s: %s", phpFilename, err)
+		return
+	}
+
+	goStr, err := readFile(goFilename)
 	if err != nil {
 		t.Error(err)
 	}
-	if err == nil && buf.String() != goStr {
+
+	if err == nil && string(imported) != goStr {
 		failFunc := t.Skipf
 		if failTranspilation {
 			failFunc = t.Errorf
 		}
-		failFunc("mistranlation %s:\n\n===php===\n\n%s\n\n===expected===\n\n%s\n\n===got===\n\n%s\n\n", phpFilename, phpStr, goStr, buf.String())
+		failFunc("mistranlation %s:\n\n===php===\n\n%s\n\n===expected===\n\n%s\n\n===got===\n\n%s\n\n", phpFilename, phpStr, goStr, string(imported))
 	}
 }
 
