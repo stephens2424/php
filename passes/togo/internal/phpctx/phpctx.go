@@ -2,7 +2,9 @@ package phpctx
 
 import (
 	"errors"
+	"flag"
 	"io"
+	"net/http"
 	"os/exec"
 	"reflect"
 	"strings"
@@ -15,6 +17,7 @@ var (
 )
 
 var zero = reflect.Value{}
+var addr = flag.String("http-address", "localhost:8080", "host and port for serving http")
 
 type PHPContext struct {
 	Echo          io.Writer
@@ -36,6 +39,17 @@ func (ctx PHPContext) GetDynamic(name string) (interface{}, error) {
 	}
 
 	return *v, nil
+}
+
+func (ctx PHPContext) Write(b []byte) (int, error) {
+	return ctx.Echo.Write(b)
+}
+
+func ListenAndServe() {
+	if !flag.Parsed() {
+		flag.Parse()
+	}
+	http.ListenAndServe(*addr, nil)
 }
 
 func GetDynamicProperty(rcvr interface{}, field string) (interface{}, error) {
@@ -61,4 +75,8 @@ func Shell(cmd string) ([]byte, error) {
 	}
 
 	return c.Output()
+}
+
+type Server interface {
+	ServePHP(ctx PHPContext)
 }

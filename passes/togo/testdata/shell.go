@@ -2,6 +2,6 @@ package translated
 
 import "github.com/stephens2424/php/passes/togo/internal/phpctx"
 
-func main() {
-	phpctx.Shell(`ls -al`)
+func Shell(ctx phpctx.PHPContext) {
+	ctx.Shell(`ls -al`)
 }

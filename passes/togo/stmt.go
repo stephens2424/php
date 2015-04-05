@@ -44,6 +44,9 @@ func (t *Togo) ToGoStmt(php phpast.Statement) goast.Stmt {
 	case phpast.ContinueStmt:
 	case phpast.DoWhileStmt:
 	case phpast.EchoStmt:
+		for _, e := range n.Expressions {
+			return &goast.ExprStmt{t.CtxFuncCall("Echo.Write", []goast.Expr{t.ToGoExpr(e)})}
+		}
 	case phpast.EmptyStatement:
 	case phpast.ExitStmt:
 	case phpast.Expression:
@@ -159,9 +162,8 @@ func (t *Togo) ToGoExpr(p phpast.Expression) goast.Expr {
 		switch n.Type {
 		case phpast.String:
 			return &goast.BasicLit{Kind: token.STRING, Value: n.Value}
-		default:
-			return &goast.BasicLit{Value: n.Value}
 		}
+		return &goast.BasicLit{Value: n.Value}
 	case phpast.MethodCallExpression:
 	case phpast.NewExpression:
 	case phpast.PropertyExpression:

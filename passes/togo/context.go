@@ -34,7 +34,7 @@ func (t *Togo) ResolveDynamicProperty(rcvr goast.Expr, propName phpast.Expressio
 func (t *Togo) CtxFuncCall(funcName string, args []goast.Expr) *goast.CallExpr {
 	return &goast.CallExpr{
 		Fun: &goast.SelectorExpr{
-			X:   goast.NewIdent("phpctx"),
+			X:   goast.NewIdent("ctx"),
 			Sel: goast.NewIdent(funcName),
 		},
 		Args: args,
