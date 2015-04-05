@@ -51,11 +51,13 @@ func GetDynamicProperty(rcvr interface{}, field string) (interface{}, error) {
 }
 
 func Shell(cmd string) ([]byte, error) {
-	cmdName, args := strings.SplitN(cmd, " ", 2)
-	c := exec.Command(cmdName, args...)
+	cmdParts := strings.SplitN(cmd, " ", 2)
+	cmdName := cmdParts[0]
+	args := cmdParts[1]
+	c := exec.Command(cmdName, args)
 	err := c.Run()
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	return c.Output()

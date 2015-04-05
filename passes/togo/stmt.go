@@ -15,6 +15,16 @@ func (t *Togo) ToGoStmt(php phpast.Statement) goast.Stmt {
 	}
 
 	switch n := php.(type) {
+	// preliminary cases
+	case phpast.UnaryExpression:
+		if n.Operator == "--" || n.Operator == "++" {
+			return &goast.IncDecStmt{
+				X:   t.ToGoExpr(n.Operand),
+				Tok: t.ToGoOperator(n.Operator),
+			}
+		}
+
+	// standard cases
 	case phpast.AnonymousFunction:
 	case phpast.ArrayAppendExpression:
 	case phpast.ArrayExpression:
@@ -36,6 +46,8 @@ func (t *Togo) ToGoStmt(php phpast.Statement) goast.Stmt {
 	case phpast.EchoStmt:
 	case phpast.EmptyStatement:
 	case phpast.ExitStmt:
+	case phpast.Expression:
+		return &goast.ExprStmt{t.ToGoExpr(n)}
 	case phpast.ExpressionStmt:
 		switch expr := n.Expression.(type) {
 		case phpast.AssignmentExpression:
@@ -89,6 +101,7 @@ func (t *Togo) ToGoStmt(php phpast.Statement) goast.Stmt {
 	case phpast.SwitchStmt:
 	case phpast.ThrowStmt:
 	case phpast.TryStmt:
+
 	case phpast.Variable:
 	case phpast.WhileStmt:
 		f := &goast.ForStmt{}

@@ -73,7 +73,7 @@ func parseFile(t *testing.T, phpFilename, phpStr string) {
 
 	goFilename := phpFilename[:len(phpFilename)-3] + "go"
 
-	imported, err := imports.Process(goFilename, buf.Bytes(), nil)
+	imported, err := imports.Process(goFilename, buf.Bytes(), &imports.Options{AllErrors: true, Comments: true, TabIndent: true, TabWidth: 8})
 	if err != nil {
 		t.Errorf("error while getting imports for %s: %s", phpFilename, err)
 		return
