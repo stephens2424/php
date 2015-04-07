@@ -15,18 +15,22 @@ import (
 )
 
 type Togo struct {
-	currentScope phpast.Scope
+	currentScope *phpast.Scope
 }
 
 func TranspileFile(goFilename, phpFilename, phpStr string, gosrc io.Writer) error {
-	file, errs := php.NewParser().Parse(phpFilename, phpStr)
+	parser := php.NewParser()
+	file, errs := parser.Parse(phpFilename, phpStr)
 	if len(errs) != 0 {
 		return fmt.Errorf("found errors while parsing %s: %s", phpFilename, errs)
 	}
 
-	tg := Togo{}
+	tg := Togo{currentScope: parser.FileSet.Scope}
 
 	nodes := []goast.Node{}
+	for _, node := range tg.beginScope(tg.currentScope) {
+		nodes = append(nodes, node)
+	}
 	for _, phpNode := range file.Nodes {
 		nodes = append(nodes, tg.ToGoStmt(phpNode.(phpast.Statement)))
 	}

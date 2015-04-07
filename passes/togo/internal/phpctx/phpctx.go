@@ -19,6 +19,8 @@ var (
 var zero = reflect.Value{}
 var addr = flag.String("http-address", "localhost:8080", "host and port for serving http")
 
+type PHPVar interface{}
+
 type PHPContext struct {
 	Echo          io.Writer
 	dynamicValues map[string]*interface{}

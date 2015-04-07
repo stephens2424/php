@@ -24,6 +24,8 @@ type Scope struct {
 
 func (s *Scope) Variable(v *Variable) {
 	switch i := v.Name.(type) {
+	case *Identifier:
+		s.Identifiers[i.Value] = append(s.Identifiers[i.Value], v)
 	case Identifier:
 		s.Identifiers[i.Value] = append(s.Identifiers[i.Value], v)
 	default:

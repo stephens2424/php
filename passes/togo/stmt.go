@@ -189,11 +189,35 @@ func (t *Togo) ToGoExpr(p phpast.Expression) goast.Expr {
 	return PHPEval(p)
 }
 
+func (t *Togo) beginScope(scope *phpast.Scope) []goast.Stmt {
+	g := []goast.Stmt{}
+	for ident := range scope.Identifiers {
+		g = append(g, &goast.DeclStmt{&goast.GenDecl{
+			Tok: token.VAR,
+			Specs: []goast.Spec{
+				&goast.ValueSpec{
+					Names: []*goast.Ident{goast.NewIdent(ident)},
+					Type: &goast.SelectorExpr{
+						X:   goast.NewIdent("phpctx"),
+						Sel: goast.NewIdent("PHPVar"),
+					},
+				},
+			},
+		}})
+	}
+	return g
+}
+
 func (t *Togo) ToGoBlock(p phpast.Statement) *goast.BlockStmt {
 	g := &goast.BlockStmt{}
+
+	if pb, ok := p.(phpast.Block); ok {
+		p = &pb
+	}
+
 	switch p := p.(type) {
 	case *phpast.Block:
-		g.List = []goast.Stmt{}
+		g.List = t.beginScope(&p.Scope)
 		for _, stmt := range p.Statements {
 			g.List = append(g.List, t.ToGoStmt(stmt))
 		}
