@@ -125,6 +125,8 @@ func (p *Printer) PrintNode(node ast.Node) {
 		p.PrintPropertyExpression(n)
 	case *ast.ReturnStmt:
 		p.PrintReturnStmt(n)
+	case ast.ShellCommand:
+		p.PrintShellCommand(&n)
 	case *ast.ShellCommand:
 		p.PrintShellCommand(n)
 	case *ast.StaticVariableDeclaration:

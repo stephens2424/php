@@ -1,12 +1,14 @@
 package togo
 
 import (
+	"bytes"
 	goast "go/ast"
 	"go/token"
 	"reflect"
 	"strconv"
 
 	phpast "github.com/stephens2424/php/ast"
+	"github.com/stephens2424/php/ast/printer"
 )
 
 func (t *Togo) ToGoStmt(php phpast.Statement) goast.Stmt {
@@ -49,11 +51,13 @@ func (t *Togo) ToGoStmt(php phpast.Statement) goast.Stmt {
 		}
 	case phpast.EmptyStatement:
 	case phpast.ExitStmt:
-	case phpast.Expression:
-		return &goast.ExprStmt{t.ToGoExpr(n)}
 	case phpast.ExpressionStmt:
 		switch expr := n.Expression.(type) {
 		case phpast.AssignmentExpression:
+			return t.ToGoStmt(expr)
+		case *phpast.ShellCommand:
+			return t.ToGoStmt(expr)
+		case phpast.ShellCommand:
 			return t.ToGoStmt(expr)
 		}
 		return &goast.ExprStmt{t.ToGoExpr(n.Expression)}
@@ -95,10 +99,10 @@ func (t *Togo) ToGoStmt(php phpast.Statement) goast.Stmt {
 	case phpast.Method:
 	case phpast.MethodCallExpression:
 	case phpast.NewExpression:
-	case phpast.Node:
 	case phpast.PropertyExpression:
 	case phpast.ReturnStmt:
 	case phpast.ShellCommand:
+		return &goast.ExprStmt{t.CtxFuncCall("Shell", []goast.Expr{&goast.BasicLit{Kind: token.STRING, Value: n.Command}})}
 	case phpast.Statement:
 	case phpast.StaticVariableDeclaration:
 	case phpast.SwitchStmt:
@@ -111,6 +115,11 @@ func (t *Togo) ToGoStmt(php phpast.Statement) goast.Stmt {
 		f.Cond = t.ToGoExpr(n.Termination)
 		f.Body = t.ToGoBlock(n.LoopBlock)
 		return f
+
+		// broadest
+	case phpast.Expression:
+		return &goast.ExprStmt{t.ToGoExpr(n)}
+	case phpast.Node:
 	}
 
 	return PHPEvalStmt(php)
@@ -121,10 +130,13 @@ func PHPEvalStmt(p phpast.Node) goast.Stmt {
 }
 
 func PHPEval(p phpast.Node) goast.Expr {
+	buf := &bytes.Buffer{}
+	pr := printer.NewPrinter(buf)
+	pr.PrintNode(p)
 	return &goast.CallExpr{
 		Fun: goast.NewIdent("PHPEval"),
 		Args: []goast.Expr{
-			&goast.BasicLit{Kind: token.STRING, Value: strconv.Quote(p.String())},
+			&goast.BasicLit{Kind: token.STRING, Value: strconv.Quote(buf.String())},
 		},
 	}
 }
