@@ -6,10 +6,12 @@ import (
 	"github.com/stephens2424/php/token"
 )
 
-func (p *Parser) parseFunctionStmt() *ast.FunctionStmt {
+func (p *Parser) parseFunctionStmt(inMethod bool) *ast.FunctionStmt {
 	stmt := &ast.FunctionStmt{}
 	stmt.FunctionDefinition = p.parseFunctionDefinition()
-	p.namespace.Functions[stmt.Name] = stmt
+	if !inMethod {
+		p.namespace.Functions[stmt.Name] = stmt
+	}
 	p.scope = ast.NewScope(p.scope, p.FileSet.GlobalScope, p.FileSet.SuperGlobalScope)
 	stmt.Body = p.parseBlock()
 	p.scope = p.scope.EnclosingScope

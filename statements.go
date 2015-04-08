@@ -31,9 +31,11 @@ func (p *Parser) parseStmt() ast.Statement {
 		p.expectStmtEnd()
 		return g
 	case token.Namespace:
+		// TODO check that this comes before anything but a declare statement
 		p.expect(token.Identifier)
+		p.namespace = ast.NewNamespace(p.current.Val)
+		p.file.Namespace = p.namespace
 		p.expectStmtEnd()
-		// We are ignoring this for now
 		return nil
 	case token.Use:
 		p.expect(token.Identifier)
@@ -92,7 +94,7 @@ func (p *Parser) parseStmt() ast.Statement {
 		p.expectStmtEnd()
 		return stmt
 	case token.Function:
-		return p.parseFunctionStmt()
+		return p.parseFunctionStmt(false)
 	case token.PHPEnd:
 		if p.peek().Typ == token.EOF {
 			return nil

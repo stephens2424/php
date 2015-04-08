@@ -131,7 +131,7 @@ func (p *Parser) parseClassFields(c *ast.Class) *ast.Class {
 			} else {
 				c.Methods = append(c.Methods, &ast.Method{
 					Visibility:   vis,
-					FunctionStmt: p.parseFunctionStmt(),
+					FunctionStmt: p.parseFunctionStmt(true),
 				})
 			}
 		case token.Var:

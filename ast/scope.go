@@ -35,7 +35,7 @@ func (s *Scope) Variable(v *Variable) {
 
 type File struct {
 	Name      string
-	Namespace Namespace
+	Namespace *Namespace
 	Nodes     []Node
 }
 

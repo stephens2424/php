@@ -25,6 +25,7 @@ type Parser struct {
 	errorMap   map[int]bool
 	errorCount int
 
+	file      *ast.File
 	namespace *ast.Namespace
 	scope     *ast.Scope
 
@@ -44,11 +45,12 @@ func NewParser() *Parser {
 
 // Parse consumes the input string to produce an AST that represents it.
 func (p *Parser) Parse(filepath, input string) (file *ast.File, errors []error) {
-	file = &ast.File{}
+	file = &ast.File{Namespace: p.FileSet.GlobalNamespace}
+	p.file = file
 	p.scope = p.FileSet.Scope
 	p.namespace = p.FileSet.GlobalNamespace
 	p.lexer = lexer.NewLexer(input)
-	p.FileSet.Files[filepath] = file
+	p.FileSet.Files[filepath] = p.file
 	defer func() {
 		if r := recover(); r != nil {
 			errors = append([]error{fmt.Errorf("%s", r)}, p.errors...)
@@ -61,7 +63,7 @@ func (p *Parser) Parse(filepath, input string) (file *ast.File, errors []error) 
 		}
 	}()
 	// expecting either token.HTML or token.PHPBegin
-	file.Nodes = make([]ast.Node, 0, 1)
+	p.file.Nodes = make([]ast.Node, 0, 1)
 TokenLoop:
 	for {
 		p.next()
@@ -71,7 +73,7 @@ TokenLoop:
 		default:
 			n := p.parseNode()
 			if n != nil {
-				file.Nodes = append(file.Nodes, n)
+				p.file.Nodes = append(p.file.Nodes, n)
 			}
 		}
 	}
