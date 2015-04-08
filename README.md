@@ -17,22 +17,25 @@ This project is under heavy development, though some pieces are more or less sta
 
 Feature                       |Status
 ------------------------------|------
-Lexer and Parser              |these pieces are quite useable and haven't seen more than minor changes for a while. They do have notable gaps, though (e.g. namespaces)
+Lexer and Parser              | mostly complete. there are probably a few gaps still
+Scoping                       | complete, but not well tested
 Code search and symbol lookup | basic idea implemented, many many details missing
 Code formatting               | basic idea implemented, formatting needs to narrow down to PSR-2
 Transpilation to Go           | basic idea implemented, need follow through with more node types
-Scoping                       |not begun
-Type inferencing              |not begun
-Dead code analysis            |not begun
+Type inferencing              | not begun
+Dead code analysis            | not begun
 
 ## Project Components
 
-- php: the core parser
-- php/ast: (Abstract syntax tree) describes the nodes in PHP as parsed by the parser
-- php/ast/printer: prints an ast back to source code
-- php/cmd: a tool used to debug the parser
-- php/lexer: reads a stream of tokens from source code
-- php/passes: tools and packages related to modifying or analyzing PHP code (heavily a work in progress)
-- php/query: tools and packages related to analyzing and finding things in PHP code (heavily a work in progress)
-- php/testfiles: simple examples of PHP that must parse with no errors for tests to pass
-- php/token: describes the tokens read by the lexer
+Directory                     |Description
+------------------------------|------
+php| the core parser
+php/ast| (abstract syntax tree) describes the nodes in PHP as parsed by the parser
+php/ast/printer| prints an ast back to source code
+php/cmd| a tool used to debug the parser
+php/lexer| reads a stream of tokens from source code
+php/passes| tools and packages related to modifying or analyzing PHP code (heavily a work in progress)
+php/passes/togo| transpiler
+php/query| tools and packages related to analyzing and finding things in PHP code (heavily a work in progress)
+php/testdata| simple examples of PHP that must parse with no errors for tests to pass
+php/token| describes the tokens read by the lexer
