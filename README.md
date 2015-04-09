@@ -18,7 +18,7 @@ This project is under heavy development, though some pieces are more or less sta
 Feature                       |Status
 ------------------------------|------
 Lexer and Parser              | mostly complete. there are probably a few gaps still
-Scoping                       | complete, but not well tested
+Scoping                       | complete for simple cases. probably some gaps still
 Code search and symbol lookup | basic idea implemented, many many details missing
 Code formatting               | basic idea implemented, formatting needs to narrow down to PSR-2
 Transpilation to Go           | basic idea implemented, need follow through with more node types
