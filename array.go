@@ -23,7 +23,7 @@ func (p *Parser) parseArrayLookup(e ast.Expression) ast.Expression {
 
 func (p *Parser) parseArrayDeclaration() ast.Expression {
 	var endType token.Token
-	pairs := make([]ast.ArrayPair, 0)
+	var pairs []ast.ArrayPair
 	p.expectCurrent(token.Array, token.ArrayLookupOperatorLeft)
 	switch p.current.Typ {
 	case token.Array:

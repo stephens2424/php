@@ -2,7 +2,6 @@ package php
 
 import (
 	"bytes"
-	"errors"
 	"fmt"
 
 	"github.com/stephens2424/php/ast"
@@ -45,8 +44,10 @@ func NewParser() *Parser {
 	return p
 }
 
+// ParseErrorList is a list of ParseErrors.
 type ParseErrorList []ParseError
 
+// Error formats p into a string.
 func (p ParseErrorList) Error() string {
 	if len(p) == 0 {
 		return ""
@@ -63,6 +64,7 @@ func (p ParseErrorList) Error() string {
 	return buf.String()
 }
 
+// ParseError represents an error found during parsing.
 type ParseError struct {
 	error
 	Line, Column int
@@ -130,7 +132,7 @@ func (p *Parser) parseNode() ast.Node {
 }
 
 func (p *Parser) next() {
-	p.idx += 1
+	p.idx++
 	if len(p.previous) <= p.idx {
 		p.current = p.lexer.Next()
 		if p.PrintTokens {
@@ -143,7 +145,7 @@ func (p *Parser) next() {
 }
 
 func (p *Parser) backup() {
-	p.idx -= 1
+	p.idx--
 	p.current = p.previous[p.idx]
 }
 
@@ -201,7 +203,7 @@ func (p *Parser) errorf(str string, args ...interface{}) {
 }
 
 func errorf(p *Parser, str string, args ...interface{}) ParseError {
-	e := ParseError{error: errors.New(fmt.Sprintf(str, args...))}
+	e := ParseError{error: fmt.Errorf(str, args...)}
 	if p != nil {
 		e.File = p.file
 		e.Line = 0

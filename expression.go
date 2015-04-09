@@ -85,11 +85,11 @@ func (p *Parser) parseExpression() (expr ast.Expression) {
 			expr = p.parseUnaryExpressionRight(p.parseNextExpression(), *op)
 			break
 		}
-		p.parenLevel += 1
+		p.parenLevel++
 		p.next()
 		expr = p.parseExpression()
 		p.expect(token.CloseParen)
-		p.parenLevel -= 1
+		p.parenLevel--
 		expr = p.parseOperation(originalParenLev, expr)
 	default:
 		p.errorf("Expected expression. Found %s", p.current)
@@ -148,7 +148,7 @@ func (p *Parser) parseOperation(originalParenLevel int, lhs ast.Expression) (exp
 			p.backup()
 			return lhs
 		}
-		p.parenLevel -= 1
+		p.parenLevel--
 		expr = lhs
 	case subexpressionBeginOperation:
 		// Check if we have a paren directly after a literal
@@ -157,7 +157,7 @@ func (p *Parser) parseOperation(originalParenLevel int, lhs ast.Expression) (exp
 			p.backup()
 			return lhs
 		}
-		p.parenLevel += 1
+		p.parenLevel++
 		expr = p.parseNextExpression()
 	default:
 		p.backup()
