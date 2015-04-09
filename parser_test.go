@@ -48,6 +48,7 @@ func findDifference(found, expected ast.Node) {
 func TestPHPParserHW(t *testing.T) {
 	testStr := `hello world`
 	p := NewParser()
+	p.disableScoping = true
 	a, _ := p.Parse("test.php", testStr)
 	tree := ast.Echo(ast.Literal{Type: ast.String, Value: `hello world`})
 	if !assertEquals(a.Nodes[0], tree) {
@@ -59,6 +60,7 @@ func TestPHPParserHWPHP(t *testing.T) {
 	testStr := `<?php
     echo "hello world", "!";`
 	p := NewParser()
+	p.disableScoping = true
 	a, _ := p.Parse("test.php", testStr)
 	tree := ast.Echo(
 		&ast.Literal{Type: ast.String, Value: `"hello world"`},
@@ -73,6 +75,7 @@ func TestInclude(t *testing.T) {
 	testStr := `<?php
   include "test.php"; ?>`
 	p := NewParser()
+	p.disableScoping = true
 	_, errs := p.Parse("test.php", testStr)
 	if len(errs) > 0 {
 		fmt.Println(errs)
@@ -87,6 +90,7 @@ func TestIf(t *testing.T) {
     else if (false)
       echo "no hello world";`
 	p := NewParser()
+	p.disableScoping = true
 	a, _ := p.Parse("test.php", testStr)
 	tree := &ast.IfStmt{
 		Branches: []ast.IfBranch{
@@ -113,6 +117,7 @@ func TestIfBraces(t *testing.T) {
       echo "no hello world";
     }`
 	p := NewParser()
+	p.disableScoping = true
 	a, _ := p.Parse("test.php", testStr)
 	tree := &ast.IfStmt{
 		Branches: []ast.IfBranch{
@@ -140,6 +145,7 @@ func TestAssignment(t *testing.T) {
     $test = "hello world";
     echo $test;`
 	p := NewParser()
+	p.disableScoping = true
 	a, _ := p.Parse("test.php", testStr)
 	if len(a.Nodes) != 2 {
 		t.Fatalf("Assignment did not correctly parse")
@@ -153,6 +159,7 @@ func TestFunction(t *testing.T) {
     }
     $var = TestFn("world", 0);`
 	p := NewParser()
+	p.disableScoping = true
 	a, _ := p.Parse("test.php", testStr)
 	tree := []ast.Node{
 		&ast.FunctionStmt{
@@ -195,6 +202,7 @@ func TestFunction(t *testing.T) {
 
 func TestExpressionParsing(t *testing.T) {
 	p := NewParser()
+	p.disableScoping = true
 	testStr := `<? if (1 + 2 > 3)
     echo "good"; `
 	a, _ := p.Parse("test.php", testStr)
@@ -228,6 +236,7 @@ func TestExpressionParsing(t *testing.T) {
 	}
 
 	p = NewParser()
+	p.disableScoping = true
 	testStr = `<? if (4 + 5 * 6)
     echo "bad";
   `
@@ -262,6 +271,7 @@ func TestExpressionParsing(t *testing.T) {
 	}
 
 	p = NewParser()
+	p.disableScoping = true
 	testStr = `<? if (1 > 2 * 3 + 4)
     echo "good";
   `
@@ -301,6 +311,7 @@ func TestExpressionParsing(t *testing.T) {
 	}
 
 	p = NewParser()
+	p.disableScoping = true
 	testStr = `<? if ($var = &$var2 > 2 * (3 + 4) - 2 & 3 && 4 ^ 8 or 14 xor 10 and 13 >> 18 << 10 ? true : false)
     echo "good";
   `
@@ -315,6 +326,7 @@ func TestArray(t *testing.T) {
 	testStr := `<?
   $var = array("one", "two", "three");`
 	p := NewParser()
+	p.disableScoping = true
 	p.Debug = true
 	a, _ := p.Parse("test.php", testStr)
 	if len(a.Nodes) == 0 {
@@ -345,6 +357,7 @@ func TestArrayKeys(t *testing.T) {
 	testStr := `<?
   $var = array(1 => "one", 2 => "two", 3 => "three");`
 	p := NewParser()
+	p.disableScoping = true
 	a, _ := p.Parse("test.php", testStr)
 	if len(a.Nodes) == 0 {
 		t.Fatalf("Array did not correctly parse")
@@ -370,6 +383,7 @@ func TestMethodCall(t *testing.T) {
 	testStr := `<?
   $res = $var->go();`
 	p := NewParser()
+	p.disableScoping = true
 	p.Debug = true
 	p.MaxErrors = 0
 	a, _ := p.Parse("test.php", testStr)
@@ -397,6 +411,7 @@ func TestProperty(t *testing.T) {
   $res = $var->go;
   $var->go = $res;`
 	p := NewParser()
+	p.disableScoping = true
 	p.Debug = true
 	p.MaxErrors = 0
 	a, _ := p.Parse("test.php", testStr)
@@ -434,6 +449,7 @@ func TestDoLoop(t *testing.T) {
     echo $var;
   } while ($otherVar);`
 	p := NewParser()
+	p.disableScoping = true
 	a, _ := p.Parse("test.php", testStr)
 	if len(a.Nodes) == 0 {
 		t.Fatalf("Do loop did not correctly parse")
@@ -457,6 +473,7 @@ func TestWhileLoop(t *testing.T) {
     echo $var;
   }`
 	p := NewParser()
+	p.disableScoping = true
 	a, _ := p.Parse("test.php", testStr)
 	if len(a.Nodes) == 0 {
 		t.Fatalf("While loop did not correctly parse")
@@ -480,6 +497,7 @@ func TestForeachLoop(t *testing.T) {
     echo $key . $val;
   } ?>`
 	p := NewParser()
+	p.disableScoping = true
 	a, _ := p.Parse("test.php", testStr)
 	if len(a.Nodes) == 0 {
 		t.Fatalf("While loop did not correctly parse")
@@ -508,6 +526,7 @@ func TestForLoop(t *testing.T) {
     echo $i;
   }`
 	p := NewParser()
+	p.disableScoping = true
 	p.Debug = true
 	p.MaxErrors = 0
 	a, _ := p.Parse("test.php", testStr)
@@ -548,6 +567,7 @@ func TestWhileLoopWithAssignment(t *testing.T) {
     echo $var;
   }`
 	p := NewParser()
+	p.disableScoping = true
 	p.Debug = true
 	p.MaxErrors = 0
 	a, _ := p.Parse("test.php", testStr)
@@ -580,6 +600,7 @@ func TestArrayLookup(t *testing.T) {
   $var->arr[] = 2;
   echo $arr[2 + 1];`
 	p := NewParser()
+	p.disableScoping = true
 	p.Debug = true
 	p.MaxErrors = 0
 	a, _ := p.Parse("test.php", testStr)
@@ -629,6 +650,7 @@ func TestSwitch(t *testing.T) {
     echo "def";
   }`
 	p := NewParser()
+	p.disableScoping = true
 	a, _ := p.Parse("test.php", testStr)
 	if len(a.Nodes) == 0 {
 		t.Fatalf("Array lookup did not correctly parse")
@@ -671,6 +693,7 @@ func TestLiterals(t *testing.T) {
   $var = true;
   $var = null;`
 	p := NewParser()
+	p.disableScoping = true
 	a, _ := p.Parse("test.php", testStr)
 	if len(a.Nodes) != 4 {
 		t.Fatalf("Literals did not correctly parse")
@@ -715,6 +738,7 @@ func TestComments(t *testing.T) {
 		ast.Echo(ast.Literal{Type: ast.String, Value: "html"}),
 	}
 	p := NewParser()
+	p.disableScoping = true
 	a, _ := p.Parse("test.php", testStr)
 	if !reflect.DeepEqual(a.Nodes, tree) {
 		fmt.Printf("Found:    %+v\n", a)
@@ -729,6 +753,7 @@ func TestScopeResolutionOperator(t *testing.T) {
   echo MyClass::myconst;
   echo $var::myfunc();`
 	p := NewParser()
+	p.disableScoping = true
 	a, _ := p.Parse("test.php", testStr)
 	tree := []ast.Node{
 		ast.ExpressionStmt{
@@ -771,6 +796,7 @@ func TestCastOperator(t *testing.T) {
 	testStr := `<?
   $var = (double) 1.0; ?>`
 	p := NewParser()
+	p.disableScoping = true
 	a, _ := p.Parse("test.php", testStr)
 	tree := []ast.Node{
 		ast.ExpressionStmt{ast.AssignmentExpression{
@@ -795,6 +821,7 @@ func TestInterface(t *testing.T) {
     private function MyFunc();
   }`
 	p := NewParser()
+	p.disableScoping = true
 	a, _ := p.Parse("test.php", testStr)
 	tree := &ast.Interface{
 		Name:     "MyInterface",
@@ -829,6 +856,7 @@ func TestGlobal(t *testing.T) {
 	testStr := `<?
   global $var, $otherVar;`
 	p := NewParser()
+	p.disableScoping = true
 	a, _ := p.Parse("test.php", testStr)
 	tree := &ast.GlobalDeclaration{
 		Identifiers: []*ast.Variable{

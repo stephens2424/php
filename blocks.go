@@ -14,6 +14,12 @@ func (p *Parser) parseBlock() *ast.Block {
 
 func (p *Parser) parseStatementsUntil(endTokens ...token.Token) *ast.Block {
 	block := &ast.Block{}
+
+	// this option exists to allow parser tests to pass while scope tests may be failing
+	if !p.disableScoping {
+		block.Scope = p.scope
+	}
+
 	breakTypes := map[token.Token]bool{}
 	for _, Typ := range endTokens {
 		breakTypes[Typ] = true

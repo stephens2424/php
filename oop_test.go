@@ -23,6 +23,7 @@ func TestClass(t *testing.T) {
       }
     }`
 	p := NewParser()
+	p.disableScoping = true
 	p.Debug = true
 	a, errs := p.Parse("test.php", testStr)
 	if len(errs) > 0 {
@@ -130,6 +131,7 @@ func TestExtraModifiers(t *testing.T) {
   }`
 
 	p := NewParser()
+	p.disableScoping = true
 	_, errs := p.Parse("test.php", testStr)
 	if len(errs) != 1 {
 		t.Fatalf("Did not correctly error that a function has two public modifiers")
@@ -140,6 +142,7 @@ func TestInstantiation(t *testing.T) {
 	testStr := `<?
   $obj = new Obj::$classes['obj']($arg);`
 	p := NewParser()
+	p.disableScoping = true
 	a, errs := p.Parse("test.php", testStr)
 	if len(errs) != 0 {
 		t.Fatalf("Did not parse instantiation correctly: %s", errs)

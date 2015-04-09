@@ -217,7 +217,7 @@ func (t *Togo) ToGoBlock(p phpast.Statement) *goast.BlockStmt {
 
 	switch p := p.(type) {
 	case *phpast.Block:
-		g.List = t.beginScope(&p.Scope)
+		g.List = t.beginScope(p.Scope)
 		for _, stmt := range p.Statements {
 			g.List = append(g.List, t.ToGoStmt(stmt))
 		}

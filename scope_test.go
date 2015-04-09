@@ -31,6 +31,32 @@ func TestScope(t *testing.T) {
 
 	ExpectFunctions(a.Namespace, []string{"simple"}, t)
 	ExpectClasses(a.Namespace, []string{"fizz"}, t)
+	ExpectVariables(p.FileSet.GlobalScope.Scope, []string{"var1"}, t)
+	ExpectVariables(a.Namespace.Functions["simple"].Body.Scope, []string{"var2", "var3"}, t)
+	ExpectVariables(a.Namespace.ClassesAndInterfaces["fizz"].(*ast.Class).Methods[0].FunctionStmt.Body.Scope, []string{"var4"}, t)
+}
+
+func ExpectVariables(s *ast.Scope, variables []string, t *testing.T) {
+	expected := map[string]struct{}{}
+	hasError := false
+	for _, v := range variables {
+		expected[v] = struct{}{}
+		if _, ok := s.Identifiers[v]; !ok {
+			t.Errorf("expected identifier $%q, but didn't find it", v)
+			hasError = true
+		}
+	}
+
+	for v := range s.Identifiers {
+		if _, ok := expected[v]; !ok {
+			t.Errorf("found identifier $%q, but didn't expect it", v)
+			hasError = true
+		}
+	}
+
+	if hasError {
+		t.FailNow()
+	}
 }
 
 func ExpectFunctions(ns *ast.Namespace, functions []string, t *testing.T) {

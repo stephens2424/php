@@ -421,7 +421,7 @@ func (f FunctionCallExpression) Declares() DeclarationType { return NoDeclaratio
 
 type Block struct {
 	Statements []Statement
-	Scope      Scope
+	Scope      *Scope
 }
 
 func (b Block) String() string {

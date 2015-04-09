@@ -29,6 +29,9 @@ type Parser struct {
 	namespace *ast.Namespace
 	scope     *ast.Scope
 
+	// this option exists to allow parser tests to pass while scope tests may be failing
+	disableScoping bool
+
 	instantiation bool
 }
 

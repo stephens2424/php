@@ -2,7 +2,11 @@ package ast
 
 // superGlobalScope represents the scope containing superglobals such as $_GET
 type SuperGlobalScope struct {
-	Identifiers []Variable
+	Identifiers map[string]*Variable
+}
+
+func NewSuperGlobalScope() *SuperGlobalScope {
+	return &SuperGlobalScope{map[string]*Variable{}}
 }
 
 // globalScope represents the global scope on which functions and classes are
@@ -11,6 +15,10 @@ type SuperGlobalScope struct {
 type GlobalScope struct {
 	*Namespace
 	*Scope
+}
+
+func NewGlobalScope(ns *Namespace) *GlobalScope {
+	return &GlobalScope{ns, nil}
 }
 
 // scope represents a particular local scope (such as within a function).
@@ -47,11 +55,15 @@ type FileSet struct {
 }
 
 func NewFileSet() *FileSet {
+	ns := NewNamespace("/")
+	gscope := NewGlobalScope(ns)
+	scope := NewScope(nil, gscope, &SuperGlobalScope{})
+	gscope.Scope = scope
 	return &FileSet{
 		Files:           make(map[string]*File),
 		Namespaces:      make(map[string]*Namespace),
-		GlobalNamespace: NewNamespace("/"),
-		Scope:           NewScope(nil, &GlobalScope{}, &SuperGlobalScope{}),
+		GlobalNamespace: ns,
+		Scope:           scope,
 	}
 }
 
