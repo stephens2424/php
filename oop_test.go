@@ -25,9 +25,9 @@ func TestClass(t *testing.T) {
 	p := NewParser()
 	p.disableScoping = true
 	p.Debug = true
-	a, errs := p.Parse("test.php", testStr)
-	if len(errs) > 0 {
-		t.Fatal(errs)
+	a, err := p.Parse("test.php", testStr)
+	if err != nil {
+		t.Fatal(err)
 	}
 	if len(a.Nodes) != 1 {
 		t.Fatalf("Class did not correctly parse")
@@ -132,8 +132,8 @@ func TestExtraModifiers(t *testing.T) {
 
 	p := NewParser()
 	p.disableScoping = true
-	_, errs := p.Parse("test.php", testStr)
-	if len(errs) != 1 {
+	_, err := p.Parse("test.php", testStr)
+	if err == nil || len(err.(ParseErrorList)) != 1 {
 		t.Fatalf("Did not correctly error that a function has two public modifiers")
 	}
 }
@@ -143,9 +143,9 @@ func TestInstantiation(t *testing.T) {
   $obj = new Obj::$classes['obj']($arg);`
 	p := NewParser()
 	p.disableScoping = true
-	a, errs := p.Parse("test.php", testStr)
-	if len(errs) != 0 {
-		t.Fatalf("Did not parse instantiation correctly: %s", errs)
+	a, err := p.Parse("test.php", testStr)
+	if err != nil {
+		t.Fatalf("Did not parse instantiation correctly: %s", err)
 	}
 	tree := ast.ExpressionStmt{ast.AssignmentExpression{
 		Operator: "=",

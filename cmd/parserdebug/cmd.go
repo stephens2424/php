@@ -50,14 +50,14 @@ func main() {
 			Parser.MaxErrors = 0
 			Parser.PrintTokens = true
 		}
-		file, errs := Parser.Parse("test.php", string(fBytes))
+		file, err := Parser.Parse("test.php", string(fBytes))
 		nodes := file.Nodes
 		if *ast && len(nodes) != 0 && nodes[0] != nil {
 			for _, node := range nodes {
 				walker.Walk(node)
 			}
 		}
-		if len(errs) != 0 {
+		if err != nil {
 			errors += 1
 			if *showErrors {
 				if !*verbose {
@@ -68,9 +68,7 @@ func main() {
 						walker.Walk(node)
 					}
 				}
-				for _, err := range errs {
-					fmt.Println(err)
-				}
+				fmt.Println(err)
 			}
 		}
 	}

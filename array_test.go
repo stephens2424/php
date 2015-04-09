@@ -11,9 +11,9 @@ func TestList(t *testing.T) {
     list($one, $two) = array(1, 2);`
 
 	p := NewParser()
-	a, errs := p.Parse("test.php", testStr)
-	if len(errs) != 0 {
-		t.Fatalf("Did not parse list correctly: %s", errs)
+	a, err := p.Parse("test.php", testStr)
+	if err != nil {
+		t.Fatalf("Did not parse list correctly: %s", err)
 	}
 
 	tree := ast.ExpressionStmt{&ast.ListStatement{
@@ -41,9 +41,9 @@ func TestArrayBracket(t *testing.T) {
     $arr2 = ["one" => 1, "two" => 2];`
 
 	p := NewParser()
-	a, errs := p.Parse("test.php", testStr)
-	if len(errs) != 0 {
-		t.Fatalf("Did not parse array bracket correctly: %s", errs)
+	a, err := p.Parse("test.php", testStr)
+	if err != nil {
+		t.Fatalf("Did not parse array bracket correctly: %s", err)
 	}
 
 	tree := []ast.Statement{

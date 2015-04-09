@@ -76,9 +76,9 @@ func TestInclude(t *testing.T) {
   include "test.php"; ?>`
 	p := NewParser()
 	p.disableScoping = true
-	_, errs := p.Parse("test.php", testStr)
-	if len(errs) > 0 {
-		fmt.Println(errs)
+	_, err := p.Parse("test.php", testStr)
+	if err != nil {
+		fmt.Println(err)
 		t.Fatalf("Did not parse include correctly")
 	}
 }

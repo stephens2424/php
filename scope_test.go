@@ -24,9 +24,9 @@ func TestScope(t *testing.T) {
 	`
 
 	p := NewParser()
-	a, errs := p.Parse("test.php", src)
-	if len(errs) > 0 {
-		t.Fatal(errs)
+	a, err := p.Parse("test.php", src)
+	if err != nil {
+		t.Fatal(err)
 	}
 
 	ExpectFunctions(a.Namespace, []string{"simple"}, t)

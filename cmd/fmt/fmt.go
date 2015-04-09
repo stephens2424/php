@@ -24,9 +24,9 @@ func main() {
 			continue
 		}
 		p := printer.NewPrinter(os.Stdout)
-		file, errs := php.NewParser().Parse("test.php", string(src))
-		if len(errs) != 0 {
-			log.Fatal(errs)
+		file, err := php.NewParser().Parse("test.php", string(src))
+		if err != nil {
+			log.Fatal(err)
 		}
 		for _, node := range file.Nodes {
 			p.PrintNode(node)

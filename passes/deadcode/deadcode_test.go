@@ -29,9 +29,8 @@ func TestDeadCode(t *testing.T) {
 	`
 
 	p := php.NewParser()
-	_, errs := p.Parse("test.php", src)
-	if len(errs) > 0 {
-		t.Fatal(errs)
+	if _, err := p.Parse("test.php", src); err != nil {
+		t.Fatal(err)
 	}
 
 	var shouldBeDead = map[string]struct{}{

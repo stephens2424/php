@@ -20,9 +20,9 @@ type Togo struct {
 
 func TranspileFile(goFilename, phpFilename, phpStr string, gosrc io.Writer) error {
 	parser := php.NewParser()
-	file, errs := parser.Parse(phpFilename, phpStr)
-	if len(errs) != 0 {
-		return fmt.Errorf("found errors while parsing %s: %s", phpFilename, errs)
+	file, err := parser.Parse(phpFilename, phpStr)
+	if err != nil {
+		return fmt.Errorf("found errors while parsing %s: %s", phpFilename, err)
 	}
 
 	tg := Togo{currentScope: parser.FileSet.Scope}
@@ -37,8 +37,7 @@ func TranspileFile(goFilename, phpFilename, phpStr string, gosrc io.Writer) erro
 
 	buf := &bytes.Buffer{}
 
-	err := format.Node(buf, token.NewFileSet(), File(phpFilename[:len(phpFilename)-4], nodes...))
-	if err != nil {
+	if err = format.Node(buf, token.NewFileSet(), File(phpFilename[:len(phpFilename)-4], nodes...)); err != nil {
 		return fmt.Errorf("error while formatting %s: %s", phpFilename, err)
 	}
 

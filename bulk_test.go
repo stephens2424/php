@@ -24,9 +24,7 @@ func TestFiles(t *testing.T) {
 			continue
 		}
 
-		p := NewParser()
-		_, errs := p.Parse("test.php", string(src))
-		for _, err := range errs {
+		if _, err = NewParser().Parse("test.php", string(src)); err != nil {
 			t.Error(filename, err)
 		}
 	}

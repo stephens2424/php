@@ -1,6 +1,8 @@
 package php
 
 import (
+	"bytes"
+	"errors"
 	"fmt"
 
 	"github.com/stephens2424/php/ast"
@@ -20,10 +22,8 @@ type Parser struct {
 	previous   []token.Item
 	idx        int
 	current    token.Item
-	errors     []error
+	errors     ParseErrorList
 	parenLevel int
-	errorMap   map[int]bool
-	errorCount int
 
 	file      *ast.File
 	namespace *ast.Namespace
@@ -40,14 +40,45 @@ func NewParser() *Parser {
 	p := &Parser{
 		idx:       -1,
 		MaxErrors: 10,
-		errorMap:  make(map[int]bool),
 		FileSet:   ast.NewFileSet(),
 	}
 	return p
 }
 
+type ParseErrorList []ParseError
+
+func (p ParseErrorList) Error() string {
+	if len(p) == 0 {
+		return ""
+	}
+	if len(p) == 1 {
+		return p.Error()
+	}
+	buf := &bytes.Buffer{}
+	for _, s := range p[:len(p)-1] {
+		buf.WriteString(s.Error())
+		buf.WriteString("\n")
+	}
+	buf.WriteString(p[len(p)-2].Error())
+	return buf.String()
+}
+
+type ParseError struct {
+	error
+	Line, Column int
+	File         *ast.File
+}
+
+func (p ParseError) Error() string {
+	return fmt.Sprintf("%s:%d: %s", p.File.Name, p.Line, p.error)
+}
+
+func (p ParseError) String() string {
+	return p.Error()
+}
+
 // Parse consumes the input string to produce an AST that represents it.
-func (p *Parser) Parse(filepath, input string) (file *ast.File, errors []error) {
+func (p *Parser) Parse(filepath, input string) (file *ast.File, err error) {
 	file = &ast.File{Namespace: p.FileSet.GlobalNamespace}
 	p.file = file
 	p.scope = p.FileSet.Scope
@@ -56,7 +87,7 @@ func (p *Parser) Parse(filepath, input string) (file *ast.File, errors []error) 
 	p.FileSet.Files[filepath] = p.file
 	defer func() {
 		if r := recover(); r != nil {
-			errors = append([]error{fmt.Errorf("%s", r)}, p.errors...)
+			err = append(ParseErrorList{errorf(p, "%s", r)}, p.errors...)
 			if p.Debug {
 				for _, err := range p.errors {
 					fmt.Println(err)
@@ -80,7 +111,9 @@ TokenLoop:
 			}
 		}
 	}
-	errors = p.errors
+	if p.errors != nil {
+		err = p.errors
+	}
 	return
 }
 
@@ -161,16 +194,19 @@ func (p *Parser) accept(i ...token.Token) bool {
 }
 
 func (p *Parser) errorf(str string, args ...interface{}) {
-	if p.errorCount > p.MaxErrors {
+	if len(p.errors) > p.MaxErrors {
 		panic("too many errors")
 	}
-	if _, ok := p.errorMap[p.current.Begin.Line]; ok {
-		return
+	p.errors = append(p.errors, errorf(p, str, args...))
+}
+
+func errorf(p *Parser, str string, args ...interface{}) ParseError {
+	e := ParseError{error: errors.New(fmt.Sprintf(str, args...))}
+	if p != nil {
+		e.File = p.file
+		e.Line = 0
 	}
-	errString := fmt.Sprintf(str, args...)
-	p.errorCount += 1
-	p.errors = append(p.errors, fmt.Errorf("%s: %s", p.errorPrefix(), errString))
-	p.errorMap[p.current.Begin.Line] = true
+	return e
 }
 
 func (p *Parser) errorPrefix() string {
