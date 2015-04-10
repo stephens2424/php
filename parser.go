@@ -53,7 +53,7 @@ func (p ParseErrorList) Error() string {
 		return ""
 	}
 	if len(p) == 1 {
-		return p.Error()
+		return p[0].Error()
 	}
 	buf := &bytes.Buffer{}
 	for _, s := range p[:len(p)-1] {

@@ -224,7 +224,7 @@ func (e ExpressionStmt) String() string {
 
 func (e ExpressionStmt) Children() []Node {
 	if e.Expression != nil {
-		return e.Expression.Children()
+		return []Node{e.Expression}
 	}
 	return nil
 }
@@ -668,7 +668,7 @@ func (c ClassExpression) String() string {
 }
 
 func (c ClassExpression) Children() []Node {
-	return []Node{c.Expression}
+	return []Node{c.Receiver, c.Expression}
 }
 
 func (c ClassExpression) AssignableType() Type {

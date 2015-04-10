@@ -346,18 +346,21 @@ func (p *Parser) parseNew(originalParenLev int) ast.Expression {
 }
 
 func (p *Parser) parseIdentifier() (expr ast.Expression) {
-	switch p.peek().Typ {
-	case token.OpenParen:
+	switch typ := p.peek().Typ; {
+	case typ == token.OpenParen && !p.instantiation:
 		// Function calls are okay here because we know they came with
 		// a non-dynamic identifier.
 		expr = p.parseFunctionCall(&ast.Identifier{Value: p.current.Val})
 		p.next()
-	case token.ScopeResolutionOperator:
+	case typ == token.ScopeResolutionOperator:
 		classIdent := p.current.Val
 		p.next() // get onto ::, then we get to the next expr
 		p.next()
 		expr = ast.NewClassExpression(classIdent, p.parseOperand())
 		p.next()
+	case p.instantiation:
+		defer p.next()
+		return &ast.Identifier{Value: p.current.Val}
 	default:
 		name := p.current.Val
 		v := ast.NewVariable(p.current.Val)
