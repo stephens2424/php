@@ -73,10 +73,10 @@ type Variable struct {
 }
 
 // NewVariable intializes a variable node with its name being a simple
-// identifier and its type set to AnyType. The name argument should not
+// identifier and its type set to Unknown. The name argument should not
 // include the $ operator.
 func NewVariable(name string) *Variable {
-	return &Variable{Name: &Identifier{Value: name}, Type: AnyType}
+	return &Variable{Name: &Identifier{Value: name}, Type: Unknown}
 }
 
 func (v Variable) String() string {
@@ -130,9 +130,6 @@ type Expression interface {
 	Statement
 	EvaluatesTo() Type
 }
-
-// AnyType is a bitmask of all the valid types.
-const AnyType = String | Integer | Float | Boolean | Null | Resource | Array | Object
 
 // OperatorExpression is an expression that applies an operator to one, two, or three
 // operands. The operator determines how many operands it should contain.
@@ -321,7 +318,7 @@ func (i Include) String() string {
 }
 
 func (i Include) EvaluatesTo() Type {
-	return AnyType
+	return Unknown
 }
 
 func (i Include) Declares() DeclarationType { return NoDeclaration }
@@ -402,7 +399,7 @@ type FunctionCallExpression struct {
 }
 
 func (f FunctionCallExpression) EvaluatesTo() Type {
-	return String | Integer | Float | Boolean | Null | Resource | Array | Object
+	return Unknown
 }
 
 func (f FunctionCallExpression) String() string {
@@ -565,7 +562,7 @@ type ConstantExpression struct {
 
 func (c Constant) Declares() DeclarationType { return ConstantDeclaration }
 
-func (c Constant) EvaluatesTo() Type { return AnyType }
+func (c Constant) EvaluatesTo() Type { return Unknown }
 
 type Interface struct {
 	Name      string
@@ -622,7 +619,7 @@ func (p PropertyExpression) AssignableType() Type {
 }
 
 func (p PropertyExpression) EvaluatesTo() Type {
-	return AnyType
+	return Unknown
 }
 
 func (p PropertyExpression) Children() []Node {
@@ -647,7 +644,7 @@ func NewClassExpression(r string, e Expression) *ClassExpression {
 }
 
 func (c ClassExpression) EvaluatesTo() Type {
-	return AnyType
+	return Unknown
 }
 
 func (c ClassExpression) String() string {
@@ -970,7 +967,7 @@ func (a ArrayExpression) EvaluatesTo() Type {
 }
 
 func (a ArrayExpression) AssignableType() Type {
-	return AnyType
+	return Unknown
 }
 
 type ArrayLookupExpression struct {
@@ -989,11 +986,11 @@ func (a ArrayLookupExpression) Children() []Node {
 }
 
 func (a ArrayLookupExpression) EvaluatesTo() Type {
-	return AnyType
+	return Unknown
 }
 
 func (a ArrayLookupExpression) AssignableType() Type {
-	return AnyType
+	return Unknown
 }
 
 type ArrayAppendExpression struct {
@@ -1001,11 +998,11 @@ type ArrayAppendExpression struct {
 }
 
 func (a ArrayAppendExpression) EvaluatesTo() Type {
-	return AnyType
+	return Unknown
 }
 
 func (a ArrayAppendExpression) AssignableType() Type {
-	return AnyType
+	return Unknown
 }
 
 func (a ArrayAppendExpression) Children() []Node {

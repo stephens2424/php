@@ -1,13 +1,23 @@
 package ast
 
-import (
-	"strings"
-)
-
-type Type int
+type keyType BasicType
 
 const (
-	String Type = 1 << iota
+	MixedKey   = String | Integer
+	StringKey  = String
+	IntegerKey = Integer
+)
+
+type ArrayType struct {
+	KeyType   keyType
+	ValueType Type
+}
+
+type BasicType int
+
+const (
+	Invalid BasicType = iota
+	String
 	Integer
 	Float
 	Boolean
@@ -16,12 +26,11 @@ const (
 	Array
 	Object
 	Function
-
-	Numeric = Float | Integer
-	Unknown = String | Integer | Float | Boolean | Null | Resource | Array | Object | Function
 )
 
-var typeMap = map[Type]string{
+var Numeric = compoundType{Integer: struct{}{}, Float: struct{}{}}
+
+var typeMap = map[BasicType]string{
 	String:   "string",
 	Integer:  "integer",
 	Float:    "float",
@@ -31,44 +40,162 @@ var typeMap = map[Type]string{
 	Array:    "array",
 	Object:   "object",
 	Function: "function",
+	Invalid:  "invalid-type",
 }
 
-func (t Type) Contains(typ Type) bool {
-	return t&typ != 0
+func (t BasicType) Contains(typ Type) bool {
+	if bt, ok := typ.(BasicType); ok {
+		return t&bt != 0
+	}
+	return false
 }
 
-func (t Type) List() []Type {
-	list := make([]Type, 0)
-	for typ := range typeMap {
-		if t.Contains(typ) {
-			list = append(list, typ)
+func (t BasicType) String() string {
+	if st, ok := typeMap[t]; ok {
+		return st
+	}
+	return typeMap[Invalid]
+}
+
+func (t BasicType) Basic() []BasicType {
+	return []BasicType{t}
+}
+
+func (t BasicType) Equals(o Type) bool {
+	ot, ok := o.(BasicType)
+	if !ok {
+		return false
+	}
+	return ot == t
+}
+
+func (t BasicType) Single() bool {
+	return t != 0 && t&(t-1) == 0
+}
+
+func (t BasicType) Union(o Type) Type {
+	return compoundType{t: struct{}{}, o: struct{}{}}
+}
+
+type compoundType map[Type]struct{}
+
+func (c compoundType) Equals(t Type) bool {
+	if ct, ok := t.(compoundType); ok {
+		if len(ct) != len(c) {
+			return false
+		}
+		for it := range c {
+			if _, ok := ct[it]; !ok {
+				return false
+			}
+		}
+		return true
+	}
+	if len(c) == 1 {
+		for it := range c {
+			return it.Equals(t)
 		}
 	}
-	return list
+	return false
 }
 
-func (t Type) String() string {
-	typeList := t.List()
-	stringList := make([]string, len(typeList))
-	for i, typ := range typeList {
-		stringList[i] = typeMap[typ]
+func (c compoundType) Contains(t Type) bool {
+	if ct, ok := t.(compoundType); ok {
+		if len(ct) > len(c) {
+			return false
+		}
+		for it := range ct {
+			if _, ok := c[it]; !ok {
+				return false
+			}
+		}
+		return true
 	}
-	return strings.Join(stringList, "|")
+
+	for it := range c {
+		if it.Contains(t) {
+			return true
+		}
+	}
+
+	return false
 }
 
-type KeyType Type
+// Union returns a new type that includes both the receiver and the argument.
+func (c compoundType) Union(t Type) Type {
+	c[t] = struct{}{}
+	return c
+}
 
-const (
-	StringKey  KeyType = KeyType(String)
-	IntegerKey KeyType = KeyType(Integer)
-)
+// Single returns true if the receiver expresses one type and only one type.
+func (c compoundType) Single() bool {
+	if len(c) != 1 {
+		return false
+	}
+	for t := range c {
+		return t.Single()
+	}
+	return false
+}
 
-type ArrayType struct {
-	KeyType   KeyType
-	ValueType Type
+// String returns the receiver expressed as a string.
+func (c compoundType) String() string {
+	return ""
+}
+
+// Basic returns the basic type a type expresses.
+func (c compoundType) Basic() []BasicType {
+	return nil
 }
 
 type ObjectType struct {
-	Class             *Class
-	DynamicProperties []Variable
+	Class string
+}
+
+type Type interface {
+	// Equals returns true if the receiver is of the same type as the argument.
+	Equals(Type) bool
+
+	// Contains returns true if the receiver contains the argument type.
+	Contains(Type) bool
+
+	// Union returns a new type that includes both the receiver and the argument.
+	Union(Type) Type
+
+	// Single returns true if the receiver expresses one type and only one type.
+	Single() bool
+
+	// String returns the receiver expressed as a string.
+	String() string
+
+	// Basic returns the basic type a type expresses.
+	Basic() []BasicType
+}
+
+var Unknown = new(unknownType)
+
+type unknownType struct{}
+
+func (_ unknownType) Equals(t Type) bool {
+	return t == Unknown
+}
+
+func (_ unknownType) Contains(t Type) bool {
+	return t == Unknown
+}
+
+func (_ unknownType) Union(t Type) Type {
+	return t
+}
+
+func (_ unknownType) Single() bool {
+	return false
+}
+
+func (_ unknownType) String() string {
+	return "unknown"
+}
+
+func (_ unknownType) Basic() []BasicType {
+	return nil
 }

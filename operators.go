@@ -56,7 +56,7 @@ func operationTypeForToken(t token.Token) operationType {
 }
 
 func (p *Parser) newBinaryOperation(operator token.Item, expr1, expr2 ast.Expression) ast.Expression {
-	t := ast.Numeric
+	var t ast.Type = ast.Numeric
 	switch operator.Typ {
 	case token.AssignmentOperator:
 		return p.parseAssignmentOperation(expr1, expr2, operator)
@@ -65,7 +65,7 @@ func (p *Parser) newBinaryOperation(operator token.Item, expr1, expr2 ast.Expres
 	case token.ConcatenationOperator:
 		t = ast.String
 	case token.AmpersandOperator, token.BitwiseXorOperator, token.BitwiseOrOperator, token.BitwiseShiftOperator:
-		t = ast.AnyType
+		t = ast.Unknown
 	}
 	return ast.BinaryExpression{
 		Type:       t,
@@ -103,7 +103,7 @@ func (p *Parser) parseTernaryOperation(lhs ast.Expression) ast.Expression {
 		Condition: lhs,
 		True:      truthy,
 		False:     falsy,
-		Type:      truthy.EvaluatesTo() | falsy.EvaluatesTo(),
+		Type:      truthy.EvaluatesTo().Union(falsy.EvaluatesTo()),
 	}
 }
 
