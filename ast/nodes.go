@@ -126,6 +126,17 @@ func (e EmptyStatement) Declares() DeclarationType { return NoDeclaration }
 
 type Dynamic Expression
 
+func Static(d Dynamic) *Identifier {
+	switch d := d.(type) {
+	case Identifier:
+		return &d
+	case *Identifier:
+		return d
+	}
+
+	return nil
+}
+
 // An Expression is a snippet of code that evaluates to a single value when run
 // and does not represent a program instruction.
 type Expression interface {

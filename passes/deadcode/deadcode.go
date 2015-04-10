@@ -26,18 +26,12 @@ func EliminateCalls(nodes []ast.Node, knownFunctions map[string]ast.Node) {
 	for _, node := range nodes {
 		switch node := node.(type) {
 		case ast.FunctionCallExpression:
-			if fname, ok := node.FunctionName.(ast.Identifier); ok {
-				delete(knownFunctions, fname.Value)
-			}
-			if fname, ok := node.FunctionName.(*ast.Identifier); ok {
-				delete(knownFunctions, fname.Value)
+			if static := ast.Static(node.FunctionName); static != nil {
+				delete(knownFunctions, static.Value)
 			}
 		case *ast.FunctionCallExpression:
-			if fname, ok := node.FunctionName.(ast.Identifier); ok {
-				delete(knownFunctions, fname.Value)
-			}
-			if fname, ok := node.FunctionName.(*ast.Identifier); ok {
-				delete(knownFunctions, fname.Value)
+			if static := ast.Static(node.FunctionName); static != nil {
+				delete(knownFunctions, static.Value)
 			}
 		}
 		EliminateCalls(node.Children(), knownFunctions)
