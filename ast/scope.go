@@ -23,19 +23,34 @@ func NewGlobalScope(ns *Namespace) *GlobalScope {
 
 // scope represents a particular local scope (such as within a function).
 type Scope struct {
-	Identifiers      map[string][]*Variable
+	Identifiers      map[string]VariableGroup
 	DynamicVariables []*Variable
 	EnclosingScope   *Scope
 	GlobalScope      *GlobalScope
 	SuperGlobalScope *SuperGlobalScope
 }
 
+type VariableGroup struct {
+	References []*Variable
+	Type       Type
+}
+
 func (s *Scope) Variable(v *Variable) {
-	if static := Static(v.Name); static != nil {
-		s.Identifiers[static.Value] = append(s.Identifiers[static.Value], v)
-	} else {
+	static := Static(v.Name)
+	if static == nil {
 		s.DynamicVariables = append(s.DynamicVariables, v)
+		return
 	}
+	vg, ok := s.Identifiers[static.Value]
+	if !ok {
+		vg = VariableGroup{Type: Unknown}
+	}
+	vg.Type = vg.Type.Union(v.EvaluatesTo())
+	for _, ref := range vg.References {
+		ref.Type = vg.Type
+	}
+	vg.References = append(vg.References, v)
+	s.Identifiers[static.Value] = vg
 }
 
 type File struct {
@@ -98,7 +113,7 @@ func (i Interface) ClassName() string { return i.Name }
 
 func NewScope(parent *Scope, global *GlobalScope, superGlobal *SuperGlobalScope) *Scope {
 	return &Scope{
-		Identifiers:      map[string][]*Variable{},
+		Identifiers:      map[string]VariableGroup{},
 		EnclosingScope:   parent,
 		GlobalScope:      global,
 		SuperGlobalScope: superGlobal,

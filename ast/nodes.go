@@ -356,6 +356,9 @@ type NewExpression struct {
 }
 
 func (n NewExpression) EvaluatesTo() Type {
+	if static := Static(n.Class); static != nil {
+		return ObjectType{static.Value}
+	}
 	return Object
 }
 
