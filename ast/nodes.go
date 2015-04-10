@@ -68,7 +68,7 @@ func (i Identifier) Children() []Node {
 type Variable struct {
 	// Name is the identifier for the variable, which may be
 	// a dynamic expression.
-	Name Expression
+	Name Dynamic
 	Type Type
 }
 
@@ -124,6 +124,8 @@ func (e EmptyStatement) Children() []Node          { return nil }
 func (e EmptyStatement) Print(f Format) string     { return ";" }
 func (e EmptyStatement) Declares() DeclarationType { return NoDeclaration }
 
+type Dynamic Expression
+
 // An Expression is a snippet of code that evaluates to a single value when run
 // and does not represent a program instruction.
 type Expression interface {
@@ -131,7 +133,7 @@ type Expression interface {
 	EvaluatesTo() Type
 }
 
-// OperatorExpression is an expression that applies an operator to one, two, or three
+// BinaryExpression is an expression that applies an operator to one, two, or three
 // operands. The operator determines how many operands it should contain.
 type BinaryExpression struct {
 	Antecedent Expression
@@ -338,7 +340,7 @@ func (e ExitStmt) String() string {
 func (e ExitStmt) Declares() DeclarationType { return NoDeclaration }
 
 type NewExpression struct {
-	Class     Expression
+	Class     Dynamic
 	Arguments []Expression
 }
 
@@ -385,7 +387,7 @@ func (a AssignmentExpression) EvaluatesTo() Type {
 func (a AssignmentExpression) Declares() DeclarationType { return NoDeclaration }
 
 type Assignable interface {
-	Expression
+	Dynamic
 	AssignableType() Type
 }
 
@@ -394,7 +396,7 @@ type FunctionCallStmt struct {
 }
 
 type FunctionCallExpression struct {
-	FunctionName Expression
+	FunctionName Dynamic
 	Arguments    []Expression
 }
 
@@ -605,8 +607,8 @@ func (p Property) Children() []Node {
 }
 
 type PropertyExpression struct {
-	Receiver Expression
-	Name     Expression
+	Receiver Dynamic
+	Name     Dynamic
 	Type     Type
 }
 
@@ -631,8 +633,8 @@ func (p PropertyExpression) Children() []Node {
 func (p PropertyExpression) Declares() DeclarationType { return NoDeclaration }
 
 type ClassExpression struct {
-	Receiver   Expression
-	Expression Expression
+	Receiver   Dynamic
+	Expression Dynamic
 	Type       Type
 }
 
@@ -675,7 +677,7 @@ func (m Method) Children() []Node {
 }
 
 type MethodCallExpression struct {
-	Receiver Expression
+	Receiver Dynamic
 	*FunctionCallExpression
 }
 
@@ -971,7 +973,7 @@ func (a ArrayExpression) AssignableType() Type {
 }
 
 type ArrayLookupExpression struct {
-	Array Expression
+	Array Dynamic
 	Index Expression
 }
 
@@ -994,7 +996,7 @@ func (a ArrayLookupExpression) AssignableType() Type {
 }
 
 type ArrayAppendExpression struct {
-	Array Expression
+	Array Dynamic
 }
 
 func (a ArrayAppendExpression) EvaluatesTo() Type {
@@ -1053,7 +1055,7 @@ func (l ListStatement) Children() []Node {
 func (_ ListStatement) Declares() DeclarationType { return NoDeclaration }
 
 type StaticVariableDeclaration struct {
-	Declarations []Expression
+	Declarations []Dynamic
 }
 
 func (s StaticVariableDeclaration) Children() []Node {

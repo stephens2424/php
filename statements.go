@@ -52,7 +52,7 @@ func (p *Parser) parseStmt() ast.Statement {
 			p.expectStmtEnd()
 			return expr
 		}
-		s := &ast.StaticVariableDeclaration{Declarations: make([]ast.Expression, 0)}
+		s := &ast.StaticVariableDeclaration{Declarations: make([]ast.Dynamic, 0)}
 		for {
 			p.expect(token.VariableOperator)
 			p.expect(token.Identifier)
