@@ -53,10 +53,10 @@ func parseFile(t *testing.T, phpFilename, phpStr string) {
 
 	goStr, err := readFile(goFilename)
 	if err != nil {
-		t.Fatal(err)
+		t.Fatal("couldn't read go file", goFilename, err)
 	}
 
-	if err == nil && buf.String() != goStr {
+	if buf.String() != goStr {
 		failFunc := t.Skipf
 		if failTranspilation {
 			failFunc = t.Errorf

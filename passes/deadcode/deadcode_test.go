@@ -7,7 +7,7 @@ import (
 	"github.com/stephens2424/php/ast"
 )
 
-func TestDeadCode(t *testing.T) {
+func TestDeadFunctions(t *testing.T) {
 	src := `<?php
 	$var1 = "a";
 	function simple() {
