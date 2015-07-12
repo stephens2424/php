@@ -1,0 +1,16 @@
+	"<?phpif(('')==)v(''." +
+	"(_).''v('').''$b=t::" +
+	"actory();\n$db->exec(" +
+	"\"CREATE TABLE test (" +
+	"test INT)\");\n\n$boole" +
+	"an = 1;\n$stmt = $db-" +
+	">prepare('INSERT INT" +
+	"O test VALUES (:bool" +
+	"ean)');\n$stmt->bindV" +
+	"alue(':boolean', iss" +
+	"et($boolean), PDO::P" +
+	"ARAM_INT);\n$stmt->ex" +
+	"ecute();\n\nvar_dump($" +
+	"db->query(\"SELECT * " +
+	"FROM test\")->fetchAl" +
+	"l(PDO::FETCH_ASSOC))"

@@ -1,0 +1,13 @@
+<?php
+function est1(.. $args) {
+    var_dump(args);}
+
+tst1();
+tes1(1);test(1,2,3);
+
+function tes2($rg1,$rg2,...$rgs) {
+    var_dump(arg1, $arg2, $args);}
+
+tst2(1,2);test(1,2,3);test(1,2,3,4,5)
+
+?>

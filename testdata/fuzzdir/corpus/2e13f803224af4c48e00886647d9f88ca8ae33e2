@@ -1,0 +1,4 @@
+<?phpswitch(true){case false;echo"";
+case true;
+  echo "why does this work?";
+}

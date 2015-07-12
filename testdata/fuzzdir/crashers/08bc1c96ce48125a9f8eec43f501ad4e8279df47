@@ -1,0 +1,4 @@
+<?$'';b->c(''$b("")$t=-('');
+$stmt->bindValue(':id', 1, SQLITE3_INTEGER);
+$stmt->reset("dummy");
+$stmt->reset(

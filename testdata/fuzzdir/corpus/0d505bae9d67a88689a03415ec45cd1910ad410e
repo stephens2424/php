@@ -1,0 +1,2 @@
+<?php
+interface 1{const O=0;}interface 2{const O=0;}class C implements 1,

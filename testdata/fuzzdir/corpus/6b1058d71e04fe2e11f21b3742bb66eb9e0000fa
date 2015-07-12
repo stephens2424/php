@@ -1,0 +1,2 @@
+<?php
+g(L);p(array(1,2,3,4,)[3]);p(array(1,2,3,4,)['']);p(y(array(1,2,3),array(4,5,6))[1][2]);foreach(y(y(1,2,3))[0]as$r){echo$r;}

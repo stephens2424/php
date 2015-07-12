@@ -1,0 +1,2 @@
+<?php
+$a = 0xBC$this->assertEquals($expectedResult, $rsult, NULL, 1E-8);

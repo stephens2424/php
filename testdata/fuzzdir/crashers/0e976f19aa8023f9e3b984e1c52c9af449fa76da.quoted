@@ -1,0 +1,7 @@
+	"<?\"\";}}}a$s\"\";};x=-e" +
+	"(\n$b = function ($cl" +
+	"ass) {\n    eval('cla" +
+	"ss ' . $class . '{fu" +
+	"nction __construct()" +
+	"{echo \"foo\\n\";}}');\n" +
+	"    e"

@@ -1,0 +1,54 @@
+:0: Found close-paren:")", expected [;]
+:0: Found [:"[", expected [Function Argument Separator]
+:0: Expected expression. Found */%:"%"
+:0: Found number-literal:"03", expected [close-paren]
+:0: Found identifier:"d", expected [;]
+:0: Expected expression. Found ]:"]"
+:0: Found ]:"]", statement or expression
+:0: expected => or ,
+:0: Found identifier:"c", statement or expression
+:0: Expected expression. Found EOF
+:0: Found EOF, statement or expression
+panic: too many errors [recovered]
+	panic: too many errors
+
+goroutine 1 [running]:
+github.com/stephens2424/php.func·006()
+	/var/folders/6c/hxwdzv2n4vv363cpjk201md80000gn/T/go-fuzz-build666027188/src/github.com/stephens2424/php/parser.go:97 +0x605
+github.com/stephens2424/php.(*Parser).errorf(0x2083f81e0, 0x245430, 0x15, 0x2083e09a8, 0x2, 0x2)
+	/var/folders/6c/hxwdzv2n4vv363cpjk201md80000gn/T/go-fuzz-build666027188/src/github.com/stephens2424/php/parser.go:200 +0xe2
+github.com/stephens2424/php.(*Parser).expected(0x2083f81e0, 0x208384270, 0x1, 0x1)
+	/var/folders/6c/hxwdzv2n4vv363cpjk201md80000gn/T/go-fuzz-build666027188/src/github.com/stephens2424/php/parser.go:184 +0x19b
+github.com/stephens2424/php.(*Parser).expectCurrent(0x2083f81e0, 0x208384270, 0x1, 0x1)
+	/var/folders/6c/hxwdzv2n4vv363cpjk201md80000gn/T/go-fuzz-build666027188/src/github.com/stephens2424/php/parser.go:165 +0x16b
+github.com/stephens2424/php.(*Parser).parseBlock(0x2083f81e0, 0x2083f8228)
+	/var/folders/6c/hxwdzv2n4vv363cpjk201md80000gn/T/go-fuzz-build666027188/src/github.com/stephens2424/php/blocks.go:11 +0x155
+github.com/stephens2424/php.(*Parser).parseStmt(0x2083f81e0, 0x0, 0x0)
+	/var/folders/6c/hxwdzv2n4vv363cpjk201md80000gn/T/go-fuzz-build666027188/src/github.com/stephens2424/php/statements.go:12 +0x1fd1
+github.com/stephens2424/php.(*Parser).parseControlBlock(0x2083f81e0, 0x2083e0fe8, 0x3, 0x3, 0x0, 0x0)
+	/var/folders/6c/hxwdzv2n4vv363cpjk201md80000gn/T/go-fuzz-build666027188/src/github.com/stephens2424/php/controlstructures.go:91 +0x1df
+github.com/stephens2424/php.(*Parser).parseIfBranch(0x2083f81e0, 0x0, 0x0, 0x0, 0x0)
+	/var/folders/6c/hxwdzv2n4vv363cpjk201md80000gn/T/go-fuzz-build666027188/src/github.com/stephens2424/php/controlstructures.go:41 +0x1be
+github.com/stephens2424/php.(*Parser).parseIf(0x2083f81e0, 0x1f6080)
+	/var/folders/6c/hxwdzv2n4vv363cpjk201md80000gn/T/go-fuzz-build666027188/src/github.com/stephens2424/php/controlstructures.go:11 +0x10e
+github.com/stephens2424/php.(*Parser).parseStmt(0x2083f81e0, 0x0, 0x0)
+	/var/folders/6c/hxwdzv2n4vv363cpjk201md80000gn/T/go-fuzz-build666027188/src/github.com/stephens2424/php/statements.go:123 +0x3842
+github.com/stephens2424/php.(*Parser).parseStatementsUntil(0x2083f81e0, 0x2083e1738, 0x1, 0x1, 0x220837c000)
+	/var/folders/6c/hxwdzv2n4vv363cpjk201md80000gn/T/go-fuzz-build666027188/src/github.com/stephens2424/php/blocks.go:32 +0x3d8
+github.com/stephens2424/php.(*Parser).parseBlock(0x2083f81e0, 0x2083dc3c0)
+	/var/folders/6c/hxwdzv2n4vv363cpjk201md80000gn/T/go-fuzz-build666027188/src/github.com/stephens2424/php/blocks.go:10 +0xf2
+github.com/stephens2424/php.(*Parser).parseFunctionStmt(0x2083f81e0, 0x1f6000, 0x32c8f8)
+	/var/folders/6c/hxwdzv2n4vv363cpjk201md80000gn/T/go-fuzz-build666027188/src/github.com/stephens2424/php/functions.go:16 +0x2cf
+github.com/stephens2424/php.(*Parser).parseStmt(0x2083f81e0, 0x0, 0x0)
+	/var/folders/6c/hxwdzv2n4vv363cpjk201md80000gn/T/go-fuzz-build666027188/src/github.com/stephens2424/php/statements.go:97 +0x721
+github.com/stephens2424/php.(*Parser).parseNode(0x2083f81e0, 0x0, 0x0)
+	/var/folders/6c/hxwdzv2n4vv363cpjk201md80000gn/T/go-fuzz-build666027188/src/github.com/stephens2424/php/parser.go:131 +0x39d
+github.com/stephens2424/php.(*Parser).Parse(0x2083f81e0, 0x241390, 0x8, 0x20837b0e0, 0x10f, 0x2083b4c30, 0x220838f130, 0x208398080)
+	/var/folders/6c/hxwdzv2n4vv363cpjk201md80000gn/T/go-fuzz-build666027188/src/github.com/stephens2424/php/parser.go:110 +0x5c6
+github.com/stephens2424/php.Fuzz(0x220853c000, 0x10f, 0x200000, 0x3)
+	/var/folders/6c/hxwdzv2n4vv363cpjk201md80000gn/T/go-fuzz-build666027188/src/github.com/stephens2424/php/fuzz.go:21 +0x183
+github.com/dvyukov/go-fuzz/go-fuzz-dep.Main(0x27ee90)
+	/Users/stephen/go/src/github.com/dvyukov/go-fuzz/go-fuzz-dep/main.go:44 +0x13d
+main.main()
+	/var/folders/6c/hxwdzv2n4vv363cpjk201md80000gn/T/go-fuzz-build666027188/src/go-fuzz-main/main.go:10 +0x2a
+exit status 2

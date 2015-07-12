@@ -1,0 +1,13 @@
+<?php$f= dirname(__)."";$h=n($f,'');echo"\n";varp(k($h,0,R));echo"".l($h)."\n";//read the next 10
+varp(d($h,0));echo"\e\n";varp(k( $h, 34, R));echo"=".gztell($h)."\n";
+//read the next 10
+var_dump(gzread($h, 10));
+
+echo "\nmove backward to the 77th byte\n";
+var_dump(gzseek( $h, -27, SEEK_CUR ) );
+echo "tell=".gztell($h)."\n";
+//read the next 10
+var_dump(gzread($h, 10));
+gzclose($h);
+?>
+===DONE===

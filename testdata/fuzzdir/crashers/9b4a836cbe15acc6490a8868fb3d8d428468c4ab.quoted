@@ -1,0 +1,13 @@
+	"<?/* Source code: ex" +
+	"t/mbstring/mbstring." +
+	"c\n * Alias to functi" +
+	"ons: \n */\n\n/*\n * Pas" +
+	"s an unknown encodin" +
+	"g to mb_stripos() to" +
+	" test behaviour\n */\n" +
+	"\necho \"*** Testing m" +
+	"b_stripos() : error " +
+	"conditions ***\\n\";\n$" +
+	"haystack = b'Hello, " +
+	"world';\n$needle = b'" +
+	"world';"

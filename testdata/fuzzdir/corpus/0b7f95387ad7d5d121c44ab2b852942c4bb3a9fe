@@ -1,0 +1,8 @@
+<?
+
+$r = 
+$a = 
+
+$c = function ($r, $r) use ($r, $r) {
+  return $r + $a;
+};

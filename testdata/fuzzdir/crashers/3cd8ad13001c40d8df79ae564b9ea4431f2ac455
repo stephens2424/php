@@ -1,0 +1,9 @@
+<?phpif(('')=v(''(''v('').''$b=t:factory();
+$db->exec("CREATE TABLE test (test INT)");
+
+$boolean = 1;
+$stmt = $db->prepare('INSERT INTO test VALUES (:boolean)');
+$stmt->bindValue(':boolean', isset($boolean), PDO::PARAM_INT);
+$stmt->execute();
+
+v

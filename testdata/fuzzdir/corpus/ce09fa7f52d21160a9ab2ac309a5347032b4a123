@@ -1,0 +1,9 @@
+<?php
+/*
+ * wordpress/wp-includes/class-simplepie.php
+ *
+ * line 1413
+ */
+					if (!($this->get_type() & ~SIMPLEPIE_TYPE_NONE))
+					{
+						$this->error = "A feed could not be found at $this->feed_url. This does not appear to be a valid RSS or Atom feed."

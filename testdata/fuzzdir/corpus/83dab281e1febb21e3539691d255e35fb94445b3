@@ -1,0 +1,7 @@
+<?php
+
+namespace TIsA\T;
+
+use ATet as Another;
+
+

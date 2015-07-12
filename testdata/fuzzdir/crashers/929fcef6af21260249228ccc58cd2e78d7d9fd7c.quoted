@@ -1,0 +1,13 @@
+	"<?\"\";y(k,\"\";y(k,CREA" +
+	"TE TABLE test_affect" +
+	"ed (foo int) ENGINE=" +
+	"\" . $engine);\n\n\tmysq" +
+	"li_query($link, \"INS" +
+	"ERT INTO test_affect" +
+	"ed VALUES (1),(2),(3" +
+	"),(4),(5)\");\n\n\t$stmt" +
+	" = mysqli_prepare($l" +
+	"ink, \"DELETE FROM te" +
+	"st_affected WHERE fo" +
+	"o=?\");\n\tmysqli_stmt_" +
+	"bind_param($stmt, \""

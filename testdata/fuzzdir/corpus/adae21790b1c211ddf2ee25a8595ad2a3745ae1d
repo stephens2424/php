@@ -1,0 +1,7 @@
+<?php
+function fo($uused = null, $uused = nul, $arg = array()) {
+	   return 1
+}
+fo();
+ech "okey";
+?>

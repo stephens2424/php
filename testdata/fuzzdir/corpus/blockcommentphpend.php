@@ -1,0 +1,6 @@
+<?php
+
+/**
+ * Convert <?= ?> to long-form <?php echo ?> and <?php ?> to <?php ?>
+ *
+ */

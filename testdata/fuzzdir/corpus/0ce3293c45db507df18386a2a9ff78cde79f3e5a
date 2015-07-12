@@ -1,0 +1,6 @@
+<?php
+/**/"This is a nice and simple string";
+  if (mb_ereg(".*nice and simple.*",$a)) {
+    echo "ok\n";
+  }
+  if (!mb_ereg(".*doesn't exist.*"

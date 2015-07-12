@@ -1,0 +1,48 @@
+:0: Expected expression. Found =:"="
+:0: Found =:"=", statement or expression
+:0: Expected expression. Found =:"="
+:0: Found =:"=", statement or expression
+:0: Expected expression. Found logical-or:"or"
+:0: Found identifier:"e", expected [close-paren]
+:0: Found identifier:"l", expected [close-paren]
+:0: Found identifier:"r", expected [] Block End]
+:0: Found identifier:"f", expected [;]
+:0: Found identifier:"y", expected [;]
+:0: Expected expression. Found EOF
+panic: too many errors [recovered]
+	panic: too many errors
+
+goroutine 1 [running]:
+github.com/stephens2424/php.func·006()
+	/var/folders/6c/hxwdzv2n4vv363cpjk201md80000gn/T/go-fuzz-build666027188/src/github.com/stephens2424/php/parser.go:97 +0x605
+github.com/stephens2424/php.(*Parser).errorf(0x2083f8000, 0x25c9b0, 0x21, 0x2083fd3e8, 0x1, 0x1)
+	/var/folders/6c/hxwdzv2n4vv363cpjk201md80000gn/T/go-fuzz-build666027188/src/github.com/stephens2424/php/parser.go:200 +0xe2
+github.com/stephens2424/php.(*Parser).parseStmt(0x2083f8000, 0x0, 0x0)
+	/var/folders/6c/hxwdzv2n4vv363cpjk201md80000gn/T/go-fuzz-build666027188/src/github.com/stephens2424/php/statements.go:209 +0x1cb0
+github.com/stephens2424/php.(*Parser).parseStatementsUntil(0x2083f8000, 0x2083fd790, 0x1, 0x1, 0x2)
+	/var/folders/6c/hxwdzv2n4vv363cpjk201md80000gn/T/go-fuzz-build666027188/src/github.com/stephens2424/php/blocks.go:32 +0x3d8
+github.com/stephens2424/php.(*Parser).parseBlock(0x2083f8000, 0x2083f8048)
+	/var/folders/6c/hxwdzv2n4vv363cpjk201md80000gn/T/go-fuzz-build666027188/src/github.com/stephens2424/php/blocks.go:10 +0xf2
+github.com/stephens2424/php.(*Parser).parseStmt(0x2083f8000, 0x0, 0x0)
+	/var/folders/6c/hxwdzv2n4vv363cpjk201md80000gn/T/go-fuzz-build666027188/src/github.com/stephens2424/php/statements.go:12 +0x1fd1
+github.com/stephens2424/php.(*Parser).parseNode(0x2083f8000, 0x0, 0x0)
+	/var/folders/6c/hxwdzv2n4vv363cpjk201md80000gn/T/go-fuzz-build666027188/src/github.com/stephens2424/php/parser.go:131 +0x39d
+github.com/stephens2424/php.(*Parser).Parse(0x2083f8000, 0x241390, 0x8, 0x208398600, 0x17, 0x2083b4840, 0x220838ef28, 0x208398100)
+	/var/folders/6c/hxwdzv2n4vv363cpjk201md80000gn/T/go-fuzz-build666027188/src/github.com/stephens2424/php/parser.go:110 +0x5c6
+github.com/stephens2424/php.Fuzz(0x220853c000, 0x17, 0x200000, 0x2083b4510)
+	/var/folders/6c/hxwdzv2n4vv363cpjk201md80000gn/T/go-fuzz-build666027188/src/github.com/stephens2424/php/fuzz.go:21 +0x183
+github.com/dvyukov/go-fuzz/go-fuzz-dep.Main(0x27ee90)
+	/Users/stephen/go/src/github.com/dvyukov/go-fuzz/go-fuzz-dep/main.go:44 +0x13d
+main.main()
+	/var/folders/6c/hxwdzv2n4vv363cpjk201md80000gn/T/go-fuzz-build666027188/src/go-fuzz-main/main.go:10 +0x2a
+
+goroutine 6 [runnable]:
+github.com/stephens2424/php/lexer.(*lexer).emit(0x2083b2300, 0x0)
+	/var/folders/6c/hxwdzv2n4vv363cpjk201md80000gn/T/go-fuzz-build666027188/src/github.com/stephens2424/php/lexer/lexer.go:77 +0x2da
+github.com/stephens2424/php/lexer.lexPHP(0x2083b2300, 0x27f2e8)
+	/var/folders/6c/hxwdzv2n4vv363cpjk201md80000gn/T/go-fuzz-build666027188/src/github.com/stephens2424/php/lexer/lexers.go:95 +0x8ef
+github.com/stephens2424/php/lexer.(*lexer).run(0x2083b2300)
+	/var/folders/6c/hxwdzv2n4vv363cpjk201md80000gn/T/go-fuzz-build666027188/src/github.com/stephens2424/php/lexer/lexer.go:58 +0x9b
+created by github.com/stephens2424/php/lexer.NewLexer
+	/var/folders/6c/hxwdzv2n4vv363cpjk201md80000gn/T/go-fuzz-build666027188/src/github.com/stephens2424/php/lexer/lexer.go:46 +0x116
+exit status 2

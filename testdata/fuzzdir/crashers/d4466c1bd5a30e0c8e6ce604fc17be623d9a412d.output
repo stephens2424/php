@@ -1,0 +1,36 @@
+:0: Found identifier:"c", expected [] Block End]
+:0: Found number-literal:"0", expected [;]
+:0: Expected expression. Found close-paren:")"
+:0: Found number-literal:"0", expected [close-paren]
+:0: Found number-literal:"0", statement or expression
+:0: Found $:"$", expected [;]
+:0: Expected expression. Found Block End:"}"
+:0: Found Block End:"}", statement or expression
+:0: Expected expression. Found Public:"public"
+:0: Found Public:"public", statement or expression
+:0: Found number-literal:"0", expected [$]
+panic: too many errors [recovered]
+	panic: too many errors
+
+goroutine 1 [running]:
+github.com/stephens2424/php.func·006()
+	/var/folders/6c/hxwdzv2n4vv363cpjk201md80000gn/T/go-fuzz-build666027188/src/github.com/stephens2424/php/parser.go:97 +0x605
+github.com/stephens2424/php.(*Parser).errorf(0x2083f8000, 0x265330, 0x21, 0x2083fd688, 0x1, 0x1)
+	/var/folders/6c/hxwdzv2n4vv363cpjk201md80000gn/T/go-fuzz-build666027188/src/github.com/stephens2424/php/parser.go:200 +0xe2
+github.com/stephens2424/php.(*Parser).parseFunctionDefinition(0x2083f8000, 0x2083842d0)
+	/var/folders/6c/hxwdzv2n4vv363cpjk201md80000gn/T/go-fuzz-build666027188/src/github.com/stephens2424/php/functions.go:50 +0xb7d
+github.com/stephens2424/php.(*Parser).parseFunctionStmt(0x2083f8000, 0x25c900, 0x21)
+	/var/folders/6c/hxwdzv2n4vv363cpjk201md80000gn/T/go-fuzz-build666027188/src/github.com/stephens2424/php/functions.go:11 +0x84
+github.com/stephens2424/php.(*Parser).parseStmt(0x2083f8000, 0x0, 0x0)
+	/var/folders/6c/hxwdzv2n4vv363cpjk201md80000gn/T/go-fuzz-build666027188/src/github.com/stephens2424/php/statements.go:97 +0x721
+github.com/stephens2424/php.(*Parser).parseNode(0x2083f8000, 0x0, 0x0)
+	/var/folders/6c/hxwdzv2n4vv363cpjk201md80000gn/T/go-fuzz-build666027188/src/github.com/stephens2424/php/parser.go:131 +0x39d
+github.com/stephens2424/php.(*Parser).Parse(0x2083f8000, 0x241390, 0x8, 0x2083b4840, 0x21, 0x2083b4870, 0x220838ee98, 0x2083980e0)
+	/var/folders/6c/hxwdzv2n4vv363cpjk201md80000gn/T/go-fuzz-build666027188/src/github.com/stephens2424/php/parser.go:110 +0x5c6
+github.com/stephens2424/php.Fuzz(0x220853c000, 0x21, 0x200000, 0x2083b4510)
+	/var/folders/6c/hxwdzv2n4vv363cpjk201md80000gn/T/go-fuzz-build666027188/src/github.com/stephens2424/php/fuzz.go:21 +0x183
+github.com/dvyukov/go-fuzz/go-fuzz-dep.Main(0x27ee90)
+	/Users/stephen/go/src/github.com/dvyukov/go-fuzz/go-fuzz-dep/main.go:44 +0x13d
+main.main()
+	/var/folders/6c/hxwdzv2n4vv363cpjk201md80000gn/T/go-fuzz-build666027188/src/go-fuzz-main/main.go:10 +0x2a
+exit status 2

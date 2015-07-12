@@ -1,0 +1,3 @@
+<?
+
+echo ++self::$depth;

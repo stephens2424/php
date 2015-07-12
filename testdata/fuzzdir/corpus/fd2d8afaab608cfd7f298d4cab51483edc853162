@@ -1,0 +1,8 @@
+<?php
+
+					if (!$this->e() & ~IEYPEONE)
+					{
+						$this->r  "A feed could not be found at $this->feed_url. This does not appear to be a valid RSS or Atom feed."
+						$this->s->l('M', 'error', array($this->error, E_USER_NOTICE, __FILE__, __LINE__));
+						return false;
+          }

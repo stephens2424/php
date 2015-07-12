@@ -1,0 +1,11 @@
+<?('';'');function g($k,$g,$e,$t){if(e(p=(_))){f("",t+(p),p);return;}if(s=y(k,'')){f(",
+				$offset + ,
+				$control_string,
+				mysqli_errno($link),
+				mysqli_error($link));
+			return false;
+		}
+
+		clearstatcache();
+		if (!file_exists($trace_file)) {
+			printf("[%03d][c

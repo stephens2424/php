@@ -1,0 +1,13 @@
+<?php
+""$y="".e().""$y="".e()."""wrong";
+
+openssl_private_encrypt($data, $encrypted, $privkey);
+var_dump(openssl_public_decrypt($encrypted, $output, $pubkey));
+var_dump($output);
+var_dump(openssl_public_decrypt($encrypted, $output2, $wrong));
+var_dump($output2);
+var_dump(openssl_public_decrypt($wrong, $output3, $pubkey));
+var_dump($output3);
+var_dump(openssl_public_decrypt($encrypted, $output4, array()));
+var_dump($output4);
+var_dump(openssl_public_decrypt($encrypted, $output5, array($p

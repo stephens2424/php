@@ -1,0 +1,13 @@
+	"<?phpif(('')=v(''.(." +
+	"''v('').''$b=t:facto" +
+	"ry();\n$db->exec(\"CRE" +
+	"ATE TABLE test (test" +
+	" INT)\");\n\n$boolean =" +
+	" 1;\n$stmt = $db->pre" +
+	"pare('INSERT INTO te" +
+	"st VALUES (:boolean)" +
+	"');\n$stmt->bindValue" +
+	"(':boolean', isset($" +
+	"boolean), PDO::PARAM" +
+	"_INT);\n$stmt->execut" +
+	"e();\n\nv"

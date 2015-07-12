@@ -1,0 +1,6 @@
+<?"";y(k,"";y(k,CREATE TABLE test_affected (foo int) ENGINE=" . $engine);
+
+	mysqli_query($link, "INSERT INTO test_affected VALUES (1),(2),(3),(4),(5)");
+
+	$stmt = mysqli_prepare($link, "DELETE FROM test_affected WHERE foo=?");
+	mysqli_stmt_bind_param($stmt, "

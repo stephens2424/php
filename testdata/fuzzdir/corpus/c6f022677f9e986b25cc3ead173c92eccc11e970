@@ -1,0 +1,1 @@
+<?phpfunction test(){static$zero=0,$otherzero=0;static$one=1;static$two="t";static$three=array(3);}

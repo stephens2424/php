@@ -1,0 +1,20 @@
+panic: false positive: the input was valid but flagged invalid
+
+goroutine 1 [running]:
+github.com/stephens2424/php.Fuzz(0x220853c000, 0x23e, 0x200000, 0x2083b4510)
+	/var/folders/6c/hxwdzv2n4vv363cpjk201md80000gn/T/go-fuzz-build666027188/src/github.com/stephens2424/php/fuzz.go:29 +0x3d3
+github.com/dvyukov/go-fuzz/go-fuzz-dep.Main(0x27ee90)
+	/Users/stephen/go/src/github.com/dvyukov/go-fuzz/go-fuzz-dep/main.go:44 +0x13d
+main.main()
+	/var/folders/6c/hxwdzv2n4vv363cpjk201md80000gn/T/go-fuzz-build666027188/src/go-fuzz-main/main.go:10 +0x2a
+
+goroutine 6 [runnable]:
+github.com/stephens2424/php/lexer.(*lexer).emit(0x2083b2060, 0x0)
+	/var/folders/6c/hxwdzv2n4vv363cpjk201md80000gn/T/go-fuzz-build666027188/src/github.com/stephens2424/php/lexer/lexer.go:77 +0x2da
+github.com/stephens2424/php/lexer.lexHTML(0x2083b2060, 0x27f2c0)
+	/var/folders/6c/hxwdzv2n4vv363cpjk201md80000gn/T/go-fuzz-build666027188/src/github.com/stephens2424/php/lexer/lexers.go:45 +0x362
+github.com/stephens2424/php/lexer.(*lexer).run(0x2083b2060)
+	/var/folders/6c/hxwdzv2n4vv363cpjk201md80000gn/T/go-fuzz-build666027188/src/github.com/stephens2424/php/lexer/lexer.go:58 +0x9b
+created by github.com/stephens2424/php/lexer.NewLexer
+	/var/folders/6c/hxwdzv2n4vv363cpjk201md80000gn/T/go-fuzz-build666027188/src/github.com/stephens2424/php/lexer/lexer.go:46 +0x116
+exit status 2

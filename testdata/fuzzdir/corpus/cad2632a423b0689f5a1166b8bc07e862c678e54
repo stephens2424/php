@@ -1,0 +1,2 @@
+<?php
+try{try{try{try{throw new n(NULL);}catch(n$e){varp($e->e());throw$e;}}catch(n$e){varp($e->e());throw$e;}}catch(n$e){varp($e->e());throw$e;}}catch(n$e){varp($e->e());throw$e;}?

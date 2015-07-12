@@ -1,0 +1,3 @@
+<?php
+
+gzopen('someFile', 'c');

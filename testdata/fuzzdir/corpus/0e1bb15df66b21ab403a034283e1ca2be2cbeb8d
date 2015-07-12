@@ -1,0 +1,9 @@
+<?php	require_once(""/*/=t();$l->b()$l->y("");
+	$row = $result->fetch_row();
+	$result->close();
+
+	var_dump($row);
+	if ($row[0] != $db)
+		printf("[001] Expecting '%s' got '%s'\n", $db, $row[0]);
+
+	$mysql->close(

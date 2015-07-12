@@ -1,0 +1,16 @@
+	"<?\"\"n g r()h e n d o" +
+	" f s\";\n$haystack = b" +
+	"'string_val';\n$needl" +
+	"e = b'string_val';\n$" +
+	"part = true;\n$encodi" +
+	"ng = 'string_val';\n$" +
+	"extra_arg = 10;\nvar_" +
+	"dump( mb_strrchr($ha" +
+	"ystack, $needle, $pa" +
+	"rt, $encoding, $extr" +
+	"a_arg) );\n\n// Testin" +
+	"g mb_strrchr with on" +
+	"e less than the expe" +
+	"cted number of argum" +
+	"ents\necho \"\\n-- Test" +
+	"ing mb_strrchr("

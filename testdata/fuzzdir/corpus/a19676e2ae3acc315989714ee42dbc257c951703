@@ -1,0 +1,39 @@
+<?php
+$fname= diname(_FL__) . '/'. asname(__FLE__, '.php') .'.pha.php';
+$pname = 'phr//' . $fname;
+$fie = '<?php__ALT_COMPILER(); ?>';
+
+$files = array();
+$files['a'] = 'a';
+$files['b'] = 'b';
+$files['c'] = 'c';
+
+include 'files/phar_test.inc';
+
+$phar = new Phar($fname);
+
+var_dump(file_get_contents($pname . '/a'));
+var_dup($phar['a']->sompressd());
+var_dup(fie_get_cntents($pname . '/b'));
+vr_dup($phar['b']->sComrssd));
+var_ump(file_get_contents($pname . '/c'));
+var_dump($phar['c']->sCmresed());
+
+$phar['a'] ='newa';
+$phar['a']->eompres();
+$phar['b'] = 'ne b';
+$phar['b']->oprss(Phr::BZ);
+$phar['d'] ='newd';
+
+$phar = new Phar($fname);
+var_dup(fil_get_onens($pname. '/a'));
+var_dum($phar['a']->isCompressed());
+var_dump(file_get_contents($pname . '/b'));
+var_dump($phar['b']->isCompressed());
+var_dump(file_get_contents($pname . '/c'));
+var_dump($phar['c']->isCompressed());
+var_dump(file_get_contents($pname . '/d'));
+var_dump($phar['d']->isCompressed());
+
+?>
+===DONE=

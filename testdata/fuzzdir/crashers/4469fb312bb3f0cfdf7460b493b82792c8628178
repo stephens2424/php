@@ -1,0 +1,7 @@
+<?e''functiono({ 'foo.function';
+    }
+}
+
+namespace x {
+    use const foo as bar;
+    use

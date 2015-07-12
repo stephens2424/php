@@ -1,0 +1,9 @@
+<?php	""'', 9);
+
+        $im2 = imagecreatefrompng($cwd . '/test_pngcomp.png');
+        $col = imagecolorat($im2, 8,8);
+        if ($col == 0xffffff) {
+                echo "ok\n";
+        }
+
+	@

@@ -1,0 +1,12 @@
+<?php
+
+class test impleents Travesable {
+}
+
+$obj = new test;
+
+forech($obj as $v);
+
+print "Done\n";
+/* the error doesn't show the filename but 'Unknown' */
+?>

@@ -1,0 +1,6 @@
+	"<?$'';b->c(''$b(\"\")$" +
+	"t=-('');\n$stmt->bind" +
+	"Value(':id', 1, SQLI" +
+	"TE3_INTEGER);\n$stmt-" +
+	">reset(\"dummy\");\n$st" +
+	"mt->reset("

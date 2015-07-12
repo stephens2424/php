@@ -1,0 +1,7 @@
+	"<?php\nclass C{protec" +
+	"ted static$y 'C::$y'" +
+	";\n}\n$c = new ;\n\necho" +
+	" \"\\n--> Access non-v" +
+	"isible static prop l" +
+	"ike instance prop:\\n" +
+	"\""

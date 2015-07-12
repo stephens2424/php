@@ -1,0 +1,14 @@
+	"<?t f(e$e,,:d g o a " +
+	"m*\n/*/(E);echo\"\";//\n" +
+	"'\\%\\%\\%\\s';\n\n// Arra" +
+	"ys of non string val" +
+	"ues for the format d" +
+	"efined in $format.\n/" +
+	"/ Each sub array con" +
+	"tains non string val" +
+	"ues which correspond" +
+	" to each format in $" +
+	"format\n$args_array =" +
+	" array(\n\n  // array " +
+	"of float values\n  ar" +
+	"ray("

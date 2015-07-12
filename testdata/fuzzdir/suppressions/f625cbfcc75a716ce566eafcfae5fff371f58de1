@@ -1,0 +1,4 @@
+panic: false negative: the input was invalid and not flagged
+github.com/stephens2424/php.Fuzz
+github.com/dvyukov/go-fuzz/go-fuzz-dep.Main
+main.main

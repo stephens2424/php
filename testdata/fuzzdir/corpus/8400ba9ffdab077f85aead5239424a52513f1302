@@ -1,0 +1,4 @@
+<?php
+class father{function f(){}function f(){}public function f(){}protected function f(){}private function f(){}}class e extends r{// overload fn with same visibility
+function f(){}public function f(){}public function f(){}protected function f(){}private function f(){}}class l extends e{protected function f(){}}echo""; // shouldn't be displayed
+?>

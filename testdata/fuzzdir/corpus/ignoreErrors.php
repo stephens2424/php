@@ -1,0 +1,3 @@
+<?php
+
+$x = @myfunc($y);

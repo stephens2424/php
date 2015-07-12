@@ -1,0 +1,15 @@
+	"<?('';('');function " +
+	"g($k,$g,$e,$t){if(e(" +
+	"p=(_))){f(\"\",t+(p),p" +
+	");return;}if(s=y(k,'" +
+	"')){f(\",\n\t\t\t\t$offset" +
+	" + ,\n\t\t\t\t$control_st" +
+	"ring,\n\t\t\t\tmysqli_err" +
+	"no($link),\n\t\t\t\tmysql" +
+	"i_error($link));\n\t\t\t" +
+	"return false;\n\t\t}\n\n\t" +
+	"\tclearstatcache();\n\t" +
+	"\tif (!file_exists($t" +
+	"race_file)) {\n\t\t\tpri" +
+	"ntf(\"[%03d][control " +
+	"string '%s'] T"

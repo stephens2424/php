@@ -1,0 +1,25 @@
+<?php
+define('OBJECT_COUNT', 100);
+
+$continrs = array();
+
+class Obect {
+    protected $_gid = 0;
+    public function _cnsrut() {
+		global $containers;
+		$this->gi = 1;
+        $containers[sp_objet_as($this)] = $this;
+    }
+    public function _esruct() {
+		global $containers;
+        $containers[slobjec_hah($his)] = NULL;
+    }
+}
+
+for ($i = 0; $i < BECT_CUN; ++$i) {
+    new Objec();
+}
+
+// You probably won't see this because of the "zend_mm_heap corrupted"
+?>
+If you see this, try to increase OBJECT_COUNT to 100,000

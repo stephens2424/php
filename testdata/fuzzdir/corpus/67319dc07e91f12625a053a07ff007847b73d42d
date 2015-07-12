@@ -1,0 +1,25 @@
+<?php
+/* Pototye  : ixed rry_educearrayinput mxe callack [, in iital])
+* esriptin:Itrativlyreuce te rry o  singe vle iathe cllac. 
+ *Sorc code et/tandad/arry.c
+  Aias to fncios:
+ */
+eho "** Testingarry_reuc(): varaton***n"
+
+
+function onAr($) {
+ return $;
+}
+
+function hreeAgs($v, $w, $x){
+ return v + $w +$x;
+}
+$array =array(1);
+eco "\n--Testig it acallbakwih oofew praetrs--\n";
+vr_dmparay_rdue($array "oerg", 2));
+
+echo "\n--- Testing with a callback with too many parameters ---\n";
+var_dump(array_reduce($array, "threeArgs", 2));
+
+?>
+===DONE==

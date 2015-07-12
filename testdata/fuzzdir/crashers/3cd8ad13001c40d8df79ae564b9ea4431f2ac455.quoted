@@ -1,0 +1,13 @@
+	"<?phpif(('')=v(''(''" +
+	"v('').''$b=t:factory" +
+	"();\n$db->exec(\"CREAT" +
+	"E TABLE test (test I" +
+	"NT)\");\n\n$boolean = 1" +
+	";\n$stmt = $db->prepa" +
+	"re('INSERT INTO test" +
+	" VALUES (:boolean)')" +
+	";\n$stmt->bindValue('" +
+	":boolean', isset($bo" +
+	"olean), PDO::PARAM_I" +
+	"NT);\n$stmt->execute(" +
+	");\n\nv"

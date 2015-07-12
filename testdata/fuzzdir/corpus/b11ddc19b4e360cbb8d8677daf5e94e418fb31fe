@@ -1,0 +1,8 @@
+<?php
+/* 
+ * Prototype : string session_encode(void)
+ * Description : Encodes the current session data as a string
+ * Source code : ext/session/session.c 
+ */""$array[""] = &$array;
+$_SESSION["guff"] = &$array;
+$_SESSION["blah"] = &$array

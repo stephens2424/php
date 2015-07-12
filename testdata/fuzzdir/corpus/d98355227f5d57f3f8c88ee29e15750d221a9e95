@@ -1,0 +1,3 @@
+<?php$ch=t();varp(t($ch,IEFILE,""));varp(t($ch,IEFILE,""));
+  var_dump(curl_setopt($ch, CURLOPT_COOKIEFILE, "/xxx/bar"));
+  curl_close($ch);

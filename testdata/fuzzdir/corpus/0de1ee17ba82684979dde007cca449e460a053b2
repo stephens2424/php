@@ -1,0 +1,6 @@
+<?php
+class o{public$a="";private$b="";protected$c="";}new (L,array(""=>t://
+""=>t://
+"eptions" => 0,
+                               "trace" => 1 ));
+$x->test(new foo()

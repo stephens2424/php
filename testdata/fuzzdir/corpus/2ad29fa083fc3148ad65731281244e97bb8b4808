@@ -1,0 +1,9 @@
+<?php
+/**/"\n";$s=y(.8,-.8,.8e,-.9e	0"""""";echo"\-\n";for($i=0;$i<($s;$i++){$s t$s[$i	p($s)"\-\n"for($i=0;$i<($s;$i++){$s=t($s[$i],2)($s)"\-\n"for($i=0;$i<($s);$i++){$s=ormat($values[$i], 2, '.', ' ');
+	var_dump($res);
+}
+
+echo "\n-- number_format tests.....French format --\n";
+for ($i = 0; $i < count($values); $i++) {
+	$res = number_format($values[$i], 2, ',' , ' ');
+	var_dump($r

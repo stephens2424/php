@@ -1,0 +1,4 @@
+<?"";}}}a$s"";};x=-e(
+$b = function ($class) {
+    eval('class ' . $class . '{function __construct(){echo "foo\n";}}');
+    e

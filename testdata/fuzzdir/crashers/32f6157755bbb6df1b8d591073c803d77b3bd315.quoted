@@ -1,0 +1,24 @@
+	"<?php\n//-=-=-=-\n\nvar" +
+	"_dump(password_hash(" +
+	"\"foo\", PASSWORD_BCRY" +
+	"PT, array(\"cost\" => " +
+	"3)));\n\nvar_dump(pass" +
+	"word_hash(\"foo\", PAS" +
+	"SWORD_BCRYPT, array(" +
+	"\"cost => 32)));\n\nvar" +
+	"_dump(password_hash(" +
+	"\"foo\", PASSWORD_BCRY" +
+	"PT, array(\"salt\" => " +
+	"\"foo\")));\n\nvar_dump(" +
+	"password_hash(\"foo\"," +
+	" PASSWORD_BCRYPT, ar" +
+	"ray(\"salt\" => \"12345" +
+	"6789012345678901\")))" +
+	";\n\nvar_dump(password" +
+	"_hash(\"foo\", PASSWOR" +
+	"D_BCRYPT, array(\"sal" +
+	"t\" => 123)));\n\nvar_d" +
+	"ump(password_hash(\"f" +
+	"oo\", PASSWORD_BCRYPT" +
+	", array(\"cost\" => \"f" +
+	"oo\")"

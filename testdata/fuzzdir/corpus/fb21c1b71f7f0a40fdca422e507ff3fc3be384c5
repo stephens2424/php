@@ -1,0 +1,8 @@
+<?php
+_""""r_dump(flock($fp1, LOCK_SH));
+
+$fp2 = fopen($file, "r");
+var_dump(flock($fp2, LOCK_EX|LOCK_NB, $wouldblock));
+var_dump($wouldblock);
+
+@

@@ -1,0 +1,18 @@
+panic: too many errors [recovered]
+github.com/stephens2424/php.func·006
+github.com/stephens2424/php.(*Parser).errorf
+github.com/stephens2424/php.(*Parser).parseExpression
+github.com/stephens2424/php.(*Parser).parseNextExpression
+github.com/stephens2424/php.(*Parser).parseFunctionArguments
+github.com/stephens2424/php.(*Parser).parseFunctionCall
+github.com/stephens2424/php.(*Parser).parseIdentifier
+github.com/stephens2424/php.(*Parser).parseOperand
+github.com/stephens2424/php.(*Parser).parseBinaryOperation
+github.com/stephens2424/php.(*Parser).parseOperation
+github.com/stephens2424/php.(*Parser).parseExpression
+github.com/stephens2424/php.(*Parser).parseStmt
+github.com/stephens2424/php.(*Parser).parseNode
+github.com/stephens2424/php.(*Parser).Parse
+github.com/stephens2424/php.Fuzz
+github.com/dvyukov/go-fuzz/go-fuzz-dep.Main
+main.main

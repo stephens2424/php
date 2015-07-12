@@ -1,0 +1,16 @@
+<?php
+t()echo"";class 2{public$h;public function n($h,$e){ifh){r();}s->h''return true;}public function e(){return true;}public function d($d){return@s->h;}public function e($d,$a){return s->h;}public function y($d){@s->h;}public function c($e)or$s->h.''as{ife()+){@;}}return true;}public function d(return null;}}r=new(array(r,''),array(r,''),array(r,''),array(r,''),array($handler, 'destroy'), array($handler, 'gc'), array($handler, 'create_sid'));
+session_start();
+
+$_SESSION['foo'] = "hello";
+
+var_dump(session_id(), ini_get('session.save_handler'), $_SESSION);
+
+session_write_close();
+session_unset();
+
+session_start();
+var_dump($_SESSION);
+
+session_write_close();
+session_unset()

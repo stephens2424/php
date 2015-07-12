@@ -1,0 +1,21 @@
+	"<?phpt('',1;\ninclude" +
+	" dirname(__FILE__) ." +
+	" '/files/tarmaker.ph" +
+	"p.inc';\n$fname = dir" +
+	"name(__FILE__) . '/t" +
+	"ar_004.phar.tar';\n$a" +
+	"lias = 'phar://' . $" +
+	"fname;\n$fname2 = dir" +
+	"name(__FILE__) . '/t" +
+	"ar_004.tar';\n\n$tar =" +
+	" new tarmaker($fname" +
+	", 'none');\n$tar->ini" +
+	"t();\ntar->addFile('t" +
+	"ar_004.php', '<?php " +
+	"var_dump(__FILE__);'" +
+	");\n$tar->addFile('in" +
+	"ternal/file/here', \"" +
+	"hi there!\\n\");\n$tar-" +
+	">addFile('.phar/stub" +
+	".php', \"__HALT_COMPI" +
+	"LER();\""

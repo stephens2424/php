@@ -1,0 +1,20 @@
+<?php
+
+function TestFunc1($classname)
+{
+	echo __METHOD__ . "($classname)\n";
+}
+
+function TestFunc2($classname)
+{
+	echo __METHOD__ . "($classname)\n";
+	throw new Exception("Class $classname missing");
+}
+
+function TestFunc3($classname)
+{
+	echo __METHOD__ . "($classname)\n";
+}
+
+spl_autoload_register("TestFunc1");
+spl

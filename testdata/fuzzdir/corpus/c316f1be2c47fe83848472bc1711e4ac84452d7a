@@ -1,0 +1,5 @@
+<?php
+"Testn"=n("php://input""r";2=n("php://input","r");
+
+while (!feof($f1) && !feof($f2)) {
+	echo fgets($f1), fgets(

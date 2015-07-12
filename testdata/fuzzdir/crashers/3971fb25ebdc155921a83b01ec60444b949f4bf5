@@ -1,0 +1,10 @@
+<?t f(e$e,,:d g o a m*
+/*/(E);echo"";//
+'\%\%\%\s';
+
+// Arrays of non string values for the format defined in $format.
+// Each sub array contains non string values which correspond to each format in $format
+$args_array = array(
+
+  // array of float values
+  array(

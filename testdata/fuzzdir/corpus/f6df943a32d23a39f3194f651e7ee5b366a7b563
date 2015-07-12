@@ -1,0 +1,3 @@
+<?php$e=e(_).'/'.e(_,'.php').'.phar.php';$e='phar://'.$e;$e="";$s=y();$s['a']='a';$s['b/a']='b';include'files/phar_test.inc';include$e;$r=r('phar://hio/');while(e==($a=r($r))){p($a);	var_dump(is_dir('phar://hio/' . $a));
+}
+?>

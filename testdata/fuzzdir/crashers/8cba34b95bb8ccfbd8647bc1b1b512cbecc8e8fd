@@ -1,0 +1,5 @@
+<?classX{n e()n function${"";}}}a=function($s){echo"";};x=-e(
+$b = function ($class) {
+    eval('class ' . $class . '{function __construct(){echo "foo\n";}}');
+    echo "b called\n";
+}

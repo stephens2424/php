@@ -1,0 +1,7 @@
+<?phpif(e):echo"false";else:echo"true";endif
+if(e):if(e):
+    echo "false";
+  else:
+    echo "true";
+  endif;
+endif;

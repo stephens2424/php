@@ -1,0 +1,11 @@
+<?/* Source code: ext/mbstring/mbstring.c
+ * Alias to functions: 
+ */
+
+/*
+ * Pass an unknown encoding to mb_stripos() to test behaviour
+ */
+
+echo "*** Testing mb_stripos() : error conditions ***\n";
+$haystack = b'Hello, world';
+$needle = b'world';

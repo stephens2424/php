@@ -1,0 +1,12 @@
+	"<?phpclass A{public " +
+	"function l($d,$s){if" +
+	"(s(d,'')==){returns(" +
+	"}e(\"\");}d n t(){$s()" +
+	";  $call = array($cl" +
+	"ass, 'noSuchMethod')" +
+	";\n        \n        i" +
+	"f (is_callable($call" +
+	")) {\n            cal" +
+	"l_user_func($call);\n" +
+	"        }\n    }\n}\n\nc" +
+	"lass B extends A {"

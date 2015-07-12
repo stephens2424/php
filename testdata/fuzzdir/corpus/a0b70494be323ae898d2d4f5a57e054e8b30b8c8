@@ -1,0 +1,8 @@
+<?php
+function&returnf(){global$a;return$;}function returnl(){global$a;return$""returnl"changed";
+var_dump($a); //expecting warning + "original" 
+
+$a = "original";
+$b =& returnRef();
+$b = "changed";
+var_

@@ -1,0 +1,1 @@
+<?php$image=l(8,3);$white=e($image,5,5,5);$t=r($image, 1, 5, 5, '',$white);t();g($image,l,9);$img=s();n();echo d(e($img));?>

@@ -1,0 +1,14 @@
+	"<?'';'');function g(" +
+	"$k,$g,$e,$t){if(e(p=" +
+	"(_))){f(\"\",t+(p),p);" +
+	"return;}if(s=y(k,'')" +
+	"){f(\",\n\t\t\t\t$offset +" +
+	" ,\n\t\t\t\t$control_stri" +
+	"ng,\n\t\t\t\tmysqli_errno" +
+	"($link),\n\t\t\t\tmysqli_" +
+	"error($link));\n\t\t\tre" +
+	"turn false;\n\t\t}\n\n\t\tc" +
+	"learstatcache();\n\t\ti" +
+	"f (!file_exists($tra" +
+	"ce_file)) {\n\t\t\tprint" +
+	"f(\"[%03d][c"

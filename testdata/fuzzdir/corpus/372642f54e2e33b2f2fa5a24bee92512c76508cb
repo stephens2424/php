@@ -1,0 +1,2 @@
+<?php
+function d(){throw new n("Bad"

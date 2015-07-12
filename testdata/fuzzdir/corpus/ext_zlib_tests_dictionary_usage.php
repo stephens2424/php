@@ -1,0 +1,20 @@
+<?php
+
+$dict = range("a", "z");
+
+$r = deflate_init(ZLIB_ENCODING_DEFLATE, ["dictionary" => $dict]);
+$a = deflate_add($r, "abdcde", ZLIB_FINISH);
+var_dump($a);
+
+$r = deflate_init(ZLIB_ENCODING_DEFLATE, ["dictionary" => implode("\0", $dict)."\0"]);
+$dictStr_a = deflate_add($r, "abdcde", ZLIB_FINISH);
+var_dump($dictStr_a === $a);
+
+$r = inflate_init(ZLIB_ENCODING_DEFLATE, ["dictionary" => $dict]);
+var_dump(inflate_add($r, $a, ZLIB_FINISH));
+
+
+$r = inflate_init(ZLIB_ENCODING_DEFLATE, ["dictionary" => ["8"] + range("a", "z")]);
+var_dump(inflate_add($r, $a, ZLIB_FINISH));
+
+?>

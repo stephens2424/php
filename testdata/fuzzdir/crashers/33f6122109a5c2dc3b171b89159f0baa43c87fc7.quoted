@@ -1,0 +1,29 @@
+	"<?phpfunction o()y{t" +
+	"hrow new(\"\");return;" +
+	"}finally{try{throw n" +
+	"ewn\"catched\");\n\t\t} c" +
+	"atch (Exception $e) " +
+	"{\n\t\t}\n\t}\n}\ntry {\n\t$f" +
+	"oo = foo1();\n\tvar_du" +
+	"mp($foo);\n} catch (E" +
+	"xception $e) {\n\tdo {" +
+	"\n\t\tvar_dump($e->getM" +
+	"essage());\n\t} while " +
+	"($e = $e->getPreviou" +
+	"s());\n}\n\nfunction fo" +
+	"o2() {\n\ttry  {\n\t\ttry" +
+	" {\n\t\t\tthrow new Exce" +
+	"ption(\"catched\");\n\t\t" +
+	"\treturn true;\n\t\t} fi" +
+	"nally {\n\t\t\ttry {\n\t\t\t" +
+	"\tthrow new Exception" +
+	"(\"catched\");\n\t\t\t} ca" +
+	"tch (Exception $e) {" +
+	"\n\t\t\t}\n\t\t}\n\t} catch (" +
+	"Exception $e) {\n\t}\n}" +
+	"\n\n$foo = foo2();\nvar" +
+	"_dump($foo);\n\nfuncti" +
+	"on foo3() {\n\ttry {\n\t" +
+	"\tthrow new Exception" +
+	"(\"not catched\");\n\t\tr" +
+	"eturn true;\n\t}"

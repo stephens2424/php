@@ -1,0 +1,10 @@
+	"<?classX{n e()n func" +
+	"tion${\"\";}}}a=functi" +
+	"on($s){echo\"\";};x=-e" +
+	"(\n$b = function ($cl" +
+	"ass) {\n    eval('cla" +
+	"ss ' . $class . '{fu" +
+	"nction __construct()" +
+	"{echo \"foo\\n\";}}');\n" +
+	"    echo \"b called\\n" +
+	"\";\n}"

@@ -1,0 +1,14 @@
+panic: runtime error: invalid memory address or nil pointer dereference [recovered]
+github.com/stephens2424/php.func·006
+github.com/stephens2424/php.(*Parser).parseTernaryOperation
+github.com/stephens2424/php.(*Parser).parseOperation
+github.com/stephens2424/php.(*Parser).parseOperation
+github.com/stephens2424/php.(*Parser).parseOperation
+github.com/stephens2424/php.(*Parser).parseOperation
+github.com/stephens2424/php.(*Parser).parseExpression
+github.com/stephens2424/php.(*Parser).parseStmt
+github.com/stephens2424/php.(*Parser).parseNode
+github.com/stephens2424/php.(*Parser).Parse
+github.com/stephens2424/php.Fuzz
+github.com/dvyukov/go-fuzz/go-fuzz-dep.Main
+main.main
