@@ -216,7 +216,7 @@ func (p *Parser) errorPrefix() string {
 	return fmt.Sprintf("%d", p.current.Begin.Line)
 }
 
-func (p *Parser) parseNextExpression() ast.Expression {
+func (p *Parser) parseNextExpression() ast.Expr {
 	p.next()
 	return p.parseExpression()
 }

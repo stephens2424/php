@@ -52,7 +52,7 @@ func TestClass(t *testing.T) {
 			{
 				Visibility: ast.Private,
 				Name:       "$arr",
-				Initialization: &ast.ArrayExpression{
+				Initialization: &ast.ArrayExpr{
 					Pairs: []ast.ArrayPair{
 						{Value: &ast.Literal{Type: ast.String, Value: `"one"`}},
 						{Value: &ast.Literal{Type: ast.String, Value: `"two"`}},
@@ -111,7 +111,7 @@ func TestClass(t *testing.T) {
 					Body: &ast.Block{
 						Statements: []ast.Statement{
 							ast.Echo(ast.NewVariable("arg")),
-							&ast.ReturnStmt{Expression: ast.NewVariable("arg")},
+							&ast.ReturnStmt{Expr: ast.NewVariable("arg")},
 						},
 					},
 				},
@@ -147,15 +147,15 @@ func TestInstantiation(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Did not parse instantiation correctly: %s", err)
 	}
-	tree := ast.ExpressionStmt{ast.AssignmentExpression{
+	tree := ast.ExprStmt{ast.AssignmentExpr{
 		Operator: "=",
 		Assignee: ast.NewVariable("obj"),
-		Value: &ast.NewExpression{
-			Class: ast.NewClassExpression("Obj", &ast.ArrayLookupExpression{
+		Value: &ast.NewCallExpr{
+			Class: ast.NewClassExpression("Obj", &ast.ArrayLookupExpr{
 				Array: ast.NewVariable("classes"),
 				Index: &ast.Literal{Type: ast.String, Value: `'obj'`},
 			}),
-			Arguments: []ast.Expression{
+			Arguments: []ast.Expr{
 				ast.NewVariable("arg"),
 			},
 		},

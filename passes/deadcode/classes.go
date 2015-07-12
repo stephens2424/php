@@ -25,19 +25,19 @@ func DeadClasses(fs *ast.FileSet, entryPoints []string) []ast.Node {
 func EliminateClasses(nodes []ast.Node, knownClasses map[string]ast.Node) {
 	for _, node := range nodes {
 		switch node := node.(type) {
-		case ast.NewExpression:
+		case ast.NewCallExpr:
 			if static := ast.Static(node.Class); static != nil {
 				delete(knownClasses, static.Value)
 			}
-		case *ast.NewExpression:
+		case *ast.NewCallExpr:
 			if static := ast.Static(node.Class); static != nil {
 				delete(knownClasses, static.Value)
 			}
-		case ast.ClassExpression:
+		case ast.ClassExpr:
 			if static := ast.Static(node.Receiver); static != nil {
 				delete(knownClasses, static.Value)
 			}
-		case *ast.ClassExpression:
+		case *ast.ClassExpr:
 			if static := ast.Static(node.Receiver); static != nil {
 				delete(knownClasses, static.Value)
 			}

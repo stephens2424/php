@@ -124,7 +124,7 @@ func (e EmptyStatement) Children() []Node          { return nil }
 func (e EmptyStatement) Print(f Format) string     { return ";" }
 func (e EmptyStatement) Declares() DeclarationType { return NoDeclaration }
 
-type Dynamic Expression
+type Dynamic Expr
 
 func Static(d Dynamic) *Identifier {
 	switch d := d.(type) {
@@ -139,107 +139,107 @@ func Static(d Dynamic) *Identifier {
 
 // An Expression is a snippet of code that evaluates to a single value when run
 // and does not represent a program instruction.
-type Expression interface {
+type Expr interface {
 	Statement
 	EvaluatesTo() Type
 }
 
 // BinaryExpression is an expression that applies an operator to one, two, or three
 // operands. The operator determines how many operands it should contain.
-type BinaryExpression struct {
-	Antecedent Expression
-	Subsequent Expression
+type BinaryExpr struct {
+	Antecedent Expr
+	Subsequent Expr
 	Type       Type
 	Operator   string
 }
 
-func (b BinaryExpression) Children() []Node {
+func (b BinaryExpr) Children() []Node {
 	return []Node{b.Antecedent, b.Subsequent}
 }
 
-func (b BinaryExpression) String() string {
+func (b BinaryExpr) String() string {
 	return b.Operator
 }
 
-func (b BinaryExpression) EvaluatesTo() Type {
+func (b BinaryExpr) EvaluatesTo() Type {
 	return b.Type
 }
 
-func (b BinaryExpression) Declares() DeclarationType { return NoDeclaration }
+func (b BinaryExpr) Declares() DeclarationType { return NoDeclaration }
 
-type TernaryExpression struct {
-	Condition, True, False Expression
+type TernaryCallExpr struct {
+	Condition, True, False Expr
 	Type                   Type
 }
 
-func (t TernaryExpression) Children() []Node {
+func (t TernaryCallExpr) Children() []Node {
 	return []Node{t.Condition, t.True, t.False}
 }
 
-func (t TernaryExpression) String() string {
+func (t TernaryCallExpr) String() string {
 	return "?:"
 }
 
-func (t TernaryExpression) EvaluatesTo() Type {
+func (t TernaryCallExpr) EvaluatesTo() Type {
 	return t.Type
 }
 
-func (t TernaryExpression) Declares() DeclarationType { return NoDeclaration }
+func (t TernaryCallExpr) Declares() DeclarationType { return NoDeclaration }
 
 // UnaryExpression is an expression that applies an operator to only one operand. The
 // operator may precede or follow the operand.
-type UnaryExpression struct {
-	Operand   Expression
+type UnaryCallExpr struct {
+	Operand   Expr
 	Operator  string
 	Preceding bool
 }
 
-func (u UnaryExpression) Children() []Node {
+func (u UnaryCallExpr) Children() []Node {
 	return []Node{u.Operand}
 }
 
-func (u UnaryExpression) String() string {
+func (u UnaryCallExpr) String() string {
 	if u.Preceding {
 		return u.Operator + " (preceding)"
 	}
 	return u.Operator
 }
 
-func (u UnaryExpression) EvaluatesTo() Type {
+func (u UnaryCallExpr) EvaluatesTo() Type {
 	return Unknown
 }
 
-func (u UnaryExpression) Declares() DeclarationType { return NoDeclaration }
+func (u UnaryCallExpr) Declares() DeclarationType { return NoDeclaration }
 
-type ExpressionStmt struct {
-	Expression
+type ExprStmt struct {
+	Expr
 }
 
-func (e ExpressionStmt) String() string {
-	if e.Expression != nil {
-		return e.Expression.String()
+func (e ExprStmt) String() string {
+	if e.Expr != nil {
+		return e.Expr.String()
 	}
 	return ""
 }
 
-func (e ExpressionStmt) Children() []Node {
-	if e.Expression != nil {
-		return []Node{e.Expression}
+func (e ExprStmt) Children() []Node {
+	if e.Expr != nil {
+		return []Node{e.Expr}
 	}
 	return nil
 }
 
-func (e ExpressionStmt) Declares() DeclarationType { return NoDeclaration }
+func (e ExprStmt) Declares() DeclarationType { return NoDeclaration }
 
 // Echo returns a new echo statement.
-func Echo(exprs ...Expression) EchoStmt {
+func Echo(exprs ...Expr) EchoStmt {
 	return EchoStmt{Expressions: exprs}
 }
 
 // Echo represents an echo statement. It may be either a literal statement
 // or it may be from data outside PHP-mode, such as "here" in: <? not here ?> here <? not here ?>
 type EchoStmt struct {
-	Expressions []Expression
+	Expressions []Expr
 }
 
 func (e EchoStmt) String() string {
@@ -258,7 +258,7 @@ func (e EchoStmt) Declares() DeclarationType { return NoDeclaration }
 
 // ReturnStmt represents a function return.
 type ReturnStmt struct {
-	Expression
+	Expr
 }
 
 func (r ReturnStmt) String() string {
@@ -266,21 +266,21 @@ func (r ReturnStmt) String() string {
 }
 
 func (r ReturnStmt) Children() []Node {
-	if r.Expression == nil {
+	if r.Expr == nil {
 		return nil
 	}
-	return []Node{r.Expression}
+	return []Node{r.Expr}
 }
 
 func (r ReturnStmt) Declares() DeclarationType { return NoDeclaration }
 
 type BreakStmt struct {
-	Expression
+	Expr
 }
 
 func (b BreakStmt) Children() []Node {
-	if b.Expression != nil {
-		return b.Expression.Children()
+	if b.Expr != nil {
+		return b.Expr.Children()
 	}
 	return nil
 }
@@ -290,7 +290,7 @@ func (b BreakStmt) String() string {
 }
 
 type ContinueStmt struct {
-	Expression
+	Expr
 }
 
 func (c ContinueStmt) String() string {
@@ -298,14 +298,14 @@ func (c ContinueStmt) String() string {
 }
 
 func (c ContinueStmt) Children() []Node {
-	if c.Expression != nil {
-		return c.Expression.Children()
+	if c.Expr != nil {
+		return c.Expr.Children()
 	}
 	return nil
 }
 
 type ThrowStmt struct {
-	Expression
+	Expr
 }
 
 func (t ThrowStmt) Declares() DeclarationType { return NoDeclaration }
@@ -315,7 +315,7 @@ type IncludeStmt struct {
 }
 
 type Include struct {
-	Expressions []Expression
+	Expressions []Expr
 }
 
 func (i Include) Children() []Node {
@@ -337,7 +337,7 @@ func (i Include) EvaluatesTo() Type {
 func (i Include) Declares() DeclarationType { return NoDeclaration }
 
 type ExitStmt struct {
-	Expression Expression
+	Expr Expr
 }
 
 func (e ExitStmt) Children() []Node {
@@ -350,23 +350,23 @@ func (e ExitStmt) String() string {
 
 func (e ExitStmt) Declares() DeclarationType { return NoDeclaration }
 
-type NewExpression struct {
+type NewCallExpr struct {
 	Class     Dynamic
-	Arguments []Expression
+	Arguments []Expr
 }
 
-func (n NewExpression) EvaluatesTo() Type {
+func (n NewCallExpr) EvaluatesTo() Type {
 	if static := Static(n.Class); static != nil {
 		return ObjectType{static.Value}
 	}
 	return Object
 }
 
-func (n NewExpression) String() string {
+func (n NewCallExpr) String() string {
 	return "new"
 }
 
-func (c NewExpression) Children() []Node {
+func (c NewCallExpr) Children() []Node {
 	n := make([]Node, len(c.Arguments)+1)
 	n[0] = c.Class
 	for i, arg := range c.Arguments {
@@ -375,30 +375,30 @@ func (c NewExpression) Children() []Node {
 	return n
 }
 
-func (n NewExpression) Declares() DeclarationType { return NoDeclaration }
+func (n NewCallExpr) Declares() DeclarationType { return NoDeclaration }
 
-type AssignmentExpression struct {
+type AssignmentExpr struct {
 	Assignee Assignable
-	Value    Expression
+	Value    Expr
 	Operator string
 }
 
-func (a AssignmentExpression) String() string {
+func (a AssignmentExpr) String() string {
 	return a.Operator
 }
 
-func (a AssignmentExpression) Children() []Node {
+func (a AssignmentExpr) Children() []Node {
 	return []Node{
 		a.Assignee,
 		a.Value,
 	}
 }
 
-func (a AssignmentExpression) EvaluatesTo() Type {
+func (a AssignmentExpr) EvaluatesTo() Type {
 	return a.Value.EvaluatesTo()
 }
 
-func (a AssignmentExpression) Declares() DeclarationType { return NoDeclaration }
+func (a AssignmentExpr) Declares() DeclarationType { return NoDeclaration }
 
 type Assignable interface {
 	Dynamic
@@ -406,23 +406,23 @@ type Assignable interface {
 }
 
 type FunctionCallStmt struct {
-	FunctionCallExpression
+	FunctionCallExpr
 }
 
-type FunctionCallExpression struct {
+type FunctionCallExpr struct {
 	FunctionName Dynamic
-	Arguments    []Expression
+	Arguments    []Expr
 }
 
-func (f FunctionCallExpression) EvaluatesTo() Type {
+func (f FunctionCallExpr) EvaluatesTo() Type {
 	return Unknown
 }
 
-func (f FunctionCallExpression) String() string {
+func (f FunctionCallExpr) String() string {
 	return fmt.Sprintf("%s()", f.FunctionName)
 }
 
-func (f FunctionCallExpression) Children() []Node {
+func (f FunctionCallExpr) Children() []Node {
 	n := make([]Node, len(f.Arguments))
 	for i, a := range f.Arguments {
 		n[i] = a
@@ -430,7 +430,7 @@ func (f FunctionCallExpression) Children() []Node {
 	return n
 }
 
-func (f FunctionCallExpression) Declares() DeclarationType { return NoDeclaration }
+func (f FunctionCallExpr) Declares() DeclarationType { return NoDeclaration }
 
 type Block struct {
 	Statements []Statement
@@ -519,7 +519,7 @@ func (fd FunctionDefinition) String() string {
 
 type FunctionArgument struct {
 	TypeHint string
-	Default  Expression
+	Default  Expr
 	Variable *Variable
 }
 
@@ -572,7 +572,7 @@ type Constant struct {
 func (c Constant) Children() []Node { return nil }
 func (c Constant) String() string   { return c.Name }
 
-type ConstantExpression struct {
+type ConstantExpr struct {
 	*Variable
 }
 
@@ -605,7 +605,7 @@ type Property struct {
 	Name           string
 	Visibility     Visibility
 	Type           Type
-	Initialization Expression
+	Initialization Expr
 }
 
 func (p Property) String() string {
@@ -620,62 +620,62 @@ func (p Property) Children() []Node {
 	return []Node{p.Initialization}
 }
 
-type PropertyExpression struct {
+type PropertyCallExpr struct {
 	Receiver Dynamic
 	Name     Dynamic
 	Type     Type
 }
 
-func (p PropertyExpression) String() string {
+func (p PropertyCallExpr) String() string {
 	return fmt.Sprintf("%s->%s", p.Receiver, p.Name)
 }
 
-func (p PropertyExpression) AssignableType() Type {
+func (p PropertyCallExpr) AssignableType() Type {
 	return p.Type
 }
 
-func (p PropertyExpression) EvaluatesTo() Type {
+func (p PropertyCallExpr) EvaluatesTo() Type {
 	return Unknown
 }
 
-func (p PropertyExpression) Children() []Node {
+func (p PropertyCallExpr) Children() []Node {
 	return []Node{
 		p.Receiver,
 	}
 }
 
-func (p PropertyExpression) Declares() DeclarationType { return NoDeclaration }
+func (p PropertyCallExpr) Declares() DeclarationType { return NoDeclaration }
 
-type ClassExpression struct {
-	Receiver   Dynamic
-	Expression Dynamic
-	Type       Type
+type ClassExpr struct {
+	Receiver Dynamic
+	Expr     Dynamic
+	Type     Type
 }
 
-func NewClassExpression(r string, e Expression) *ClassExpression {
-	return &ClassExpression{
-		Receiver:   &Identifier{Value: r},
-		Expression: e,
+func NewClassExpression(r string, e Expr) *ClassExpr {
+	return &ClassExpr{
+		Receiver: &Identifier{Value: r},
+		Expr:     e,
 	}
 }
 
-func (c ClassExpression) EvaluatesTo() Type {
+func (c ClassExpr) EvaluatesTo() Type {
 	return Unknown
 }
 
-func (c ClassExpression) String() string {
+func (c ClassExpr) String() string {
 	return fmt.Sprintf("%s::", c.Receiver)
 }
 
-func (c ClassExpression) Children() []Node {
-	return []Node{c.Receiver, c.Expression}
+func (c ClassExpr) Children() []Node {
+	return []Node{c.Receiver, c.Expr}
 }
 
-func (c ClassExpression) AssignableType() Type {
+func (c ClassExpr) AssignableType() Type {
 	return c.Type
 }
 
-func (c ClassExpression) Declares() DeclarationType { return NoDeclaration }
+func (c ClassExpr) Declares() DeclarationType { return NoDeclaration }
 
 type Method struct {
 	*FunctionStmt
@@ -690,19 +690,19 @@ func (m Method) Children() []Node {
 	return m.FunctionStmt.Children()
 }
 
-type MethodCallExpression struct {
+type MethodCallExpr struct {
 	Receiver Dynamic
-	*FunctionCallExpression
+	*FunctionCallExpr
 }
 
-func (m MethodCallExpression) Children() []Node {
+func (m MethodCallExpr) Children() []Node {
 	return []Node{
 		m.Receiver,
-		m.FunctionCallExpression,
+		m.FunctionCallExpr,
 	}
 }
 
-func (m MethodCallExpression) String() string {
+func (m MethodCallExpr) String() string {
 	return fmt.Sprintf("%s->", m.Receiver)
 }
 
@@ -732,7 +732,7 @@ type IfStmt struct {
 }
 
 type IfBranch struct {
-	Condition Expression
+	Condition Expr
 	Block     Statement
 }
 
@@ -762,7 +762,7 @@ func (i IfStmt) Children() []Node {
 func (i IfStmt) Declares() DeclarationType { return NoDeclaration }
 
 type SwitchStmt struct {
-	Expression  Expression
+	Expr        Expr
 	Cases       []*SwitchCase
 	DefaultCase *Block
 }
@@ -773,7 +773,7 @@ func (s SwitchStmt) String() string {
 
 func (s SwitchStmt) Children() []Node {
 	n := []Node{
-		s.Expression,
+		s.Expr,
 	}
 	for _, c := range s.Cases {
 		n = append(n, c)
@@ -787,8 +787,8 @@ func (s SwitchStmt) Children() []Node {
 func (_ SwitchStmt) Declares() DeclarationType { return NoDeclaration }
 
 type SwitchCase struct {
-	Expression Expression
-	Block      Block
+	Expr  Expr
+	Block Block
 }
 
 func (s SwitchCase) String() string {
@@ -797,15 +797,15 @@ func (s SwitchCase) String() string {
 
 func (s SwitchCase) Children() []Node {
 	return []Node{
-		s.Expression,
+		s.Expr,
 		s.Block,
 	}
 }
 
 type ForStmt struct {
-	Initialization []Expression
-	Termination    []Expression
-	Iteration      []Expression
+	Initialization []Expr
+	Termination    []Expr
+	Iteration      []Expr
 	LoopBlock      Statement
 }
 
@@ -830,7 +830,7 @@ func (f ForStmt) Children() []Node {
 func (_ ForStmt) Declares() DeclarationType { return NoDeclaration }
 
 type WhileStmt struct {
-	Termination Expression
+	Termination Expr
 	LoopBlock   Statement
 }
 
@@ -848,7 +848,7 @@ func (w WhileStmt) Children() []Node {
 func (_ WhileStmt) Declares() DeclarationType { return NoDeclaration }
 
 type DoWhileStmt struct {
-	Termination Expression
+	Termination Expr
 	LoopBlock   Statement
 }
 
@@ -922,7 +922,7 @@ func (l Literal) Children() []Node {
 func (_ Literal) Declares() DeclarationType { return NoDeclaration }
 
 type ForeachStmt struct {
-	Source    Expression
+	Source    Expr
 	Key       *Variable
 	Value     *Variable
 	LoopBlock Statement
@@ -943,16 +943,16 @@ func (f ForeachStmt) Children() []Node {
 
 func (_ ForeachStmt) Declares() DeclarationType { return NoDeclaration }
 
-type ArrayExpression struct {
+type ArrayExpr struct {
 	ArrayType
 	Pairs []ArrayPair
 }
 
-func (a ArrayExpression) String() string {
+func (a ArrayExpr) String() string {
 	return "array"
 }
 
-func (a ArrayExpression) Children() []Node {
+func (a ArrayExpr) Children() []Node {
 	n := make([]Node, len(a.Pairs))
 	for i, p := range a.Pairs {
 		n[i] = p
@@ -960,11 +960,11 @@ func (a ArrayExpression) Children() []Node {
 	return n
 }
 
-func (_ ArrayExpression) Declares() DeclarationType { return NoDeclaration }
+func (_ ArrayExpr) Declares() DeclarationType { return NoDeclaration }
 
 type ArrayPair struct {
-	Key   Expression
-	Value Expression
+	Key   Expr
+	Value Expr
 }
 
 func (p ArrayPair) Children() []Node {
@@ -978,58 +978,58 @@ func (p ArrayPair) String() string {
 	return fmt.Sprintf("%s => %s", p.Key, p.Value)
 }
 
-func (a ArrayExpression) EvaluatesTo() Type {
+func (a ArrayExpr) EvaluatesTo() Type {
 	return Array
 }
 
-func (a ArrayExpression) AssignableType() Type {
+func (a ArrayExpr) AssignableType() Type {
 	return Unknown
 }
 
-type ArrayLookupExpression struct {
+type ArrayLookupExpr struct {
 	Array Dynamic
-	Index Expression
+	Index Expr
 }
 
-func (_ ArrayLookupExpression) Declares() DeclarationType { return NoDeclaration }
+func (_ ArrayLookupExpr) Declares() DeclarationType { return NoDeclaration }
 
-func (a ArrayLookupExpression) String() string {
+func (a ArrayLookupExpr) String() string {
 	return fmt.Sprintf("%s[", a.Array)
 }
 
-func (a ArrayLookupExpression) Children() []Node {
+func (a ArrayLookupExpr) Children() []Node {
 	return []Node{a.Index}
 }
 
-func (a ArrayLookupExpression) EvaluatesTo() Type {
+func (a ArrayLookupExpr) EvaluatesTo() Type {
 	return Unknown
 }
 
-func (a ArrayLookupExpression) AssignableType() Type {
+func (a ArrayLookupExpr) AssignableType() Type {
 	return Unknown
 }
 
-type ArrayAppendExpression struct {
+type ArrayAppendExpr struct {
 	Array Dynamic
 }
 
-func (a ArrayAppendExpression) EvaluatesTo() Type {
+func (a ArrayAppendExpr) EvaluatesTo() Type {
 	return Unknown
 }
 
-func (a ArrayAppendExpression) AssignableType() Type {
+func (a ArrayAppendExpr) AssignableType() Type {
 	return Unknown
 }
 
-func (a ArrayAppendExpression) Children() []Node {
+func (a ArrayAppendExpr) Children() []Node {
 	return nil
 }
 
-func (a ArrayAppendExpression) String() string {
+func (a ArrayAppendExpr) String() string {
 	return a.Array.String() + "[]"
 }
 
-func (_ ArrayAppendExpression) Declares() DeclarationType { return NoDeclaration }
+func (_ ArrayAppendExpr) Declares() DeclarationType { return NoDeclaration }
 
 type ShellCommand struct {
 	Command string
@@ -1050,7 +1050,7 @@ func (_ ShellCommand) Declares() DeclarationType { return NoDeclaration }
 
 type ListStatement struct {
 	Assignees []Assignable
-	Value     Expression
+	Value     Expr
 	Operator  string
 }
 

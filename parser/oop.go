@@ -6,12 +6,12 @@ import (
 	"github.com/stephens2424/php/token"
 )
 
-func (p *Parser) parseInstantiation() ast.Expression {
+func (p *Parser) parseInstantiation() ast.Expr {
 	p.expectCurrent(token.NewOperator)
 	p.next()
 
 	p.instantiation = true
-	expr := &ast.NewExpression{}
+	expr := &ast.NewCallExpr{}
 	expr.Class = p.parseOperand()
 	p.instantiation = false
 
@@ -62,9 +62,9 @@ func (p *Parser) parseClass() *ast.Class {
 	return c
 }
 
-func (p *Parser) parseObjectLookup(r ast.Expression) (expr ast.Expression) {
+func (p *Parser) parseObjectLookup(r ast.Expr) (expr ast.Expr) {
 	p.expectCurrent(token.ObjectOperator)
-	prop := &ast.PropertyExpression{
+	prop := &ast.PropertyCallExpr{
 		Receiver: r,
 	}
 	switch p.next(); p.current.Typ {
@@ -79,9 +79,9 @@ func (p *Parser) parseObjectLookup(r ast.Expression) (expr ast.Expression) {
 	expr = prop
 	switch pk := p.peek(); pk.Typ {
 	case token.OpenParen:
-		expr = &ast.MethodCallExpression{
-			Receiver:               r,
-			FunctionCallExpression: p.parseFunctionCall(prop.Name),
+		expr = &ast.MethodCallExpr{
+			Receiver:         r,
+			FunctionCallExpr: p.parseFunctionCall(prop.Name),
 		}
 	}
 	expr = p.parseOperation(p.parenLevel, expr)

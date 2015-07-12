@@ -5,15 +5,15 @@ import (
 	"github.com/stephens2424/php/token"
 )
 
-func (p *Parser) parseArrayLookup(e ast.Expression) ast.Expression {
+func (p *Parser) parseArrayLookup(e ast.Expr) ast.Expr {
 	p.expectCurrent(token.ArrayLookupOperatorLeft, token.BlockBegin)
 	switch Typ := p.peek().Typ; Typ {
 	case token.ArrayLookupOperatorRight, token.BlockBegin:
 		p.expect(token.ArrayLookupOperatorRight, token.BlockEnd)
-		return ast.ArrayAppendExpression{Array: e}
+		return ast.ArrayAppendExpr{Array: e}
 	}
 	p.next()
-	expr := &ast.ArrayLookupExpression{
+	expr := &ast.ArrayLookupExpr{
 		Array: e,
 		Index: p.parseExpression(),
 	}
@@ -21,7 +21,7 @@ func (p *Parser) parseArrayLookup(e ast.Expression) ast.Expression {
 	return expr
 }
 
-func (p *Parser) parseArrayDeclaration() ast.Expression {
+func (p *Parser) parseArrayDeclaration() ast.Expr {
 	var endType token.Token
 	var pairs []ast.ArrayPair
 	p.expectCurrent(token.Array, token.ArrayLookupOperatorLeft)
@@ -34,7 +34,7 @@ func (p *Parser) parseArrayDeclaration() ast.Expression {
 	}
 ArrayLoop:
 	for {
-		var key, Val ast.Expression
+		var key, Val ast.Expr
 		switch p.peek().Typ {
 		case endType:
 			break ArrayLoop
@@ -63,10 +63,10 @@ ArrayLoop:
 		pairs = append(pairs, ast.ArrayPair{Key: key, Value: Val})
 	}
 	p.expect(endType)
-	return &ast.ArrayExpression{Pairs: pairs}
+	return &ast.ArrayExpr{Pairs: pairs}
 }
 
-func (p *Parser) parseList() ast.Expression {
+func (p *Parser) parseList() ast.Expr {
 	l := &ast.ListStatement{
 		Assignees: make([]ast.Assignable, 0),
 	}

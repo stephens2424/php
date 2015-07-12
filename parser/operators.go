@@ -55,7 +55,7 @@ func operationTypeForToken(t token.Token) operationType {
 	return nilOperation
 }
 
-func (p *Parser) newBinaryOperation(operator token.Item, expr1, expr2 ast.Expression) ast.Expression {
+func (p *Parser) newBinaryOperation(operator token.Item, expr1, expr2 ast.Expr) ast.Expr {
 	var t ast.Type = ast.Numeric
 	switch operator.Typ {
 	case token.AssignmentOperator:
@@ -67,7 +67,7 @@ func (p *Parser) newBinaryOperation(operator token.Item, expr1, expr2 ast.Expres
 	case token.AmpersandOperator, token.BitwiseXorOperator, token.BitwiseOrOperator, token.BitwiseShiftOperator:
 		t = ast.Unknown
 	}
-	return ast.BinaryExpression{
+	return ast.BinaryExpr{
 		Type:       t,
 		Antecedent: expr1,
 		Subsequent: expr2,
@@ -75,7 +75,7 @@ func (p *Parser) newBinaryOperation(operator token.Item, expr1, expr2 ast.Expres
 	}
 }
 
-func (p *Parser) parseBinaryOperation(lhs ast.Expression, operator token.Item, originalParenLevel int) ast.Expression {
+func (p *Parser) parseBinaryOperation(lhs ast.Expr, operator token.Item, originalParenLevel int) ast.Expr {
 	p.next()
 	rhs := p.parseOperand()
 	currentPrecedence := operatorPrecedence[operator.Typ]
@@ -90,8 +90,8 @@ func (p *Parser) parseBinaryOperation(lhs ast.Expression, operator token.Item, o
 	return p.newBinaryOperation(operator, lhs, rhs)
 }
 
-func (p *Parser) parseTernaryOperation(lhs ast.Expression) ast.Expression {
-	var truthy ast.Expression
+func (p *Parser) parseTernaryOperation(lhs ast.Expr) ast.Expr {
+	var truthy ast.Expr
 	if p.peek().Typ == token.TernaryOperator2 {
 		truthy = lhs
 	} else {
@@ -99,7 +99,7 @@ func (p *Parser) parseTernaryOperation(lhs ast.Expression) ast.Expression {
 	}
 	p.expect(token.TernaryOperator2)
 	falsy := p.parseNextExpression()
-	return &ast.TernaryExpression{
+	return &ast.TernaryCallExpr{
 		Condition: lhs,
 		True:      truthy,
 		False:     falsy,
@@ -107,15 +107,15 @@ func (p *Parser) parseTernaryOperation(lhs ast.Expression) ast.Expression {
 	}
 }
 
-func (p *Parser) parseUnaryExpressionRight(operand ast.Expression, operator token.Item) ast.Expression {
-	return ast.UnaryExpression{
+func (p *Parser) parseUnaryExpressionRight(operand ast.Expr, operator token.Item) ast.Expr {
+	return ast.UnaryCallExpr{
 		Operand:  operand,
 		Operator: operator.Val,
 	}
 }
 
-func (p *Parser) parseUnaryExpressionLeft(operand ast.Expression, operator token.Item) ast.Expression {
-	return ast.UnaryExpression{
+func (p *Parser) parseUnaryExpressionLeft(operand ast.Expr, operator token.Item) ast.Expr {
+	return ast.UnaryCallExpr{
 		Operand:   operand,
 		Operator:  operator.Val,
 		Preceding: true,
