@@ -236,7 +236,7 @@ func lexLineComment(l *lexer) stateFn {
 		lineLength = phpEndLength
 	}
 	l.pos += lineLength
-	l.ignore()
+	l.emit(token.CommentLine)
 	return lexPHP
 }
 
@@ -247,7 +247,7 @@ func lexBlockComment(l *lexer) stateFn {
 		commentLength = len(l.input[l.pos:])
 	}
 	l.pos += commentLength
-	l.ignore()
+	l.emit(token.CommentBlock)
 	return lexPHP
 }
 

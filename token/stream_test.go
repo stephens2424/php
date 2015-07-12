@@ -5,7 +5,7 @@ import (
 )
 
 func TestNewList(t *testing.T) {
-	list := NewList(Item{Typ: PHP}, Item{Typ: PHP})
+	list := NewList(Item{Typ: Echo}, Item{Typ: Echo})
 
 	if len(list.Items) != 2 {
 		t.Fatalf("Items should contain two items")
@@ -13,7 +13,7 @@ func TestNewList(t *testing.T) {
 }
 
 func TestNext(t *testing.T) {
-	list := NewList(Item{Typ: PHP}, Item{Typ: PHP})
+	list := NewList(Item{Typ: Echo}, Item{Typ: Echo})
 	items := make([]Item, 0)
 
 	for item := list.Next(); item.Typ != EOF; item = list.Next() {
@@ -26,7 +26,7 @@ func TestNext(t *testing.T) {
 }
 
 func TestPeek(t *testing.T) {
-	list := NewList(Item{Typ: PHP}, Item{Typ: HTML})
+	list := NewList(Item{Typ: Echo}, Item{Typ: HTML})
 	list.Next()
 
 	if list.Peek().Typ != HTML {
@@ -36,7 +36,7 @@ func TestPeek(t *testing.T) {
 
 func TestPush(t *testing.T) {
 	list := NewList()
-	list.Push(Item{Typ: PHP})
+	list.Push(Item{Typ: Echo})
 
 	if len(list.Items) != 1 {
 		t.Fatalf("Items should contain one items")
@@ -44,7 +44,7 @@ func TestPush(t *testing.T) {
 }
 
 func TestSeek(t *testing.T) {
-	list := NewList(Item{Typ: PHP}, Item{Typ: HTML})
+	list := NewList(Item{Typ: Echo}, Item{Typ: HTML})
 
 	list.Seek(1)
 	if list.Next().Typ != HTML {
@@ -52,14 +52,14 @@ func TestSeek(t *testing.T) {
 	}
 
 	list.Seek(0)
-	if list.Next().Typ != PHP {
-		t.Fatalf("Item should be type PHP")
+	if list.Next().Typ != Echo {
+		t.Fatalf("Item should be type Echo")
 	}
 }
 
 func TestPushStream(t *testing.T) {
-	list := NewList(Item{Typ: PHP}, Item{Typ: PHP})
-	list.PushStream(NewList(Item{Typ: PHP}, Item{Typ: PHP}))
+	list := NewList(Item{Typ: Echo}, Item{Typ: Echo})
+	list.PushStream(NewList(Item{Typ: Echo}, Item{Typ: Echo}))
 
 	if len(list.Items) != 4 {
 		t.Fatalf("Items should contain four items")

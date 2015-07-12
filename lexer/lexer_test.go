@@ -13,12 +13,14 @@ $num = -230.098;
 
 session_start();
 
+/** comment */
 function foo(barType $bar, $foobar) {
   if (buzz()) {
     fizzbuzz();
   }
 }
 
+// comment
 class MyClass {
   public myMethod() {
     ++self::$num;
@@ -51,7 +53,7 @@ func assertItem(t *testing.T, i token.Item, expected string) {
 }
 
 func TestPHPLexer(t *testing.T) {
-	l := NewLexer(testFile)
+	l := token.Subset(NewLexer(testFile), token.Significant|token.CommentType)
 
 	var i token.Item
 	i = assertNext(t, l, token.PHPBegin)
@@ -74,6 +76,7 @@ func TestPHPLexer(t *testing.T) {
 	i = assertNext(t, l, token.CloseParen)
 	i = assertNext(t, l, token.StatementEnd)
 
+	i = assertNext(t, l, token.CommentBlock)
 	i = assertNext(t, l, token.Function)
 	i = assertNext(t, l, token.Identifier)
 	i = assertNext(t, l, token.OpenParen)
@@ -102,6 +105,7 @@ func TestPHPLexer(t *testing.T) {
 
 	i = assertNext(t, l, token.BlockEnd)
 
+	i = assertNext(t, l, token.CommentLine)
 	i = assertNext(t, l, token.Class)
 	i = assertNext(t, l, token.Identifier)
 	i = assertNext(t, l, token.BlockBegin)

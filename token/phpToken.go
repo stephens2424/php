@@ -10,7 +10,6 @@ type Token int
 const (
 	EOF Token = iota
 	HTML
-	PHP
 	PHPBegin
 	PHPEnd
 	PHPToken
@@ -31,13 +30,12 @@ const (
 	Namespace
 	Use
 
-	Comment
+	CommentLine
+	CommentBlock
 
 	IgnoreErrorOperator
 
 	Return
-	ArgumentType
-	ArgumentName
 	Comma
 	StatementEnd
 	Echo
@@ -132,17 +130,18 @@ const (
 
 	Include
 	Exit
+
+	maxToken
 )
 
 var tokens = []string{
 	HTML:             "HTML",
-	PHP:              "PHP",
 	PHPBegin:         "PHP Begin",
 	PHPEnd:           "PHP End",
 	PHPToken:         "PHP Token",
 	EOF:              "EOF",
 	Error:            "Error",
-	Space:            "Space",
+	Space:            "(space)",
 	Function:         "Function",
 	Static:           "static",
 	Self:             "self",
@@ -156,8 +155,6 @@ var tokens = []string{
 
 	Global:       "global",
 	Return:       "Return",
-	ArgumentType: "Function Argument Type",
-	ArgumentName: "Function Argument Name",
 	Comma:        "Function Argument Separator",
 	StatementEnd: ";",
 	Echo:         "echo",
@@ -171,6 +168,13 @@ var tokens = []string{
 	If:         "If",
 	Else:       "Else",
 	ElseIf:     "ElseIf",
+	EndIf:      "EndIf",
+	EndFor:     "EndFor",
+	EndForeach: "EndForeach",
+	EndWhile:   "EndWhile",
+	EndSwitch:  "EndSwitch",
+	Var:        "var",
+
 	For:        "for",
 	Foreach:    "foreach",
 	Switch:     "switch",
@@ -185,7 +189,8 @@ var tokens = []string{
 	Break:      "break",
 	Null:       "null",
 
-	Comment: "/* */",
+	CommentBlock: "/* */",
+	CommentLine:  "//",
 
 	Try:     "try",
 	Catch:   "catch",
@@ -210,17 +215,20 @@ var tokens = []string{
 
 	Identifier: "identifier",
 
-	AssignmentOperator:      "=",
-	NegationOperator:        "!",
-	AdditionOperator:        "+",
-	SubtractionOperator:     "-",
-	MultOperator:            "*/%",
-	ConcatenationOperator:   ".",
-	UnaryOperator:           "++|--",
-	ComparisonOperator:      "==<>",
-	ObjectOperator:          "->",
-	ScopeResolutionOperator: "::",
-	InstanceofOperator:      "instanceof",
+	AssignmentOperator:        "=",
+	NegationOperator:          "!",
+	AdditionOperator:          "+",
+	SubtractionOperator:       "-",
+	MultOperator:              "*/%",
+	ConcatenationOperator:     ".",
+	UnaryOperator:             "++|--",
+	ComparisonOperator:        "==<>",
+	ObjectOperator:            "->",
+	ScopeResolutionOperator:   "::",
+	InstanceofOperator:        "instanceof",
+	StrongNotEqualityOperator: "!==",
+	StrongEqualityOperator:    "===",
+	NotEqualityOperator:       "!=",
 
 	AndOperator:        "&&",
 	OrOperator:         "||",
@@ -345,10 +353,10 @@ var TokenMap = map[string]Token{
 	"(object)":  CastOperator,
 	"(unset)":   CastOperator,
 
-	"/*": Comment,
-	"*/": Comment,
-	"//": Comment,
-	"#":  Comment,
+	"/*": CommentBlock,
+	"*/": CommentBlock,
+	"//": CommentLine,
+	"#":  CommentLine,
 
 	"->": ObjectOperator,
 	"::": ScopeResolutionOperator,

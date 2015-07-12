@@ -15,20 +15,16 @@ import (
 // The idea is derived from a Rob Pike talk:
 // http://www.youtube.com/watch?v=HxaD_trXwRE
 type lexer struct {
-	// start stores the start position of the currently lexing token..
-	start int
-	// lastStart stores the start position of the previously lexed token..
-	lastStart int
-	// lastPos stores the position of the previous lexed element.
-	lastPos int
+	start     int // start stores the start position of the currently lexing token..
+	lastStart int // lastStart stores the start position of the previously lexed token..
+	lastPos   int // lastPos stores the position of the previous lexed element.
 
-	// pos is the current position of the lexer in the input, as an index
-	// of the input string.
-	pos  int
-	line int
-	// width is the length of the current rune
-	width int
-	items chan token.Item // channel of scanned items.
+	pos     int             // pos is the current position of the lexer in the input, as an index of the input string.
+	line    int             // line is the current line number
+	width   int             // width is the length of the current rune
+	itemsCh chan token.Item // channel of scanned items.
+	items   []token.Item    // the items lexed so far
+	itemPos int             // the current position in items
 
 	// input is the full input string.
 	input string
@@ -39,9 +35,9 @@ type lexer struct {
 
 func NewLexer(input string) token.Stream {
 	l := &lexer{
-		line:  1,
-		input: input,
-		items: make(chan token.Item),
+		line:    1,
+		input:   input,
+		itemsCh: make(chan token.Item),
 	}
 	go l.run()
 	return l
@@ -57,7 +53,7 @@ func (l *lexer) run() {
 	for state := lexHTML; state != nil; {
 		state = state(l)
 	}
-	close(l.items) // No more tokens will be delivered.
+	close(l.itemsCh) // No more tokens will be delivered.
 }
 
 // emit gets the current token., sends it on the token. channel
@@ -74,17 +70,42 @@ func (l *lexer) emit(t token.Token) {
 	l.start = l.pos
 
 	i.End = l.currentLocation()
-	l.items <- i
+	l.itemsCh <- i
 }
 
 func (l *lexer) currentLocation() token.Position {
 	return token.Position{Position: l.start, Line: l.line, File: l.file}
 }
 
-// nextItem returns the next token. from the input.
+// nextItem returns the next token from the input.
 func (l *lexer) Next() token.Item {
-	Item := <-l.items
-	return Item
+	// if we've lexed at least one item and the most recent lexed item is EOF, return the zero value
+	if l.itemPos > 0 && l.items[l.itemPos-1].Typ == token.EOF {
+		return token.Item{}
+	}
+
+	// if Previous has been called and we have already-lexed items pending, return the next of those
+	if l.itemPos < len(l.items)-1 {
+		item := l.items[l.itemPos]
+		l.itemPos++
+		return item
+	}
+
+	// lex a new item and return it
+	item := <-l.itemsCh
+	l.items = append(l.items, item)
+	l.itemPos++
+	return item
+}
+
+func (l *lexer) Previous() token.Item {
+	// if we have no previous items, return the zero value
+	if l.itemPos <= 0 {
+		return token.Item{}
+	}
+
+	l.itemPos--
+	return l.items[l.itemPos]
 }
 
 // peek returns but does not consume the next rune in the input.
@@ -130,19 +151,13 @@ func (l *lexer) next() rune {
 	return r
 }
 
-// ignore skips over the pending input before this point.
-func (l *lexer) ignore() {
-	l.start = l.pos
-	l.incrementLines()
-}
-
 func (l *lexer) skipSpace() {
 	r := l.next()
 	for isSpace(r) {
+		l.emit(token.Space)
 		r = l.next()
 	}
 	l.backup()
-	l.ignore()
 }
 
 func (l *lexer) errorf(format string, args ...interface{}) stateFn {
@@ -153,7 +168,7 @@ func (l *lexer) errorf(format string, args ...interface{}) stateFn {
 		Val:   fmt.Sprintf(format, args...),
 	}
 	l.incrementLines()
-	l.items <- i
+	l.itemsCh <- i
 	return nil
 }
 

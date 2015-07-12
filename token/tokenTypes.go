@@ -1,9 +1,35 @@
 package token
 
+import "fmt"
+
+// Type is a bitmask representing the type of a token
+type Type int
+
+const (
+	InvalidType Type = 1 << iota
+
+	KeywordType    // keyword, e.g. "static", "function"
+	LiteralType    // literal, e.g. 234, "a string", false
+	MarkerType     // marker for code blocks and groupings, e.g. {, (
+	OperatorType   // operator, e.g. +, ===, $
+	IdentifierType // identifier, e.g. StdClass
+
+	CommentType
+	WhitespaceType
+
+	Significant = KeywordType | LiteralType | MarkerType | OperatorType | IdentifierType
+)
+
+// Is returns true if ty is equal to or contained by t.
+func (t Type) Is(ty Type) bool {
+	return t&ty != 0
+}
+
+// Type returns the type of t.
 func (t Token) Type() Type {
 	typ, ok := tokenTypes[t]
 	if !ok {
-		panic("token without type")
+		panic(fmt.Sprintf("token %q", t.String()))
 	}
 	return typ
 }
@@ -60,12 +86,22 @@ var tokenTypes = map[Token]Type{
 	Catch:      KeywordType,
 	Finally:    KeywordType,
 	Throw:      KeywordType,
+	EndIf:      KeywordType,
+	EndFor:     KeywordType,
+	EndForeach: KeywordType,
+	EndWhile:   KeywordType,
+	EndSwitch:  KeywordType,
+	Var:        KeywordType,
+	StrongEqualityOperator:    KeywordType,
+	StrongNotEqualityOperator: KeywordType,
+	NotEqualityOperator:       KeywordType,
 
 	OpenParen:  MarkerType,
 	CloseParen: MarkerType,
 
-	Null:    IdentifierType,
-	Comment: CommentType,
+	Null:         IdentifierType,
+	CommentLine:  CommentType,
+	CommentBlock: CommentType,
 
 	Class:       KeywordType,
 	Const:       KeywordType,

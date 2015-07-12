@@ -85,7 +85,8 @@ func (p *Parser) Parse(filepath, input string) (file *ast.File, err error) {
 	p.file = file
 	p.scope = p.FileSet.Scope
 	p.namespace = p.FileSet.GlobalNamespace
-	p.lexer = lexer.NewLexer(input)
+	p.lexer = token.Subset(lexer.NewLexer(input), token.Significant)
+
 	p.FileSet.Files[filepath] = p.file
 	defer func() {
 		if r := recover(); r != nil {
