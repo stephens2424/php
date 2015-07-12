@@ -1,4 +1,4 @@
-package php
+package parser
 
 import (
 	"github.com/stephens2424/php/ast"
