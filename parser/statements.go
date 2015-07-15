@@ -48,15 +48,26 @@ func (p *Parser) parseStmt() ast.Statement {
 		return nil
 	case token.Static:
 		if p.peek().Typ == token.ScopeResolutionOperator {
+			p.errorf("static keyword outside of class context")
 			expr := p.parseExpression()
 			p.expectStmtEnd()
 			return expr
 		}
+
 		s := &ast.StaticVariableDeclaration{Declarations: make([]ast.Dynamic, 0)}
 		for {
-			p.expect(token.VariableOperator)
-			p.expect(token.Identifier)
-			v := ast.NewVariable(p.current.Val)
+			p.next()
+			v, ok := p.parseVariable().(*ast.Variable)
+			if !ok {
+				p.errorf("global static declaration must be a variable")
+				return nil
+			}
+
+			if _, ok := v.Name.(*ast.Identifier); !ok {
+				p.errorf("static variable declarations must not be dynamic")
+			}
+
+			// check if there's an initial assignment
 			if p.peek().Typ == token.AssignmentOperator {
 				p.expect(token.AssignmentOperator)
 				op := p.current.Val
