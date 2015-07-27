@@ -5,6 +5,31 @@ import (
 	"github.com/stephens2424/php/token"
 )
 
+func (p *Parser) parseTopStmt() ast.Statement {
+	switch p.current.Typ {
+	case token.Namespace:
+		// TODO check that this comes before anything but a declare statement
+		p.expect(token.Identifier)
+		p.namespace = ast.NewNamespace(p.current.Val)
+		p.file.Namespace = p.namespace
+		p.expectStmtEnd()
+		return nil
+	case token.Use:
+		p.expect(token.Identifier)
+		if p.peek().Typ == token.AsOperator {
+			p.expect(token.AsOperator)
+			p.expect(token.Identifier)
+		}
+		p.expectStmtEnd()
+		// We are ignoring this for now
+		return nil
+	case token.Declare:
+		return p.parseDeclareBlock()
+	default:
+		return p.parseStmt()
+	}
+}
+
 func (p *Parser) parseStmt() ast.Statement {
 	switch p.current.Typ {
 	case token.BlockBegin:
@@ -30,22 +55,6 @@ func (p *Parser) parseStmt() ast.Statement {
 		}
 		p.expectStmtEnd()
 		return g
-	case token.Namespace:
-		// TODO check that this comes before anything but a declare statement
-		p.expect(token.Identifier)
-		p.namespace = ast.NewNamespace(p.current.Val)
-		p.file.Namespace = p.namespace
-		p.expectStmtEnd()
-		return nil
-	case token.Use:
-		p.expect(token.Identifier)
-		if p.peek().Typ == token.AsOperator {
-			p.expect(token.AsOperator)
-			p.expect(token.Identifier)
-		}
-		p.expectStmtEnd()
-		// We are ignoring this for now
-		return nil
 	case token.Static:
 		if p.peek().Typ == token.ScopeResolutionOperator {
 			p.errorf("static keyword outside of class context")
@@ -209,8 +218,6 @@ func (p *Parser) parseStmt() ast.Statement {
 	case token.StatementEnd:
 		// this is an empty statement
 		return &ast.EmptyStatement{}
-	case token.Declare:
-		return p.parseDeclareBlock()
 	default:
 		expr := p.parseExpression()
 		if expr != nil {

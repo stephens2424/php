@@ -132,7 +132,7 @@ func (p *Parser) parseNode() ast.Node {
 	case token.PHPEnd:
 		return nil
 	}
-	return p.parseStmt()
+	return p.parseTopStmt()
 }
 
 func (p *Parser) next() {
