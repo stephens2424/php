@@ -7,8 +7,8 @@ import (
 	"log"
 	"os"
 
-	"github.com/stephens2424/php"
 	"github.com/stephens2424/php/ast/printer"
+	"github.com/stephens2424/php/parser"
 )
 
 func main() {
@@ -24,7 +24,7 @@ func main() {
 			continue
 		}
 		p := printer.NewPrinter(os.Stdout)
-		file, err := php.NewParser().Parse("test.php", string(src))
+		file, err := parser.NewParser().Parse("test.php", string(src))
 		if err != nil {
 			log.Fatal(err)
 		}
