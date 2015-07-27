@@ -120,51 +120,14 @@ func (p *Parser) parseClassFields(c *ast.Class) *ast.Class {
 		p.next()
 		switch p.current.Typ {
 		case token.Function:
-			if abstract {
-				f := p.parseFunctionDefinition()
-				m := &ast.Method{
-					Visibility:   vis,
-					FunctionStmt: &ast.FunctionStmt{FunctionDefinition: f},
-				}
-				c.Methods = append(c.Methods, m)
-				p.expect(token.StatementEnd)
-			} else {
-				c.Methods = append(c.Methods, &ast.Method{
-					Visibility:   vis,
-					FunctionStmt: p.parseFunctionStmt(true),
-				})
-			}
+			p.parseClassMethod(c, abstract, vis)
 		case token.Var:
 			p.expect(token.VariableOperator)
 			fallthrough
 		case token.VariableOperator:
-			for {
-				p.expect(token.Identifier)
-				prop := &ast.Property{
-					Visibility: vis,
-					Name:       "$" + p.current.Val,
-				}
-				if p.peek().Typ == token.AssignmentOperator {
-					p.expect(token.AssignmentOperator)
-					prop.Initialization = p.parseNextExpression()
-				}
-				c.Properties = append(c.Properties, prop)
-				if p.accept(token.StatementEnd) {
-					break
-				}
-				p.expect(token.Comma)
-				p.expect(token.VariableOperator)
-			}
+			p.parseClassVariables(c, vis)
 		case token.Const:
-			constant := &ast.Constant{}
-			p.expect(token.Identifier)
-			constant.Name = p.current.Val
-			if p.peek().Typ == token.AssignmentOperator {
-				p.expect(token.AssignmentOperator)
-				constant.Value = p.parseNextExpression()
-			}
-			c.Constants = append(c.Constants, constant)
-			p.expect(token.StatementEnd)
+			p.parseClassConst(c)
 		default:
 			p.errorf("unexpected class member %v", p.current)
 			return c
@@ -172,6 +135,55 @@ func (p *Parser) parseClassFields(c *ast.Class) *ast.Class {
 	}
 	p.expect(token.BlockEnd)
 	return c
+}
+
+func (p *Parser) parseClassConst(c *ast.Class) {
+	constant := &ast.Constant{}
+	p.expect(token.Identifier)
+	constant.Name = p.current.Val
+	if p.peek().Typ == token.AssignmentOperator {
+		p.expect(token.AssignmentOperator)
+		constant.Value = p.parseNextExpression()
+	}
+	c.Constants = append(c.Constants, constant)
+	p.expect(token.StatementEnd)
+}
+
+func (p *Parser) parseClassVariables(c *ast.Class, vis ast.Visibility) {
+	for {
+		p.expect(token.Identifier)
+		prop := &ast.Property{
+			Visibility: vis,
+			Name:       "$" + p.current.Val,
+		}
+		if p.peek().Typ == token.AssignmentOperator {
+			p.expect(token.AssignmentOperator)
+			prop.Initialization = p.parseNextExpression()
+		}
+		c.Properties = append(c.Properties, prop)
+		if p.accept(token.StatementEnd) {
+			break
+		}
+		p.expect(token.Comma)
+		p.expect(token.VariableOperator)
+	}
+}
+
+func (p *Parser) parseClassMethod(c *ast.Class, abstract bool, vis ast.Visibility) {
+	if abstract {
+		f := p.parseFunctionDefinition()
+		m := &ast.Method{
+			Visibility:   vis,
+			FunctionStmt: &ast.FunctionStmt{FunctionDefinition: f},
+		}
+		c.Methods = append(c.Methods, m)
+		p.expect(token.StatementEnd)
+	} else {
+		c.Methods = append(c.Methods, &ast.Method{
+			Visibility:   vis,
+			FunctionStmt: p.parseFunctionStmt(true),
+		})
+	}
 }
 
 func (p *Parser) parseInterface() *ast.Interface {
