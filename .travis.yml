@@ -4,3 +4,4 @@ go:
   - tip
 
 script: go test ./...
+sudo: false
