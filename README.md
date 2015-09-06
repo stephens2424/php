@@ -29,11 +29,11 @@ Dead code analysis            | basic idea implemented, but only for some types 
 
 Directory                     |Description
 ------------------------------|------
-php| the core parser
 php/ast| (abstract syntax tree) describes the nodes in PHP as parsed by the parser
 php/ast/printer| prints an ast back to source code
 php/cmd| a tool used to debug the parser
 php/lexer| reads a stream of tokens from source code
+php/parser| the core parser
 php/passes| tools and packages related to modifying or analyzing PHP code (heavily a work in progress)
 php/passes/togo| transpiler
 php/passes/deadcode| dead code analyzer
