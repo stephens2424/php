@@ -1,4 +1,4 @@
-package php
+package parser
 
 import (
 	"github.com/stephens2424/php/ast"
@@ -122,7 +122,7 @@ func (p *Parser) parseDo() ast.Statement {
 func (p *Parser) parseSwitch() ast.Statement {
 	stmt := ast.SwitchStmt{}
 	p.expect(token.OpenParen)
-	stmt.Expression = p.parseExpression()
+	stmt.Expr = p.parseExpression()
 	p.expectCurrent(token.CloseParen)
 	p.expect(token.BlockBegin, token.TernaryOperator2)
 	p.next()
@@ -133,8 +133,8 @@ func (p *Parser) parseSwitch() ast.Statement {
 			p.expect(token.TernaryOperator2, token.StatementEnd)
 			p.next()
 			stmt.Cases = append(stmt.Cases, &ast.SwitchCase{
-				Expression: expr,
-				Block:      *(p.parseSwitchBlock()),
+				Expr:  expr,
+				Block: *(p.parseSwitchBlock()),
 			})
 		case token.Default:
 			p.expect(token.TernaryOperator2, token.StatementEnd)

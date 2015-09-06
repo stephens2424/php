@@ -9,8 +9,8 @@ import (
 	"io"
 	"strings"
 
-	"github.com/stephens2424/php"
 	phpast "github.com/stephens2424/php/ast"
+	"github.com/stephens2424/php/parser"
 	"golang.org/x/tools/imports"
 )
 
@@ -19,7 +19,7 @@ type Togo struct {
 }
 
 func TranspileFile(goFilename, phpFilename, phpStr string, gosrc io.Writer) error {
-	parser := php.NewParser()
+	parser := parser.NewParser()
 	file, err := parser.Parse(phpFilename, phpStr)
 	if err != nil {
 		return fmt.Errorf("found errors while parsing %s: %s", phpFilename, err)

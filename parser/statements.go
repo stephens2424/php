@@ -1,9 +1,34 @@
-package php
+package parser
 
 import (
 	"github.com/stephens2424/php/ast"
 	"github.com/stephens2424/php/token"
 )
+
+func (p *Parser) parseTopStmt() ast.Statement {
+	switch p.current.Typ {
+	case token.Namespace:
+		// TODO check that this comes before anything but a declare statement
+		p.expect(token.Identifier)
+		p.namespace = ast.NewNamespace(p.current.Val)
+		p.file.Namespace = p.namespace
+		p.expectStmtEnd()
+		return nil
+	case token.Use:
+		p.expect(token.Identifier)
+		if p.peek().Typ == token.AsOperator {
+			p.expect(token.AsOperator)
+			p.expect(token.Identifier)
+		}
+		p.expectStmtEnd()
+		// We are ignoring this for now
+		return nil
+	case token.Declare:
+		return p.parseDeclareBlock()
+	default:
+		return p.parseStmt()
+	}
+}
 
 func (p *Parser) parseStmt() ast.Statement {
 	switch p.current.Typ {
@@ -30,42 +55,37 @@ func (p *Parser) parseStmt() ast.Statement {
 		}
 		p.expectStmtEnd()
 		return g
-	case token.Namespace:
-		// TODO check that this comes before anything but a declare statement
-		p.expect(token.Identifier)
-		p.namespace = ast.NewNamespace(p.current.Val)
-		p.file.Namespace = p.namespace
-		p.expectStmtEnd()
-		return nil
-	case token.Use:
-		p.expect(token.Identifier)
-		if p.peek().Typ == token.AsOperator {
-			p.expect(token.AsOperator)
-			p.expect(token.Identifier)
-		}
-		p.expectStmtEnd()
-		// We are ignoring this for now
-		return nil
 	case token.Static:
 		if p.peek().Typ == token.ScopeResolutionOperator {
+			p.errorf("static keyword outside of class context")
 			expr := p.parseExpression()
 			p.expectStmtEnd()
 			return expr
 		}
+
 		s := &ast.StaticVariableDeclaration{Declarations: make([]ast.Dynamic, 0)}
 		for {
-			p.expect(token.VariableOperator)
-			p.expect(token.Identifier)
-			v := ast.NewVariable(p.current.Val)
+			p.next()
+			v, ok := p.parseVariable().(*ast.Variable)
+			if !ok {
+				p.errorf("global static declaration must be a variable")
+				return nil
+			}
+
+			if _, ok := v.Name.(*ast.Identifier); !ok {
+				p.errorf("static variable declarations must not be dynamic")
+			}
+
+			// check if there's an initial assignment
 			if p.peek().Typ == token.AssignmentOperator {
 				p.expect(token.AssignmentOperator)
 				op := p.current.Val
 				p.expect(token.Null, token.StringLiteral, token.BooleanLiteral, token.NumberLiteral, token.Array)
 				switch p.current.Typ {
 				case token.Array:
-					s.Declarations = append(s.Declarations, &ast.AssignmentExpression{Assignee: v, Value: p.parseArrayDeclaration(), Operator: op})
+					s.Declarations = append(s.Declarations, &ast.AssignmentExpr{Assignee: v, Value: p.parseArrayDeclaration(), Operator: op})
 				default:
-					s.Declarations = append(s.Declarations, &ast.AssignmentExpression{Assignee: v, Value: p.parseLiteral(), Operator: op})
+					s.Declarations = append(s.Declarations, &ast.AssignmentExpr{Assignee: v, Value: p.parseLiteral(), Operator: op})
 				}
 			} else {
 				s.Declarations = append(s.Declarations, v)
@@ -78,7 +98,7 @@ func (p *Parser) parseStmt() ast.Statement {
 		p.expectStmtEnd()
 		return s
 	case token.VariableOperator, token.UnaryOperator:
-		expr := ast.ExpressionStmt{p.parseExpression()}
+		expr := ast.ExprStmt{p.parseExpression()}
 		p.expectStmtEnd()
 		return expr
 	case token.Print:
@@ -109,7 +129,7 @@ func (p *Parser) parseStmt() ast.Statement {
 		}
 		return expr
 	case token.Echo:
-		exprs := []ast.Expression{
+		exprs := []ast.Expr{
 			p.parseNextExpression(),
 		}
 		for p.peek().Typ == token.Comma {
@@ -139,7 +159,7 @@ func (p *Parser) parseStmt() ast.Statement {
 		p.next()
 		stmt := &ast.ReturnStmt{}
 		if p.current.Typ != token.StatementEnd {
-			stmt.Expression = p.parseExpression()
+			stmt.Expr = p.parseExpression()
 			p.expectStmtEnd()
 		}
 		return stmt
@@ -147,7 +167,7 @@ func (p *Parser) parseStmt() ast.Statement {
 		p.next()
 		stmt := &ast.BreakStmt{}
 		if p.current.Typ != token.StatementEnd {
-			stmt.Expression = p.parseExpression()
+			stmt.Expr = p.parseExpression()
 			p.expectStmtEnd()
 		}
 		return stmt
@@ -155,12 +175,12 @@ func (p *Parser) parseStmt() ast.Statement {
 		p.next()
 		stmt := &ast.ContinueStmt{}
 		if p.current.Typ != token.StatementEnd {
-			stmt.Expression = p.parseExpression()
+			stmt.Expr = p.parseExpression()
 			p.expectStmtEnd()
 		}
 		return stmt
 	case token.Throw:
-		stmt := ast.ThrowStmt{Expression: p.parseNextExpression()}
+		stmt := ast.ThrowStmt{Expr: p.parseNextExpression()}
 		p.expectStmtEnd()
 		return stmt
 	case token.Exit:
@@ -168,7 +188,7 @@ func (p *Parser) parseStmt() ast.Statement {
 		if p.peek().Typ == token.OpenParen {
 			p.expect(token.OpenParen)
 			if p.peek().Typ != token.CloseParen {
-				stmt.Expression = p.parseNextExpression()
+				stmt.Expr = p.parseNextExpression()
 			}
 			p.expect(token.CloseParen)
 		}
@@ -198,13 +218,11 @@ func (p *Parser) parseStmt() ast.Statement {
 	case token.StatementEnd:
 		// this is an empty statement
 		return &ast.EmptyStatement{}
-	case token.Declare:
-		return p.parseDeclareBlock()
 	default:
 		expr := p.parseExpression()
 		if expr != nil {
 			p.expectStmtEnd()
-			return ast.ExpressionStmt{expr}
+			return ast.ExprStmt{expr}
 		}
 		p.errorf("Found %s, statement or expression", p.current)
 		return nil

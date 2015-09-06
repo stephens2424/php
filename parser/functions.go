@@ -1,4 +1,4 @@
-package php
+package parser
 
 import (
 	"github.com/stephens2424/php/ast"
@@ -74,14 +74,14 @@ func (p *Parser) parseFunctionArgument() *ast.FunctionArgument {
 	return arg
 }
 
-func (p *Parser) parseFunctionCall(callable ast.Expression) *ast.FunctionCallExpression {
-	expr := &ast.FunctionCallExpression{}
+func (p *Parser) parseFunctionCall(callable ast.Expr) *ast.FunctionCallExpr {
+	expr := &ast.FunctionCallExpr{}
 	expr.FunctionName = callable
 	return p.parseFunctionArguments(expr)
 }
 
-func (p *Parser) parseFunctionArguments(expr *ast.FunctionCallExpression) *ast.FunctionCallExpression {
-	expr.Arguments = make([]ast.Expression, 0)
+func (p *Parser) parseFunctionArguments(expr *ast.FunctionCallExpr) *ast.FunctionCallExpr {
+	expr.Arguments = make([]ast.Expr, 0)
 	p.expect(token.OpenParen)
 	if p.peek().Typ == token.CloseParen {
 		p.expect(token.CloseParen)
@@ -101,7 +101,7 @@ func (p *Parser) parseFunctionArguments(expr *ast.FunctionCallExpression) *ast.F
 
 }
 
-func (p *Parser) parseAnonymousFunction() ast.Expression {
+func (p *Parser) parseAnonymousFunction() ast.Expr {
 	f := &ast.AnonymousFunction{}
 	f.Arguments = make([]*ast.FunctionArgument, 0)
 	f.ClosureVariables = make([]*ast.FunctionArgument, 0)

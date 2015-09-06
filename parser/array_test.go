@@ -1,4 +1,4 @@
-package php
+package parser
 
 import (
 	"testing"
@@ -16,13 +16,13 @@ func TestList(t *testing.T) {
 		t.Fatalf("Did not parse list correctly: %s", err)
 	}
 
-	tree := ast.ExpressionStmt{&ast.ListStatement{
+	tree := ast.ExprStmt{&ast.ListStatement{
 		Operator: "=",
 		Assignees: []ast.Assignable{
 			ast.NewVariable("one"),
 			ast.NewVariable("two"),
 		},
-		Value: &ast.ArrayExpression{
+		Value: &ast.ArrayExpr{
 			Pairs: []ast.ArrayPair{
 				{Key: nil, Value: &ast.Literal{Value: "1", Type: ast.Float}},
 				{Key: nil, Value: &ast.Literal{Value: "2", Type: ast.Float}},
@@ -47,20 +47,20 @@ func TestArrayBracket(t *testing.T) {
 	}
 
 	tree := []ast.Statement{
-		ast.ExpressionStmt{ast.AssignmentExpression{
+		ast.ExprStmt{ast.AssignmentExpr{
 			Operator: "=",
 			Assignee: ast.NewVariable("arr"),
-			Value: &ast.ArrayExpression{
+			Value: &ast.ArrayExpr{
 				Pairs: []ast.ArrayPair{
 					{Key: nil, Value: &ast.Literal{Value: `"one"`, Type: ast.String}},
 					{Key: nil, Value: &ast.Literal{Value: `"two"`, Type: ast.String}},
 				},
 			},
 		}},
-		ast.ExpressionStmt{ast.AssignmentExpression{
+		ast.ExprStmt{ast.AssignmentExpr{
 			Operator: "=",
 			Assignee: ast.NewVariable("arr2"),
-			Value: &ast.ArrayExpression{
+			Value: &ast.ArrayExpr{
 				Pairs: []ast.ArrayPair{
 					{
 						Key:   &ast.Literal{Value: `"one"`, Type: ast.String},

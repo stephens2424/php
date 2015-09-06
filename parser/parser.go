@@ -1,4 +1,4 @@
-package php
+package parser
 
 import (
 	"bytes"
@@ -27,6 +27,9 @@ type Parser struct {
 	file      *ast.File
 	namespace *ast.Namespace
 	scope     *ast.Scope
+
+	currentCommentLines []token.Item
+	currentCommentBlock *token.Item
 
 	// this option exists to allow parser tests to pass while scope tests may be failing
 	disableScoping bool
@@ -129,7 +132,7 @@ func (p *Parser) parseNode() ast.Node {
 	case token.PHPEnd:
 		return nil
 	}
-	return p.parseStmt()
+	return p.parseTopStmt()
 }
 
 func (p *Parser) next() {
@@ -142,6 +145,18 @@ func (p *Parser) next() {
 		p.previous = append(p.previous, p.current)
 	} else {
 		p.current = p.previous[p.idx]
+	}
+
+	switch p.current.Typ {
+	case token.CommentLine:
+		p.currentCommentLines = append(p.currentCommentLines, p.current)
+		p.currentCommentBlock = nil
+	case token.CommentBlock:
+		p.currentCommentLines = nil
+		p.currentCommentBlock = &p.current
+	default:
+		p.currentCommentLines = nil
+		p.currentCommentBlock = nil
 	}
 }
 
@@ -216,7 +231,7 @@ func (p *Parser) errorPrefix() string {
 	return fmt.Sprintf("%d", p.current.Begin.Line)
 }
 
-func (p *Parser) parseNextExpression() ast.Expression {
+func (p *Parser) parseNextExpression() ast.Expr {
 	p.next()
 	return p.parseExpression()
 }

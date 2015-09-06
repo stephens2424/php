@@ -18,7 +18,7 @@ func (t *Togo) ToGoStmt(php phpast.Statement) goast.Stmt {
 
 	switch n := php.(type) {
 	// preliminary cases
-	case phpast.UnaryExpression:
+	case phpast.UnaryCallExpr:
 		if n.Operator == "--" || n.Operator == "++" {
 			return &goast.IncDecStmt{
 				X:   t.ToGoExpr(n.Operand),
@@ -28,10 +28,10 @@ func (t *Togo) ToGoStmt(php phpast.Statement) goast.Stmt {
 
 	// standard cases
 	case phpast.AnonymousFunction:
-	case phpast.ArrayAppendExpression:
-	case phpast.ArrayExpression:
-	case phpast.ArrayLookupExpression:
-	case phpast.AssignmentExpression:
+	case phpast.ArrayAppendExpr:
+	case phpast.ArrayExpr:
+	case phpast.ArrayLookupExpr:
+	case phpast.AssignmentExpr:
 		return &goast.AssignStmt{
 			Lhs: []goast.Expr{t.ToGoExpr(n.Assignee)},
 			Rhs: []goast.Expr{t.ToGoExpr(n.Value)},
@@ -40,9 +40,9 @@ func (t *Togo) ToGoStmt(php phpast.Statement) goast.Stmt {
 	case phpast.Block:
 	case phpast.BreakStmt:
 	case phpast.Class:
-	case phpast.ClassExpression:
+	case phpast.ClassExpr:
 	case phpast.Constant:
-	case phpast.ConstantExpression:
+	case phpast.ConstantExpr:
 	case phpast.ContinueStmt:
 	case phpast.DoWhileStmt:
 	case phpast.EchoStmt:
@@ -51,16 +51,16 @@ func (t *Togo) ToGoStmt(php phpast.Statement) goast.Stmt {
 		}
 	case phpast.EmptyStatement:
 	case phpast.ExitStmt:
-	case phpast.ExpressionStmt:
-		switch expr := n.Expression.(type) {
-		case phpast.AssignmentExpression:
+	case phpast.ExprStmt:
+		switch expr := n.Expr.(type) {
+		case phpast.AssignmentExpr:
 			return t.ToGoStmt(expr)
 		case *phpast.ShellCommand:
 			return t.ToGoStmt(expr)
 		case phpast.ShellCommand:
 			return t.ToGoStmt(expr)
 		}
-		return &goast.ExprStmt{t.ToGoExpr(n.Expression)}
+		return &goast.ExprStmt{t.ToGoExpr(n.Expr)}
 	case phpast.ForStmt:
 		f := &goast.ForStmt{}
 		if len(n.Initialization) == 1 {
@@ -85,7 +85,7 @@ func (t *Togo) ToGoStmt(php phpast.Statement) goast.Stmt {
 		r.Value = t.ToGoExpr(n.Value)
 		r.X = t.ToGoExpr(n.Source)
 		r.Body = t.ToGoBlock(n.LoopBlock)
-	case phpast.FunctionCallExpression:
+	case phpast.FunctionCallExpr:
 	case phpast.FunctionCallStmt:
 	case phpast.FunctionStmt:
 	case phpast.GlobalDeclaration:
@@ -97,9 +97,9 @@ func (t *Togo) ToGoStmt(php phpast.Statement) goast.Stmt {
 	case phpast.Interface:
 	case phpast.ListStatement:
 	case phpast.Method:
-	case phpast.MethodCallExpression:
-	case phpast.NewExpression:
-	case phpast.PropertyExpression:
+	case phpast.MethodCallExpr:
+	case phpast.NewCallExpr:
+	case phpast.PropertyCallExpr:
 	case phpast.ReturnStmt:
 	case phpast.ShellCommand:
 		return &goast.ExprStmt{t.CtxFuncCall("Shell", []goast.Expr{&goast.BasicLit{Kind: token.STRING, Value: n.Command}})}
@@ -117,7 +117,7 @@ func (t *Togo) ToGoStmt(php phpast.Statement) goast.Stmt {
 		return f
 
 		// broadest
-	case phpast.Expression:
+	case phpast.Expr:
 		return &goast.ExprStmt{t.ToGoExpr(n)}
 	case phpast.Node:
 	}
@@ -141,31 +141,31 @@ func PHPEval(p phpast.Node) goast.Expr {
 	}
 }
 
-func (t *Togo) ToGoExpr(p phpast.Expression) goast.Expr {
+func (t *Togo) ToGoExpr(p phpast.Expr) goast.Expr {
 	if v := reflect.ValueOf(p); v.Kind() == reflect.Ptr {
-		p = v.Elem().Interface().(phpast.Expression)
+		p = v.Elem().Interface().(phpast.Expr)
 	}
 
 	switch n := p.(type) {
 	case phpast.AnonymousFunction:
-	case phpast.ArrayAppendExpression:
-	case phpast.ArrayExpression:
-	case phpast.ArrayLookupExpression:
-	case phpast.BinaryExpression:
+	case phpast.ArrayAppendExpr:
+	case phpast.ArrayExpr:
+	case phpast.ArrayLookupExpr:
+	case phpast.BinaryExpr:
 		return &goast.BinaryExpr{
 			X:  t.ToGoExpr(n.Antecedent),
 			Y:  t.ToGoExpr(n.Subsequent),
 			Op: t.ToGoOperator(n.Operator),
 		}
-	case phpast.UnaryExpression:
+	case phpast.UnaryCallExpr:
 		return &goast.UnaryExpr{
 			X:  t.ToGoExpr(n.Operand),
 			Op: t.ToGoOperator(n.Operator),
 		}
-	case phpast.ClassExpression:
+	case phpast.ClassExpr:
 	case phpast.Constant:
-	case phpast.ConstantExpression:
-	case phpast.FunctionCallExpression:
+	case phpast.ConstantExpr:
+	case phpast.FunctionCallExpr:
 	case phpast.Identifier:
 		return goast.NewIdent(n.Value)
 	case phpast.Include:
@@ -176,9 +176,9 @@ func (t *Togo) ToGoExpr(p phpast.Expression) goast.Expr {
 			return &goast.BasicLit{Kind: token.STRING, Value: n.Value}
 		}
 		return &goast.BasicLit{Value: n.Value}
-	case phpast.MethodCallExpression:
-	case phpast.NewExpression:
-	case phpast.PropertyExpression:
+	case phpast.MethodCallExpr:
+	case phpast.NewCallExpr:
+	case phpast.PropertyCallExpr:
 		return t.ResolveDynamicProperty(t.ToGoExpr(n.Receiver), n.Name)
 	case phpast.ShellCommand:
 		return t.CtxFuncCall("Shell", []goast.Expr{&goast.BasicLit{Kind: token.STRING, Value: n.Command}})

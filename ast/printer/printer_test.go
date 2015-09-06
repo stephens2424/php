@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"testing"
 
-	"github.com/stephens2424/php"
+	"github.com/stephens2424/php/parser"
 )
 
 type Test struct {
@@ -15,7 +15,7 @@ func TestPrinter(t *testing.T) {
 	t.SkipNow() // disabling this test before some ast restructuring
 
 	for _, test := range tests {
-		p := php.NewParser()
+		p := parser.NewParser()
 		file, err := p.Parse("test.php", test.Before)
 		if err != nil {
 			t.Error("parsing error:", err)

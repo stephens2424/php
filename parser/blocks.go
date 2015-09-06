@@ -1,4 +1,4 @@
-package php
+package parser
 
 import (
 	"github.com/stephens2424/php/ast"
@@ -40,8 +40,8 @@ func (p *Parser) parseStatementsUntil(endTokens ...token.Token) *ast.Block {
 	return block
 }
 
-func (p *Parser) parseExpressionsUntil(separator token.Token, endTokens ...token.Token) []ast.Expression {
-	exprs := make([]ast.Expression, 0, 1)
+func (p *Parser) parseExpressionsUntil(separator token.Token, endTokens ...token.Token) []ast.Expr {
+	exprs := make([]ast.Expr, 0, 1)
 	breakTypes := map[token.Token]bool{}
 	for _, Typ := range endTokens {
 		breakTypes[Typ] = true

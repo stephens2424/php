@@ -9,8 +9,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/stephens2424/php"
 	"github.com/stephens2424/php/ast"
+	"github.com/stephens2424/php/parser"
 	"github.com/stephens2424/php/query"
 )
 
@@ -62,7 +62,7 @@ func (g *gatherer) walkFile(path string, info os.FileInfo, err error) error {
 	}
 	defer f.Close()
 	src, err := ioutil.ReadAll(f)
-	p := php.NewParser()
+	p := parser.NewParser()
 	file, _ := p.Parse("test.php", string(src))
 
 	g.nodes = append(g.nodes, file.Nodes...)

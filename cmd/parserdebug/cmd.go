@@ -8,8 +8,8 @@ import (
 	"os"
 	"runtime/pprof"
 
-	"github.com/stephens2424/php"
 	//"github.com/stephens2424/php/passes/typechecking"
+	"github.com/stephens2424/php/parser"
 	"github.com/stephens2424/php/passes/printing"
 )
 
@@ -44,7 +44,7 @@ func main() {
 			continue
 		}
 		walker := printing.NewWalker()
-		Parser := php.NewParser()
+		Parser := parser.NewParser()
 		if *debugMode {
 			Parser.Debug = true
 			Parser.MaxErrors = 0

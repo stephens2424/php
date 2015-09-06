@@ -1,4 +1,4 @@
-package php
+package parser
 
 import (
 	"fmt"
@@ -175,12 +175,12 @@ func TestFunction(t *testing.T) {
 				Statements: []ast.Statement{ast.Echo(ast.NewVariable("arg"))},
 			},
 		},
-		ast.ExpressionStmt{
-			ast.AssignmentExpression{
+		ast.ExprStmt{
+			ast.AssignmentExpr{
 				Assignee: ast.NewVariable("var"),
-				Value: &ast.FunctionCallExpression{
+				Value: &ast.FunctionCallExpr{
 					FunctionName: &ast.Identifier{Value: "TestFn"},
-					Arguments: []ast.Expression{
+					Arguments: []ast.Expr{
 						&ast.Literal{Type: ast.String, Value: `"world"`},
 						&ast.Literal{Type: ast.Float, Value: "0"},
 					},
@@ -209,8 +209,8 @@ func TestExpressionParsing(t *testing.T) {
 	ifStmt := ast.IfStmt{
 		Branches: []ast.IfBranch{
 			{
-				Condition: ast.BinaryExpression{
-					Antecedent: ast.BinaryExpression{
+				Condition: ast.BinaryExpr{
+					Antecedent: ast.BinaryExpr{
 						Antecedent: &ast.Literal{Type: ast.Float, Value: "1"},
 						Subsequent: &ast.Literal{Type: ast.Float, Value: "2"},
 						Type:       ast.Numeric,
@@ -244,8 +244,8 @@ func TestExpressionParsing(t *testing.T) {
 	ifStmt = ast.IfStmt{
 		Branches: []ast.IfBranch{
 			{
-				Condition: ast.BinaryExpression{
-					Subsequent: ast.BinaryExpression{
+				Condition: ast.BinaryExpr{
+					Subsequent: ast.BinaryExpr{
 						Antecedent: &ast.Literal{Type: ast.Float, Value: "5"},
 						Subsequent: &ast.Literal{Type: ast.Float, Value: "6"},
 						Type:       ast.Numeric,
@@ -279,10 +279,10 @@ func TestExpressionParsing(t *testing.T) {
 	ifStmt = ast.IfStmt{
 		Branches: []ast.IfBranch{
 			{
-				Condition: ast.BinaryExpression{
+				Condition: ast.BinaryExpr{
 					Antecedent: &ast.Literal{Type: ast.Float, Value: `1`},
-					Subsequent: ast.BinaryExpression{
-						Antecedent: ast.BinaryExpression{
+					Subsequent: ast.BinaryExpr{
+						Antecedent: ast.BinaryExpr{
 							Antecedent: &ast.Literal{Type: ast.Float, Value: `2`},
 							Subsequent: &ast.Literal{Type: ast.Float, Value: `3`},
 							Type:       ast.Numeric,
@@ -332,11 +332,11 @@ func TestArray(t *testing.T) {
 	if len(a.Nodes) == 0 {
 		t.Fatalf("Array did not correctly parse")
 	}
-	tree := ast.ExpressionStmt{
-		ast.AssignmentExpression{
+	tree := ast.ExprStmt{
+		ast.AssignmentExpr{
 			Assignee: ast.NewVariable("var"),
 			Operator: "=",
-			Value: &ast.ArrayExpression{
+			Value: &ast.ArrayExpr{
 				ast.ArrayType{},
 				[]ast.ArrayPair{
 					{Value: &ast.Literal{Type: ast.String, Value: `"one"`}},
@@ -362,10 +362,10 @@ func TestArrayKeys(t *testing.T) {
 	if len(a.Nodes) == 0 {
 		t.Fatalf("Array did not correctly parse")
 	}
-	tree := ast.ExpressionStmt{ast.AssignmentExpression{
+	tree := ast.ExprStmt{ast.AssignmentExpr{
 		Assignee: ast.NewVariable("var"),
 		Operator: "=",
-		Value: &ast.ArrayExpression{
+		Value: &ast.ArrayExpr{
 			ast.ArrayType{},
 			[]ast.ArrayPair{
 				{Key: &ast.Literal{Type: ast.Float, Value: "1"}, Value: &ast.Literal{Type: ast.String, Value: `"one"`}},
@@ -390,14 +390,14 @@ func TestMethodCall(t *testing.T) {
 	if len(a.Nodes) == 0 {
 		t.Fatalf("Method call did not correctly parse")
 	}
-	tree := ast.ExpressionStmt{ast.AssignmentExpression{
+	tree := ast.ExprStmt{ast.AssignmentExpr{
 		Assignee: ast.NewVariable("res"),
 		Operator: "=",
-		Value: &ast.MethodCallExpression{
+		Value: &ast.MethodCallExpr{
 			Receiver: ast.NewVariable("var"),
-			FunctionCallExpression: &ast.FunctionCallExpression{
+			FunctionCallExpr: &ast.FunctionCallExpr{
 				FunctionName: &ast.Identifier{Value: "go"},
-				Arguments:    make([]ast.Expression, 0),
+				Arguments:    make([]ast.Expr, 0),
 			},
 		},
 	}}
@@ -418,10 +418,10 @@ func TestProperty(t *testing.T) {
 	if len(a.Nodes) != 2 {
 		t.Fatalf("Property did not correctly parse")
 	}
-	tree := ast.ExpressionStmt{ast.AssignmentExpression{
+	tree := ast.ExprStmt{ast.AssignmentExpr{
 		Assignee: ast.NewVariable("res"),
 		Operator: "=",
-		Value: &ast.PropertyExpression{
+		Value: &ast.PropertyCallExpr{
 			Receiver: ast.NewVariable("var"),
 			Name:     &ast.Identifier{Value: "go"},
 		},
@@ -430,8 +430,8 @@ func TestProperty(t *testing.T) {
 		t.Fatalf("Property did not correctly parse")
 	}
 
-	tree = ast.ExpressionStmt{ast.AssignmentExpression{
-		Assignee: &ast.PropertyExpression{
+	tree = ast.ExprStmt{ast.AssignmentExpr{
+		Assignee: &ast.PropertyCallExpr{
 			Receiver: ast.NewVariable("var"),
 			Name:     &ast.Identifier{Value: "go"},
 		},
@@ -507,7 +507,7 @@ func TestForeachLoop(t *testing.T) {
 		Key:    ast.NewVariable("key"),
 		Value:  ast.NewVariable("val"),
 		LoopBlock: &ast.Block{
-			Statements: []ast.Statement{ast.Echo(ast.BinaryExpression{
+			Statements: []ast.Statement{ast.Echo(ast.BinaryExpr{
 				Operator:   ".",
 				Antecedent: ast.NewVariable("key"),
 				Subsequent: ast.NewVariable("val"),
@@ -534,18 +534,18 @@ func TestForLoop(t *testing.T) {
 		t.Fatalf("For loop did not correctly parse")
 	}
 	tree := &ast.ForStmt{
-		Initialization: []ast.Expression{ast.AssignmentExpression{
+		Initialization: []ast.Expr{ast.AssignmentExpr{
 			Assignee: ast.NewVariable("i"),
 			Value:    &ast.Literal{Type: ast.Float, Value: "0"},
 			Operator: "=",
 		}},
-		Termination: []ast.Expression{ast.BinaryExpression{
+		Termination: []ast.Expr{ast.BinaryExpr{
 			Antecedent: ast.NewVariable("i"),
 			Subsequent: &ast.Literal{Type: ast.Float, Value: "10"},
 			Operator:   "<",
 			Type:       ast.Boolean,
 		}},
-		Iteration: []ast.Expression{ast.UnaryExpression{
+		Iteration: []ast.Expr{ast.UnaryCallExpr{
 			Operator:  "++",
 			Operand:   ast.NewVariable("i"),
 			Preceding: false,
@@ -575,11 +575,11 @@ func TestWhileLoopWithAssignment(t *testing.T) {
 		t.Fatalf("While loop did not correctly parse")
 	}
 	tree := &ast.WhileStmt{
-		Termination: ast.AssignmentExpression{
+		Termination: ast.AssignmentExpr{
 			Assignee: ast.NewVariable("var"),
-			Value: &ast.FunctionCallExpression{
+			Value: &ast.FunctionCallExpr{
 				FunctionName: &ast.Identifier{Value: "mysql_assoc"},
-				Arguments:    make([]ast.Expression, 0),
+				Arguments:    make([]ast.Expr, 0),
 			},
 			Operator: "=",
 		},
@@ -609,18 +609,18 @@ func TestArrayLookup(t *testing.T) {
 	}
 	tree := []ast.Node{
 		ast.EchoStmt{
-			Expressions: []ast.Expression{&ast.ArrayLookupExpression{
-				Array: &ast.ArrayLookupExpression{
+			Expressions: []ast.Expr{&ast.ArrayLookupExpr{
+				Array: &ast.ArrayLookupExpr{
 					Array: ast.NewVariable("arr"),
 					Index: &ast.Literal{Type: ast.String, Value: `'one'`},
 				},
 				Index: ast.NewVariable("two"),
 			}},
 		},
-		ast.ExpressionStmt{
-			ast.AssignmentExpression{
-				Assignee: ast.ArrayAppendExpression{
-					Array: &ast.PropertyExpression{
+		ast.ExprStmt{
+			ast.AssignmentExpr{
+				Assignee: ast.ArrayAppendExpr{
+					Array: &ast.PropertyCallExpr{
 						Receiver: ast.NewVariable("var"),
 						Name:     &ast.Identifier{Value: "arr"},
 					},
@@ -656,10 +656,10 @@ func TestSwitch(t *testing.T) {
 		t.Fatalf("Array lookup did not correctly parse")
 	}
 	tree := ast.SwitchStmt{
-		Expression: ast.NewVariable("var"),
+		Expr: ast.NewVariable("var"),
 		Cases: []*ast.SwitchCase{
 			{
-				Expression: &ast.Literal{Type: ast.Float, Value: "1"},
+				Expr: &ast.Literal{Type: ast.Float, Value: "1"},
 				Block: ast.Block{
 					Statements: []ast.Statement{
 						ast.Echo(&ast.Literal{Type: ast.String, Value: `"one"`}),
@@ -667,7 +667,7 @@ func TestSwitch(t *testing.T) {
 				},
 			},
 			{
-				Expression: &ast.Literal{Type: ast.Float, Value: "2"},
+				Expr: &ast.Literal{Type: ast.Float, Value: "2"},
 				Block: ast.Block{
 					Statements: []ast.Statement{
 						ast.Echo(&ast.Literal{Type: ast.String, Value: `"two"`}),
@@ -699,22 +699,22 @@ func TestLiterals(t *testing.T) {
 		t.Fatalf("Literals did not correctly parse")
 	}
 	tree := []ast.Node{
-		ast.ExpressionStmt{ast.AssignmentExpression{
+		ast.ExprStmt{ast.AssignmentExpr{
 			Assignee: ast.NewVariable("var"),
 			Value:    &ast.Literal{Type: ast.String, Value: `"one"`},
 			Operator: "=",
 		}},
-		ast.ExpressionStmt{ast.AssignmentExpression{
+		ast.ExprStmt{ast.AssignmentExpr{
 			Assignee: ast.NewVariable("var"),
 			Value:    &ast.Literal{Type: ast.Float, Value: "2"},
 			Operator: "=",
 		}},
-		ast.ExpressionStmt{ast.AssignmentExpression{
+		ast.ExprStmt{ast.AssignmentExpr{
 			Assignee: ast.NewVariable("var"),
 			Value:    &ast.Literal{Type: ast.Boolean, Value: "true"},
 			Operator: "=",
 		}},
-		ast.ExpressionStmt{ast.AssignmentExpression{
+		ast.ExprStmt{ast.AssignmentExpr{
 			Assignee: ast.NewVariable("var"),
 			Value:    &ast.Literal{Type: ast.Null, Value: "null"},
 			Operator: "=",
@@ -756,28 +756,28 @@ func TestScopeResolutionOperator(t *testing.T) {
 	p.disableScoping = true
 	a, _ := p.Parse("test.php", testStr)
 	tree := []ast.Node{
-		ast.ExpressionStmt{
-			&ast.ClassExpression{
+		ast.ExprStmt{
+			&ast.ClassExpr{
 				Receiver: &ast.Identifier{Value: "MyClass"},
-				Expression: &ast.FunctionCallExpression{
+				Expr: &ast.FunctionCallExpr{
 					FunctionName: &ast.Identifier{Value: "myfunc"},
-					Arguments: []ast.Expression{
+					Arguments: []ast.Expr{
 						ast.NewVariable("var"),
 					},
 				},
 			},
 		},
-		ast.Echo(&ast.ClassExpression{
+		ast.Echo(&ast.ClassExpr{
 			Receiver: &ast.Identifier{Value: "MyClass"},
-			Expression: ast.ConstantExpression{
+			Expr: ast.ConstantExpr{
 				ast.NewVariable("myconst"),
 			},
 		}),
-		ast.Echo(&ast.ClassExpression{
+		ast.Echo(&ast.ClassExpr{
 			Receiver: ast.NewVariable("var"),
-			Expression: &ast.FunctionCallExpression{
+			Expr: &ast.FunctionCallExpr{
 				FunctionName: &ast.Identifier{Value: "myfunc"},
-				Arguments:    []ast.Expression{},
+				Arguments:    []ast.Expr{},
 			},
 		}),
 	}
@@ -799,9 +799,9 @@ func TestCastOperator(t *testing.T) {
 	p.disableScoping = true
 	a, _ := p.Parse("test.php", testStr)
 	tree := []ast.Node{
-		ast.ExpressionStmt{ast.AssignmentExpression{
+		ast.ExprStmt{ast.AssignmentExpr{
 			Assignee: ast.NewVariable("var"),
-			Value: ast.UnaryExpression{
+			Value: ast.UnaryCallExpr{
 				Operand:   &ast.Literal{Type: ast.Float, Value: "1.0"},
 				Operator:  "(double)",
 				Preceding: false,

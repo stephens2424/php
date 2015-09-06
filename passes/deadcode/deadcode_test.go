@@ -3,8 +3,8 @@ package deadcode
 import (
 	"testing"
 
-	"github.com/stephens2424/php"
 	"github.com/stephens2424/php/ast"
+	"github.com/stephens2424/php/parser"
 )
 
 func TestDeadFunctions(t *testing.T) {
@@ -28,7 +28,7 @@ func TestDeadFunctions(t *testing.T) {
 	fizz::notsimple();
 	`
 
-	p := php.NewParser()
+	p := parser.NewParser()
 	if _, err := p.Parse("test.php", src); err != nil {
 		t.Fatal(err)
 	}

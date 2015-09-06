@@ -25,11 +25,11 @@ func DeadFunctions(fs *ast.FileSet, entryPoints []string) []ast.Node {
 func EliminateCalls(nodes []ast.Node, knownFunctions map[string]ast.Node) {
 	for _, node := range nodes {
 		switch node := node.(type) {
-		case ast.FunctionCallExpression:
+		case ast.FunctionCallExpr:
 			if static := ast.Static(node.FunctionName); static != nil {
 				delete(knownFunctions, static.Value)
 			}
-		case *ast.FunctionCallExpression:
+		case *ast.FunctionCallExpr:
 			if static := ast.Static(node.FunctionName); static != nil {
 				delete(knownFunctions, static.Value)
 			}
