@@ -3,6 +3,7 @@ package parser
 import (
 	"bytes"
 	"fmt"
+	"path"
 
 	"github.com/stephens2424/php/ast"
 	"github.com/stephens2424/php/lexer"
@@ -84,7 +85,7 @@ func (p ParseError) String() string {
 
 // Parse consumes the input string to produce an AST that represents it.
 func (p *Parser) Parse(filepath, input string) (file *ast.File, err error) {
-	file = &ast.File{Namespace: p.FileSet.GlobalNamespace}
+	file = &ast.File{Namespace: p.FileSet.GlobalNamespace, Name: path.Base(filepath)}
 	p.file = file
 	p.scope = p.FileSet.Scope
 	p.namespace = p.FileSet.GlobalNamespace
@@ -222,7 +223,7 @@ func errorf(p *Parser, str string, args ...interface{}) ParseError {
 	e := ParseError{error: fmt.Errorf(str, args...)}
 	if p != nil {
 		e.File = p.file
-		e.Line = 0
+		e.Line = p.current.Begin.Line
 	}
 	return e
 }
