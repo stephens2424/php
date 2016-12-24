@@ -109,6 +109,16 @@ func lexPHP(l *lexer) stateFn {
 		return lexDoubleQuotedStringLiteral
 	}
 
+	if t, ok := hasKeyword(l); ok {
+		l.emit(t)
+		return lexPHP
+	}
+
+	return lexIdentifier
+}
+
+func hasKeyword(l *lexer) (token.Token, bool) {
+	var t token.Token
 	// is it an operator or keyword?
 	//
 	// start by getting the longest possible keyword string
@@ -131,8 +141,7 @@ func lexPHP(l *lexer) stateFn {
 			if isKw && l.previous() == '$' {
 				// if the keyword is preceded by a variable
 				// operator, we actually have an identifier.
-				// break out and return
-				break
+				return t, false
 			}
 
 			// we think we're at a token of some kind
@@ -148,15 +157,17 @@ func lexPHP(l *lexer) stateFn {
 
 				// move back the length of the false keyword now
 				l.pos -= len(tokenString)
-				break
+				return t, false
 			}
 
 			// we definitely have a token, emit it.
-			l.emit(t)
-			return lexPHP
+			return t, true
 		}
 	}
+	return t, false
+}
 
+func lexIdentifier(l *lexer) stateFn {
 	var weirdIdentifier bool
 	l.acceptRunFn(func(r rune) bool {
 		if unicode.IsLetter(r) || unicode.IsNumber(r) || r == '_' || r == '\\' {
@@ -257,14 +268,6 @@ func lexDoubleQuotedStringLiteral(l *lexer) stateFn {
 const alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 const digits = "0123456789"
 const underscore = "_"
-
-func lexIdentifier(l *lexer) stateFn {
-	l.accept("$")
-	l.accept(underscore + alphabet)
-	l.acceptRun(underscore + alphabet + digits)
-	l.emit(token.VariableOperator)
-	return lexPHP
-}
 
 // lexPHPEnd lexes the end of a PHP section returning the context to HTML
 func lexPHPEnd(l *lexer) stateFn {
