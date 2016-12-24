@@ -140,6 +140,13 @@ func (l *lexer) acceptRun(valid string) {
 	l.backup()
 }
 
+// acceptRunFn consumes a run of runes from the valid set function.
+func (l *lexer) acceptRunFn(validFn func(r rune) bool) {
+	for validFn(l.next()) {
+	}
+	l.backup()
+}
+
 func (l *lexer) next() rune {
 	if int(l.pos) >= len(l.input) {
 		l.width = 0
@@ -167,7 +174,6 @@ func (l *lexer) errorf(format string, args ...interface{}) stateFn {
 		End:   l.currentLocation(),
 		Val:   fmt.Sprintf(format, args...),
 	}
-	l.incrementLines()
 	l.itemsCh <- i
 	return nil
 }

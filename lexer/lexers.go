@@ -96,6 +96,7 @@ func lexPHP(l *lexer) stateFn {
 		return nil
 	}
 
+	// strings
 	if l.peek() == '`' {
 		return lexShellCommand
 	}
@@ -108,29 +109,76 @@ func lexPHP(l *lexer) stateFn {
 		return lexDoubleQuotedStringLiteral
 	}
 
-	tokenString := l.input[l.pos:]
-	if len(tokenString) > longestToken {
-		tokenString = tokenString[:longestToken]
+	// is it an operator or keyword?
+	//
+	// start by getting the longest possible keyword string
+	// out of the remaining input. find the longest keyword
+	// match in the input
+	var tokenString string
+	if len(l.input[l.pos:]) > longestToken {
+		tokenString = l.input[l.pos : l.pos+longestToken]
+	} else {
+		tokenString = l.input[l.pos:]
 	}
+
 	tokenString = strings.ToLower(tokenString)
+
+	// starting with the longest match, iterate to see if we have found
+	// a keyword or operator token
 	for ; tokenString != ""; tokenString = tokenString[:len(tokenString)-1] {
 		if t, ok := token.TokenMap[tokenString]; ok {
 			isKw := IsKeyword(t, tokenString)
 			if isKw && l.previous() == '$' {
+				// if the keyword is preceded by a variable
+				// operator, we actually have an identifier.
+				// break out and return
 				break
 			}
+
+			// we think we're at a token of some kind
 			l.pos += len(tokenString)
 			if isKw && l.accept(alphabet+underscore+digits) {
-				l.backup() // to account for the character consumed by accept
+				// but if the keyword actually continues on
+				// unexpectedly, roll back because this is
+				// actually an identifier
+
+				// to account for the extra character consumed by
+				// accept
+				l.backup()
+
+				// move back the length of the false keyword now
 				l.pos -= len(tokenString)
 				break
 			}
+
+			// we definitely have a token, emit it.
 			l.emit(t)
 			return lexPHP
 		}
 	}
 
-	l.acceptRun(alphabet + underscore + digits + "\\")
+	var weirdIdentifier bool
+	l.acceptRunFn(func(r rune) bool {
+		if unicode.IsLetter(r) || unicode.IsNumber(r) || r == '_' || r == '\\' {
+			return true
+		}
+
+		if unicode.IsSpace(r) {
+			return false
+		}
+
+		if _, ok := token.OperatorMarks[r]; ok {
+			return false
+		}
+
+		weirdIdentifier = true
+		return true
+	})
+
+	if weirdIdentifier {
+		l.errorf("unexpected characters in identifier")
+	}
+
 	l.emit(token.Identifier)
 	return lexPHP
 }

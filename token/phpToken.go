@@ -3,6 +3,7 @@ package token
 import (
 	"sort"
 	"strconv"
+	"unicode"
 )
 
 type Token int
@@ -414,6 +415,19 @@ var TokenMap = map[string]Token{
 
 	"$":       VariableOperator,
 	"declare": Declare,
+}
+
+var OperatorMarks = map[rune]struct{}{}
+
+func init() {
+	for operator := range TokenMap {
+		for _, char := range operator {
+			if unicode.IsPunct(char) || unicode.IsSymbol(char) {
+				OperatorMarks[char] = struct{}{}
+			}
+			break // we only ever care about the first char
+		}
+	}
 }
 
 func (i Token) String() string {
