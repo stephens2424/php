@@ -277,11 +277,19 @@ func lexPHPEnd(l *lexer) stateFn {
 }
 
 func lexLineComment(l *lexer) stateFn {
-	lineLength := strings.Index(l.input[l.pos:], "\n") + 1
+	lineLength := strings.IndexAny(l.input[l.pos:], "\r\n") + 1
 	if lineLength == 0 {
 		// this is the last line, so lex until the end
 		lineLength = len(l.input[l.pos:])
 	}
+
+	// deal with varying line endings
+	if l.input[l.pos+lineLength-1] == '\r' &&
+		len(l.input[l.pos+lineLength:]) > 0 &&
+		l.input[l.pos+lineLength] == '\n' {
+		lineLength++
+	}
+
 	// don't lex php end
 	if phpEndLength := strings.Index(l.input[l.pos:l.pos+lineLength], phpEnd); phpEndLength >= 0 && phpEndLength < lineLength {
 		lineLength = phpEndLength
@@ -315,17 +323,30 @@ func lexDoc(l *lexer) stateFn {
 	labelPos := l.pos
 	l.accept(underscore + alphabet)
 	l.acceptRun(underscore + alphabet + digits)
-	endMarker := fmt.Sprintf("\n%s", l.input[labelPos:l.pos])
+
+	endMarkerA := fmt.Sprintf("\r\n%s", l.input[labelPos:l.pos])
+	endMarkerB := fmt.Sprintf("\n%s", l.input[labelPos:l.pos])
+	endMarkerC := fmt.Sprintf("\r%s", l.input[labelPos:l.pos])
 	if nowDoc {
 		l.accept("'")
 	} else if l.peek() == '"' {
 		l.next()
 	}
-	l.accept("\n")
-	for !strings.HasPrefix(l.input[l.pos:], endMarker) {
+	l.accept("\r\n")
+	l.accept("\r\n")
+
+	for !strings.HasPrefix(l.input[l.pos:], endMarkerA) &&
+		!strings.HasPrefix(l.input[l.pos:], endMarkerB) &&
+		!strings.HasPrefix(l.input[l.pos:], endMarkerC) {
 		l.next()
 	}
-	l.pos += len(endMarker)
+
+	if strings.HasPrefix(l.input[l.pos:], endMarkerA) {
+		l.pos += len(endMarkerA)
+	} else {
+		l.pos += len(endMarkerB)
+	}
+
 	l.emit(token.StringLiteral)
 	return lexPHP
 }
