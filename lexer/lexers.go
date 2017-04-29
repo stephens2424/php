@@ -138,10 +138,17 @@ func hasKeyword(l *lexer) (token.Token, bool) {
 	for ; tokenString != ""; tokenString = tokenString[:len(tokenString)-1] {
 		if t, ok := token.TokenMap[tokenString]; ok {
 			isKw := IsKeyword(t, tokenString)
-			if isKw && l.previous() == '$' {
-				// if the keyword is preceded by a variable
-				// operator, we actually have an identifier.
-				return t, false
+
+			if isKw {
+				switch l.getPrevious().Typ {
+				case token.VariableOperator,
+					token.ObjectOperator,
+					token.ScopeResolutionOperator:
+					// if the keyword is preceded by a variable
+					// operator, object operator, or scope resolution
+					// operator, we actually have an identifier.
+					return t, false
+				}
 			}
 
 			// we think we're at a token of some kind

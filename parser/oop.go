@@ -67,6 +67,7 @@ func (p *Parser) parseObjectLookup(r ast.Expr) (expr ast.Expr) {
 	prop := &ast.PropertyCallExpr{
 		Receiver: r,
 	}
+
 	switch p.next(); p.current.Typ {
 	case token.BlockBegin:
 		prop.Name = p.parseNextExpression()
@@ -75,7 +76,10 @@ func (p *Parser) parseObjectLookup(r ast.Expr) (expr ast.Expr) {
 		prop.Name = p.parseExpression()
 	case token.Identifier:
 		prop.Name = &ast.Identifier{Value: p.current.Val}
+	default:
+		p.errorf("unexpected token following object operator: %v", p.current)
 	}
+
 	expr = prop
 	switch pk := p.peek(); pk.Typ {
 	case token.OpenParen:

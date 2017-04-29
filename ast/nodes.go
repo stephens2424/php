@@ -641,6 +641,7 @@ func (p PropertyCallExpr) EvaluatesTo() Type {
 func (p PropertyCallExpr) Children() []Node {
 	return []Node{
 		p.Receiver,
+		p.Name,
 	}
 }
 

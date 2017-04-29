@@ -31,6 +31,8 @@ type lexer struct {
 
 	// file is the filename of the input, used to print errors.
 	file string
+
+	lastSignificant token.Item
 }
 
 func NewLexer(input string) token.Stream {
@@ -71,13 +73,17 @@ func (l *lexer) emit(t token.Token) {
 
 	i.End = l.currentLocation()
 	l.itemsCh <- i
+
+	if i.Typ.Type().Is(token.Significant) {
+		l.lastSignificant = i
+	}
 }
 
 func (l *lexer) currentLocation() token.Position {
 	return token.Position{Position: l.start, Line: l.line, File: l.file}
 }
 
-// nextItem returns the next token from the input.
+// Next returns the next token from the input and advances the lexer by a token.
 func (l *lexer) Next() token.Item {
 	// if we've lexed at least one item and the most recent lexed item is EOF, return the zero value
 	if l.itemPos > 0 && l.items[l.itemPos-1].Typ == token.EOF {
@@ -98,6 +104,14 @@ func (l *lexer) Next() token.Item {
 	return item
 }
 
+// getPrevious returns the most recently lexed significant item without
+// modifying the lexer state.
+func (l *lexer) getPrevious() token.Item {
+	return l.lastSignificant
+}
+
+// Previous returns the most recently lexed item and resets the position
+// of the lexer back by an item.
 func (l *lexer) Previous() token.Item {
 	// if we have no previous items, return the zero value
 	if l.itemPos <= 0 {

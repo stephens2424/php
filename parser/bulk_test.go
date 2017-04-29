@@ -18,13 +18,18 @@ func TestFiles(t *testing.T) {
 		if strings.HasPrefix(filename, ".") || !strings.HasSuffix(filename, ".php") {
 			continue
 		}
+		if filename != "badfile.php" {
+			continue
+		}
 		src, err := ioutil.ReadFile(path.Join("../testdata", filename))
 		if err != nil {
 			t.Error(err)
 			continue
 		}
 
-		if _, err = NewParser().Parse("test.php", string(src)); err != nil {
+		p := NewParser()
+		p.PrintTokens = true
+		if _, err = p.Parse("test.php", string(src)); err != nil {
 			t.Error(filename, err)
 		}
 	}
