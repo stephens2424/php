@@ -2,6 +2,7 @@ package parser
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"path"
 
@@ -36,6 +37,8 @@ type Parser struct {
 	disableScoping bool
 
 	instantiation bool
+
+	Ctx context.Context
 }
 
 // NewParser readies a parser
@@ -136,7 +139,22 @@ func (p *Parser) parseNode() ast.Node {
 	return p.parseTopStmt()
 }
 
+func (p *Parser) canceled() bool {
+	if p.Ctx != nil {
+		select {
+		case <-p.Ctx.Done():
+			return true
+		default:
+		}
+	}
+	return false
+}
+
 func (p *Parser) next() {
+	if p.canceled() {
+		panic("canceled")
+	}
+
 	p.idx++
 	if len(p.previous) <= p.idx {
 		p.current = p.lexer.Next()
