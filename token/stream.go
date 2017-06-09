@@ -45,6 +45,9 @@ func (s *itemList) Next() Item {
 	return item
 }
 
+func (s *itemList) Abort() {
+}
+
 func (s *itemList) Previous() Item {
 	if s.Position == 0 {
 		return Item{}
