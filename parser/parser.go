@@ -96,6 +96,7 @@ func (p *Parser) Parse(filepath, input string) (file *ast.File, err error) {
 
 	p.FileSet.Files[filepath] = p.file
 	defer func() {
+		p.lexer.Abort()
 		if r := recover(); r != nil {
 			err = append(ParseErrorList{errorf(p, "%s", r)}, p.errors...)
 			if p.Debug {

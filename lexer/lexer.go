@@ -19,6 +19,7 @@ type lexer struct {
 	lastStart int // lastStart stores the start position of the previously lexed token..
 	lastPos   int // lastPos stores the position of the previous lexed element.
 
+	abort   chan struct{}
 	pos     int             // pos is the current position of the lexer in the input, as an index of the input string.
 	line    int             // line is the current line number
 	width   int             // width is the length of the current rune
@@ -40,9 +41,14 @@ func NewLexer(input string) token.Stream {
 		line:    1,
 		input:   input,
 		itemsCh: make(chan token.Item),
+		abort:   make(chan struct{}),
 	}
 	go l.run()
 	return l
+}
+
+func (l *lexer) Abort() {
+	close(l.abort)
 }
 
 // stateFn represents the state of the scanner
@@ -54,7 +60,13 @@ type stateFn func(*lexer) stateFn
 func (l *lexer) run() {
 	for state := lexHTML; state != nil; {
 		state = state(l)
+		select {
+		case <-l.abort:
+			goto done
+		default:
+		}
 	}
+done:
 	close(l.itemsCh) // No more tokens will be delivered.
 }
 
@@ -72,7 +84,11 @@ func (l *lexer) emit(t token.Token) {
 	l.start = l.pos
 
 	i.End = l.currentLocation()
-	l.itemsCh <- i
+
+	select {
+	case l.itemsCh <- i:
+	case <-l.abort:
+	}
 
 	if i.Typ.Type().Is(token.Significant) {
 		l.lastSignificant = i

@@ -15,6 +15,8 @@ type Stream interface {
 	//
 	// If there is no previous item, the zero value is returned.
 	Previous() Item
+
+	Abort()
 }
 
 // List represents an ordered set of tokens.
@@ -87,6 +89,10 @@ func Subset(s Stream, t Type) Stream {
 type subsetStream struct {
 	t Type
 	s Stream
+}
+
+func (s subsetStream) Abort() {
+	s.s.Abort()
 }
 
 func (s subsetStream) Next() Item {
