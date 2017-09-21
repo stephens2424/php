@@ -180,7 +180,7 @@ var tokens = []string{
 	Foreach:    "foreach",
 	Switch:     "switch",
 	Case:       "case",
-Default:    "default",
+	Default:    "default",
 	AsOperator: "as",
 	While:      "while",
 	Do:         "do",
@@ -424,12 +424,12 @@ func init() {
 		if len(operator) == 0 {
 			continue
 		}
-		
+
 		char := rune(operator[0])
 		if !(unicode.IsPunct(char) || unicode.IsSymbol(char)) {
 			continue
 		}
-		
+
 		OperatorMarks[char] = struct{}{}
 	}
 }

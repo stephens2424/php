@@ -17,7 +17,7 @@ func (t *Togo) ToGoStmt(php phpast.Statement) goast.Stmt {
 	}
 
 	switch n := php.(type) {
-		// preliminary cases
+	// preliminary cases
 	case phpast.UnaryCallExpr:
 		if n.Operator == "--" || n.Operator == "++" {
 			return &goast.IncDecStmt{
