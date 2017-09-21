@@ -44,12 +44,12 @@ func TestDeadFunctions(t *testing.T) {
 
 		fnName := deadFunc.(*ast.FunctionStmt).Name
 		if _, ok := shouldBeDead[fnName]; !ok {
-			t.Error("%q was found dead, but shouldn't have been", fnName)
+			t.Errorf("%q was found dead, but shouldn't have been", fnName)
 		}
 		delete(shouldBeDead, fnName)
 	}
 
 	for fugitive, _ := range shouldBeDead {
-		t.Error("%q should have been found dead, but wasn't", fugitive)
+		t.Errorf("%q should have been found dead, but wasn't", fugitive)
 	}
 }

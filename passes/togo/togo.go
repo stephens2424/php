@@ -66,7 +66,7 @@ func File(name string, nodes ...goast.Node) *goast.File {
 		case goast.Stmt:
 			stmts = append(stmts, g)
 		case goast.Expr:
-			stmts = append(stmts, &goast.ExprStmt{g})
+			stmts = append(stmts, &goast.ExprStmt{X: g})
 		}
 	}
 

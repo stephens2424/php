@@ -147,7 +147,7 @@ func TestInstantiation(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Did not parse instantiation correctly: %s", err)
 	}
-	tree := ast.ExprStmt{ast.AssignmentExpr{
+	tree := ast.ExprStmt{Expr: ast.AssignmentExpr{
 		Operator: "=",
 		Assignee: ast.NewVariable("obj"),
 		Value: &ast.NewCallExpr{
