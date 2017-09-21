@@ -107,14 +107,6 @@ func (p *Parser) parseVisibility() (vis ast.Visibility, found bool) {
 	return vis, true
 }
 
-func (p *Parser) parseAbstract() bool {
-	if p.peek().Typ == token.Abstract {
-		p.next()
-		return true
-	}
-	return false
-}
-
 func (p *Parser) parseClassFields(c *ast.Class) *ast.Class {
 	// Starting on BlockBegin
 	c.Methods = make([]*ast.Method, 0)

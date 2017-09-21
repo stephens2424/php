@@ -180,7 +180,7 @@ var tokens = []string{
 	Foreach:    "foreach",
 	Switch:     "switch",
 	Case:       "case",
-	Default:    "default",
+Default:    "default",
 	AsOperator: "as",
 	While:      "while",
 	Do:         "do",
@@ -421,12 +421,16 @@ var OperatorMarks = map[rune]struct{}{}
 
 func init() {
 	for operator := range TokenMap {
-		for _, char := range operator {
-			if unicode.IsPunct(char) || unicode.IsSymbol(char) {
-				OperatorMarks[char] = struct{}{}
-			}
-			break // we only ever care about the first char
+		if len(operator) == 0 {
+			continue
 		}
+		
+		char := rune(operator[0])
+		if !(unicode.IsPunct(char) || unicode.IsSymbol(char)) {
+			continue
+		}
+		
+		OperatorMarks[char] = struct{}{}
 	}
 }
 

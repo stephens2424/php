@@ -14,7 +14,7 @@ type Node interface {
 	Children() []Node
 }
 
-// A statement is an executable piece of code. It may be as simple as
+// Statement describes an executable piece of code. It may be as simple as
 // a function call or a variable assignment. It also includes things like
 // "if".
 type Statement interface {

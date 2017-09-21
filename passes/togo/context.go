@@ -6,10 +6,6 @@ import (
 	phpast "github.com/stephens2424/php/ast"
 )
 
-type context struct {
-	Scope phpast.Scope
-}
-
 func (t *Togo) ResolveDynamicVar(varName phpast.Expr) goast.Node {
 	switch e := varName.(type) {
 	case phpast.Identifier:

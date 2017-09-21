@@ -201,16 +201,6 @@ func (p *Parser) expectCurrent(i ...token.Token) {
 	p.expected(i...)
 }
 
-func (p *Parser) expectAndNext(i ...token.Token) {
-	defer p.next()
-	for _, Typ := range i {
-		if p.current.Typ == Typ {
-			return
-		}
-	}
-	p.expected(i...)
-}
-
 func (p *Parser) expect(i ...token.Token) {
 	p.next()
 	p.expectCurrent(i...)
@@ -245,10 +235,6 @@ func errorf(p *Parser, str string, args ...interface{}) ParseError {
 		e.Line = p.current.Begin.Line
 	}
 	return e
-}
-
-func (p *Parser) errorPrefix() string {
-	return fmt.Sprintf("%d", p.current.Begin.Line)
 }
 
 func (p *Parser) parseNextExpression() ast.Expr {
