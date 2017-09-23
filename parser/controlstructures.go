@@ -20,6 +20,7 @@ func (p *Parser) parseIf() *ast.IfStmt {
 				n.Branches = append(n.Branches, p.parseIfBranch())
 			} else {
 				n.ElseBlock = p.parseControlBlock(token.EndIf)
+				p.backup()
 				return n
 			}
 		default:
