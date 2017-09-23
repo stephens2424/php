@@ -117,6 +117,16 @@ func lexPHP(l *lexer) stateFn {
 	return lexIdentifier
 }
 
+func isOperator(t token.Token) bool {
+	_, ok := map[token.Token]struct{}{
+		token.VariableOperator: struct{}{},
+		token.ObjectOperator: struct{}{},
+		token.ScopeResolutionOperator: struct{}{},
+	}[t]
+
+	return ok
+}
+
 func hasKeyword(l *lexer) (token.Token, bool) {
 	var t token.Token
 	// is it an operator or keyword?
@@ -136,40 +146,41 @@ func hasKeyword(l *lexer) (token.Token, bool) {
 	// starting with the longest match, iterate to see if we have found
 	// a keyword or operator token
 	for ; tokenString != ""; tokenString = tokenString[:len(tokenString)-1] {
-		if t, ok := token.TokenMap[tokenString]; ok {
-			isKw := IsKeyword(t, tokenString)
+		t, ok := token.TokenMap[tokenString]
+		if !ok {
+			continue
+		}
 
-			if isKw {
-				switch l.getPrevious().Typ {
-				case token.VariableOperator,
-					token.ObjectOperator,
-					token.ScopeResolutionOperator:
-					// if the keyword is preceded by a variable
-					// operator, object operator, or scope resolution
-					// operator, we actually have an identifier.
-					return t, false
-				}
-			}
-
-			// we think we're at a token of some kind
+		if !IsKeyword(t, tokenString) {
 			l.pos += len(tokenString)
-			if isKw && l.accept(alphabet+underscore+digits) {
-				// but if the keyword actually continues on
-				// unexpectedly, roll back because this is
-				// actually an identifier
-
-				// to account for the extra character consumed by
-				// accept
-				l.backup()
-
-				// move back the length of the false keyword now
-				l.pos -= len(tokenString)
-				return t, false
-			}
-
-			// we definitely have a token, emit it.
 			return t, true
 		}
+
+		if (isOperator(l.getPrevious().Typ)) {
+			// if the keyword is preceded by a variable
+			// operator, object operator, or scope resolution
+			// operator, we actually have an identifier.
+			return t, false
+		}
+
+		// we think we're at a token of some kind
+		l.pos += len(tokenString)
+		if l.accept(alphabet + underscore + digits) {
+			// but if the keyword actually continues on
+			// unexpectedly, roll back because this is
+			// actually an identifier
+
+			// to account for the extra character consumed by
+			// accept
+			l.backup()
+
+			// move back the length of the false keyword now
+			l.pos -= len(tokenString)
+			return t, false
+		}
+
+		// we definitely have a token, emit it.
+		return t, true
 	}
 	return t, false
 }
