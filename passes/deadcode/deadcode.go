@@ -2,6 +2,7 @@ package deadcode
 
 import "github.com/stephens2424/php/ast"
 
+// DeadFunctions returns a list of dead functions
 func DeadFunctions(fs *ast.FileSet, entryPoints []string) []ast.Node {
 	knownFunctions := AllTheFunctions(fs)
 
@@ -22,6 +23,7 @@ func DeadFunctions(fs *ast.FileSet, entryPoints []string) []ast.Node {
 	return nodes
 }
 
+// EliminateCalls eliminates all dead calls
 func EliminateCalls(nodes []ast.Node, knownFunctions map[string]ast.Node) {
 	for _, node := range nodes {
 		switch node := node.(type) {
@@ -39,6 +41,7 @@ func EliminateCalls(nodes []ast.Node, knownFunctions map[string]ast.Node) {
 
 }
 
+// AllTheFunctions returns a list of all functions
 func AllTheFunctions(fs *ast.FileSet) map[string]ast.Node {
 	namedFunctions := map[string]ast.Node{}
 	for f, n := range fs.GlobalNamespace.Functions {

@@ -6,6 +6,7 @@ import (
 	"unicode"
 )
 
+// Token is a token
 type Token int
 
 const (
@@ -258,6 +259,7 @@ var tokens = []string{
 	Declare: "declare",
 }
 
+// TokenList represents a list of tokens
 var TokenList []string
 
 func init() {
@@ -265,7 +267,7 @@ func init() {
 	i := 0
 	for token := range TokenMap {
 		TokenList[i] = token
-		i += 1
+		i++
 	}
 	sort.Sort(sort.Reverse(sort.StringSlice(TokenList)))
 }
@@ -417,6 +419,7 @@ var TokenMap = map[string]Token{
 	"declare": Declare,
 }
 
+// OperatorMarks represents a list of operators
 var OperatorMarks = map[rune]struct{}{}
 
 func init() {

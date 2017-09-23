@@ -28,7 +28,7 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		pprof.StartCPUProfile(f)
+		_ = pprof.StartCPUProfile(f)
 		defer pprof.StopCPUProfile()
 	}
 
@@ -37,7 +37,7 @@ func main() {
 		if *verbose {
 			fmt.Println(filename)
 		}
-		files += 1
+		files++
 		fBytes, err := ioutil.ReadFile(filename)
 		if err != nil {
 			fmt.Println(err)
@@ -58,7 +58,7 @@ func main() {
 			}
 		}
 		if err != nil {
-			errors += 1
+			errors++
 			if *showErrors {
 				if !*verbose {
 					fmt.Println(filename)

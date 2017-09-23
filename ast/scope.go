@@ -1,15 +1,16 @@
 package ast
 
-// superGlobalScope represents the scope containing superglobals such as $_GET
+// SuperGlobalScope represents the scope containing superglobals such as $_GET
 type SuperGlobalScope struct {
 	Identifiers map[string]*Variable
 }
 
+// NewSuperGlobalScope returns a new SuperGlobalScope
 func NewSuperGlobalScope() *SuperGlobalScope {
 	return &SuperGlobalScope{map[string]*Variable{}}
 }
 
-// globalScope represents the global scope on which functions and classes are
+// GlobalScope represents the global scope on which functions and classes are
 // defined. This is always within a namespace, but in many cases that may just
 // be the default global namespace ("\")
 type GlobalScope struct {
@@ -17,11 +18,12 @@ type GlobalScope struct {
 	*Scope
 }
 
+// NewGlobalScope returns a new GlobalScope
 func NewGlobalScope(ns *Namespace) *GlobalScope {
 	return &GlobalScope{ns, nil}
 }
 
-// scope represents a particular local scope (such as within a function).
+// Scope represents a particular local scope (such as within a function).
 type Scope struct {
 	Identifiers      map[string]VariableGroup
 	DynamicVariables []*Variable
@@ -30,6 +32,7 @@ type Scope struct {
 	SuperGlobalScope *SuperGlobalScope
 }
 
+// VariableGroup is a variable group
 type VariableGroup struct {
 	References []*Variable
 	Type       Type
@@ -53,12 +56,14 @@ func (s *Scope) Variable(v *Variable) {
 	s.Identifiers[static.Value] = vg
 }
 
+// File is a file
 type File struct {
 	Name      string
 	Namespace *Namespace
 	Nodes     []Node
 }
 
+// FileSet is a file set
 type FileSet struct {
 	Files           map[string]*File
 	Namespaces      map[string]*Namespace
@@ -66,6 +71,7 @@ type FileSet struct {
 	*Scope
 }
 
+// NewFileSet returns a new FileSet
 func NewFileSet() *FileSet {
 	ns := NewNamespace("/")
 	gscope := NewGlobalScope(ns)
@@ -87,6 +93,7 @@ func (f *FileSet) Namespace(name string) *Namespace {
 	return f.Namespaces[name]
 }
 
+// Namespace is a namespace
 type Namespace struct {
 	Name                 string
 	ClassesAndInterfaces map[string]Statement
@@ -94,6 +101,7 @@ type Namespace struct {
 	Functions            map[string]*FunctionStmt
 }
 
+// NewNamespace returns a Namespace
 func NewNamespace(name string) *Namespace {
 	return &Namespace{
 		Name:                 name,
@@ -103,6 +111,7 @@ func NewNamespace(name string) *Namespace {
 	}
 }
 
+// Classer is a classer
 type Classer interface {
 	Node
 	ClassName() string
@@ -111,6 +120,7 @@ type Classer interface {
 func (c Class) ClassName() string     { return c.Name }
 func (i Interface) ClassName() string { return i.Name }
 
+// NewScope returns a Scope
 func NewScope(parent *Scope, global *GlobalScope, superGlobal *SuperGlobalScope) *Scope {
 	return &Scope{
 		Identifiers:      map[string]VariableGroup{},

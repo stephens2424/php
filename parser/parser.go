@@ -64,10 +64,10 @@ func (p ParseErrorList) Error() string {
 	}
 	buf := &bytes.Buffer{}
 	for _, s := range p[:len(p)-1] {
-		buf.WriteString(s.Error())
-		buf.WriteString("\n")
+		_, _ = buf.WriteString(s.Error())
+		_, _ = buf.WriteString("\n")
 	}
-	buf.WriteString(p[len(p)-2].Error())
+	_, _ = buf.WriteString(p[len(p)-2].Error())
 	return buf.String()
 }
 

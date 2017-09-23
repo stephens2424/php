@@ -6,6 +6,7 @@ import (
 	"github.com/stephens2424/php/ast"
 )
 
+// Walker is a walker
 type Walker struct {
 	ast.DefaultWalker
 }

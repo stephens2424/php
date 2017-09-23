@@ -8,11 +8,13 @@ const (
 	IntegerKey = Integer
 )
 
+// ArrayType is an array type
 type ArrayType struct {
 	KeyType   keyType
 	ValueType Type
 }
 
+// BasicType is a basic type
 type BasicType int
 
 const (
@@ -28,6 +30,7 @@ const (
 	Function
 )
 
+// Numeric represents either a float or an integer
 var Numeric = compoundType{Integer: struct{}{}, Float: struct{}{}}
 
 var typeMap = map[BasicType]string{
@@ -148,6 +151,7 @@ func (c compoundType) Basic() []BasicType {
 	return nil
 }
 
+// Type is a type
 type Type interface {
 	// Equals returns true if the receiver is of the same type as the argument.
 	Equals(Type) bool
@@ -168,34 +172,36 @@ type Type interface {
 	Basic() []BasicType
 }
 
+// Unknown represents an unknown type
 var Unknown = new(unknownType)
 
 type unknownType struct{}
 
-func (_ unknownType) Equals(t Type) bool {
+func (unknownType) Equals(t Type) bool {
 	return t == Unknown
 }
 
-func (_ unknownType) Contains(t Type) bool {
+func (unknownType) Contains(t Type) bool {
 	return t == Unknown
 }
 
-func (_ unknownType) Union(t Type) Type {
+func (unknownType) Union(t Type) Type {
 	return t
 }
 
-func (_ unknownType) Single() bool {
+func (unknownType) Single() bool {
 	return false
 }
 
-func (_ unknownType) String() string {
+func (unknownType) String() string {
 	return "unknown"
 }
 
-func (_ unknownType) Basic() []BasicType {
+func (unknownType) Basic() []BasicType {
 	return nil
 }
 
+// ObjectType is an object type
 type ObjectType struct {
 	Class string
 }
@@ -218,7 +224,7 @@ func (o ObjectType) Union(t Type) Type {
 	return compoundType{o: struct{}{}, t: struct{}{}}
 }
 
-func (_ ObjectType) Single() bool {
+func (ObjectType) Single() bool {
 	return true
 }
 
@@ -226,6 +232,6 @@ func (o ObjectType) String() string {
 	return o.Class
 }
 
-func (_ ObjectType) Basic() []BasicType {
+func (ObjectType) Basic() []BasicType {
 	return []BasicType{Object}
 }

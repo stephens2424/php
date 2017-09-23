@@ -130,10 +130,12 @@ func (t *Togo) ToGoStmt(php phpast.Statement) goast.Stmt {
 	return PHPEvalStmt(php)
 }
 
+// PHPEvalStmt returns a PHPEvalStmt
 func PHPEvalStmt(p phpast.Node) goast.Stmt {
 	return &goast.ExprStmt{X: PHPEval(p)}
 }
 
+// PHPEval returns a PHPEval
 func PHPEval(p phpast.Node) goast.Expr {
 	buf := &bytes.Buffer{}
 	pr := printer.NewPrinter(buf)

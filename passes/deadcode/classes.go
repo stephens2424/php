@@ -2,6 +2,7 @@ package deadcode
 
 import "github.com/stephens2424/php/ast"
 
+// DeadClasses returns a list of dead classes
 func DeadClasses(fs *ast.FileSet, entryPoints []string) []ast.Node {
 	knownClasses := AllTheClasses(fs)
 
@@ -22,6 +23,7 @@ func DeadClasses(fs *ast.FileSet, entryPoints []string) []ast.Node {
 	return nodes
 }
 
+// EliminateClasses eliminates all dead classes
 func EliminateClasses(nodes []ast.Node, knownClasses map[string]ast.Node) {
 	for _, node := range nodes {
 		switch node := node.(type) {
@@ -46,6 +48,7 @@ func EliminateClasses(nodes []ast.Node, knownClasses map[string]ast.Node) {
 	}
 }
 
+// AllTheClasses returns a list of all classes
 func AllTheClasses(fs *ast.FileSet) map[string]ast.Node {
 	namedClasses := map[string]ast.Node{}
 	for _, n := range fs.GlobalNamespace.ClassesAndInterfaces {

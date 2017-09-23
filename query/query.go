@@ -14,8 +14,10 @@ import (
 	"github.com/stephens2424/php/ast"
 )
 
+// Q is a node queue
 type Q []Node
 
+// Select flattens a node list to a queue
 func Select(nodes []ast.Node) Q {
 	flat := make([]Node, 0, len(nodes))
 	flat = flatten(nodes, flat, nil)
@@ -36,6 +38,7 @@ func (q Q) Select(s string) (Q, error) {
 	return passed, nil
 }
 
+// ParseSelector parses a string to a selector
 func ParseSelector(s string) (*Selector, error) {
 	var previous *Selector
 	parts := strings.Split(s, " ")
@@ -53,6 +56,7 @@ func parseRuleSet(s string) []Rule {
 	return []Rule{NodeRule{s}}
 }
 
+// Selector is a selector
 type Selector struct {
 	localRules []Rule
 	parent     *Selector
@@ -85,10 +89,12 @@ func (s Selector) Pass(n Node, local bool) bool {
 	return false
 }
 
+// Rule is a rule
 type Rule interface {
 	Pass(n Node) bool
 }
 
+// NodeRule is a node rule
 type NodeRule struct {
 	// Type is the node type represented as a string, without the package name. For example: ReturnStmt.
 	Type string
@@ -112,6 +118,7 @@ func flatten(nodes []ast.Node, flat []Node, parent *Node) []Node {
 	return flat
 }
 
+// Node is a node
 type Node struct {
 	Node   ast.Node
 	Parent *Node
