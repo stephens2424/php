@@ -62,10 +62,13 @@ func TestNestedIfElse(t *testing.T) {
 `
 	p := NewParser()
 	p.disableScoping = true
-	p.Debug = true
-	_, err := p.Parse("", testStr)
+	ast, err := p.Parse("", testStr)
 	if err != nil {
 		t.Fatalf("parse: %v", err)
+	}
+
+	if ast.Nodes[1].Children()[1].Children()[1].String() != "someExpr()" {
+		t.Fatal("ast incorrect")
 	}
 }
 
