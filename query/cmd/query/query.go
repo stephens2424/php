@@ -24,7 +24,9 @@ func main() {
 	}
 
 	g := newGatherer(*recursive)
-	filepath.Walk(dir, g.walkFile)
+	if err := filepath.Walk(dir, g.walkFile); err != nil {
+		panic(err)
+	}
 
 	selected, _ := query.Select(g.nodes).Select(selector)
 
@@ -48,6 +50,9 @@ type gatherer struct {
 }
 
 func (g *gatherer) walkFile(path string, info os.FileInfo, err error) error {
+	// TODO handle error
+	_ = err
+
 	if info.IsDir() || !strings.HasSuffix(path, ".php") {
 		return nil
 	}
@@ -60,10 +65,18 @@ func (g *gatherer) walkFile(path string, info os.FileInfo, err error) error {
 	if err != nil {
 		return err
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 	src, err := ioutil.ReadAll(f)
+
+	if err != nil {
+		return err
+	}
+
 	p := parser.NewParser()
-	file, _ := p.Parse("test.php", string(src))
+	file, err := p.Parse("test.php", string(src))
+	if err != nil {
+		return err
+	}
 
 	g.nodes = append(g.nodes, file.Nodes...)
 	return nil

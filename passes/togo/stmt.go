@@ -26,7 +26,7 @@ func (t *Togo) ToGoStmt(php phpast.Statement) goast.Stmt {
 			}
 		}
 
-	// standard cases
+		// standard cases
 	case phpast.AnonymousFunction:
 	case phpast.ArrayAppendExpr:
 	case phpast.ArrayExpr:
@@ -47,7 +47,7 @@ func (t *Togo) ToGoStmt(php phpast.Statement) goast.Stmt {
 	case phpast.DoWhileStmt:
 	case phpast.EchoStmt:
 		for _, e := range n.Expressions {
-			return &goast.ExprStmt{t.CtxFuncCall("Echo.Write", []goast.Expr{t.ToGoExpr(e)})}
+			return &goast.ExprStmt{X: t.CtxFuncCall("Echo.Write", []goast.Expr{t.ToGoExpr(e)})}
 		}
 	case phpast.EmptyStatement:
 	case phpast.ExitStmt:
@@ -60,7 +60,7 @@ func (t *Togo) ToGoStmt(php phpast.Statement) goast.Stmt {
 		case phpast.ShellCommand:
 			return t.ToGoStmt(expr)
 		}
-		return &goast.ExprStmt{t.ToGoExpr(n.Expr)}
+		return &goast.ExprStmt{X: t.ToGoExpr(n.Expr)}
 	case phpast.ForStmt:
 		f := &goast.ForStmt{}
 		if len(n.Initialization) == 1 {
@@ -102,7 +102,12 @@ func (t *Togo) ToGoStmt(php phpast.Statement) goast.Stmt {
 	case phpast.PropertyCallExpr:
 	case phpast.ReturnStmt:
 	case phpast.ShellCommand:
-		return &goast.ExprStmt{t.CtxFuncCall("Shell", []goast.Expr{&goast.BasicLit{Kind: token.STRING, Value: n.Command}})}
+		return &goast.ExprStmt{
+			X: t.CtxFuncCall(
+				"Shell",
+				[]goast.Expr{&goast.BasicLit{Kind: token.STRING, Value: n.Command}},
+			),
+		}
 	case phpast.Statement:
 	case phpast.StaticVariableDeclaration:
 	case phpast.SwitchStmt:
@@ -118,17 +123,19 @@ func (t *Togo) ToGoStmt(php phpast.Statement) goast.Stmt {
 
 		// broadest
 	case phpast.Expr:
-		return &goast.ExprStmt{t.ToGoExpr(n)}
+		return &goast.ExprStmt{X: t.ToGoExpr(n)}
 	case phpast.Node:
 	}
 
 	return PHPEvalStmt(php)
 }
 
+// PHPEvalStmt returns a PHPEvalStmt
 func PHPEvalStmt(p phpast.Node) goast.Stmt {
-	return &goast.ExprStmt{PHPEval(p)}
+	return &goast.ExprStmt{X: PHPEval(p)}
 }
 
+// PHPEval returns a PHPEval
 func PHPEval(p phpast.Node) goast.Expr {
 	buf := &bytes.Buffer{}
 	pr := printer.NewPrinter(buf)
@@ -192,7 +199,7 @@ func (t *Togo) ToGoExpr(p phpast.Expr) goast.Expr {
 func (t *Togo) beginScope(scope *phpast.Scope) []goast.Stmt {
 	g := []goast.Stmt{}
 	for ident := range scope.Identifiers {
-		g = append(g, &goast.DeclStmt{&goast.GenDecl{
+		g = append(g, &goast.DeclStmt{Decl: &goast.GenDecl{
 			Tok: token.VAR,
 			Specs: []goast.Spec{
 				&goast.ValueSpec{

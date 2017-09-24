@@ -1,11 +1,11 @@
+// +build gofuzz
+
 package parser
 
 import (
 	"bytes"
 	"os/exec"
 )
-
-// +build gofuzz
 
 func Fuzz(data []byte) int {
 	interestingness := 0

@@ -19,8 +19,8 @@ type Stream interface {
 	Abort()
 }
 
-// List represents an ordered set of tokens.
-type itemList struct {
+// ItemList represents an ordered set of tokens.
+type ItemList struct {
 	// Items contains all the items in the list.
 	Items []Item
 
@@ -29,12 +29,12 @@ type itemList struct {
 }
 
 // NewList initializes a new ItemList
-func NewList(t ...Item) *itemList {
-	return &itemList{t, 0}
+func NewList(t ...Item) *ItemList {
+	return &ItemList{t, 0}
 }
 
 // Next consumes and returns the next item in the list.
-func (s *itemList) Next() Item {
+func (s *ItemList) Next() Item {
 	if s.Position == len(s.Items) {
 		return Item{}
 	}
@@ -45,10 +45,10 @@ func (s *itemList) Next() Item {
 	return item
 }
 
-func (s *itemList) Abort() {
+func (s *ItemList) Abort() {
 }
 
-func (s *itemList) Previous() Item {
+func (s *ItemList) Previous() Item {
 	if s.Position == 0 {
 		return Item{}
 	}
@@ -57,25 +57,25 @@ func (s *itemList) Previous() Item {
 	return s.Items[s.Position]
 }
 
-func (s *itemList) Peek() Item {
+func (s *ItemList) Peek() Item {
 	return s.Items[s.Position]
 }
 
-func (s *itemList) Push(i ...Item) {
+func (s *ItemList) Push(i ...Item) {
 	s.Items = append(s.Items, i...)
 }
 
-func (s *itemList) PushKeyword(t Token) {
+func (s *ItemList) PushKeyword(t Token) {
 	s.Items = append(s.Items, Keyword(t))
 }
 
-func (s *itemList) PushStream(i Stream) {
+func (s *ItemList) PushStream(i Stream) {
 	for item := i.Next(); item.Typ != EOF; item = i.Next() {
 		s.Push(item)
 	}
 }
 
-func (s *itemList) Seek(position int) {
+func (s *ItemList) Seek(position int) {
 	s.Position = position
 }
 

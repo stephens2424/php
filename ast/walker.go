@@ -4,11 +4,13 @@ import (
 	"fmt"
 )
 
+// Walker is a file walker
 type Walker interface {
 	Walk(n Node)
 	Errorf(fmt string, params ...interface{})
 }
 
+// DefaultWalker is the default walker implementation
 type DefaultWalker struct {
 	Nodes  []Node
 	Errors []error

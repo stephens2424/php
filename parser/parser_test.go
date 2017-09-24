@@ -176,7 +176,7 @@ func TestFunction(t *testing.T) {
 			},
 		},
 		ast.ExprStmt{
-			ast.AssignmentExpr{
+			Expr: ast.AssignmentExpr{
 				Assignee: ast.NewVariable("var"),
 				Value: &ast.FunctionCallExpr{
 					FunctionName: &ast.Identifier{Value: "TestFn"},
@@ -333,12 +333,12 @@ func TestArray(t *testing.T) {
 		t.Fatalf("Array did not correctly parse")
 	}
 	tree := ast.ExprStmt{
-		ast.AssignmentExpr{
+		Expr: ast.AssignmentExpr{
 			Assignee: ast.NewVariable("var"),
 			Operator: "=",
 			Value: &ast.ArrayExpr{
-				ast.ArrayType{},
-				[]ast.ArrayPair{
+				ArrayType: ast.ArrayType{},
+				Pairs: []ast.ArrayPair{
 					{Value: &ast.Literal{Type: ast.String, Value: `"one"`}},
 					{Value: &ast.Literal{Type: ast.String, Value: `"two"`}},
 					{Value: &ast.Literal{Type: ast.String, Value: `"three"`}},
@@ -362,12 +362,12 @@ func TestArrayKeys(t *testing.T) {
 	if len(a.Nodes) == 0 {
 		t.Fatalf("Array did not correctly parse")
 	}
-	tree := ast.ExprStmt{ast.AssignmentExpr{
+	tree := ast.ExprStmt{Expr: ast.AssignmentExpr{
 		Assignee: ast.NewVariable("var"),
 		Operator: "=",
 		Value: &ast.ArrayExpr{
-			ast.ArrayType{},
-			[]ast.ArrayPair{
+			ArrayType: ast.ArrayType{},
+			Pairs: []ast.ArrayPair{
 				{Key: &ast.Literal{Type: ast.Float, Value: "1"}, Value: &ast.Literal{Type: ast.String, Value: `"one"`}},
 				{Key: &ast.Literal{Type: ast.Float, Value: "2"}, Value: &ast.Literal{Type: ast.String, Value: `"two"`}},
 				{Key: &ast.Literal{Type: ast.Float, Value: "3"}, Value: &ast.Literal{Type: ast.String, Value: `"three"`}},
@@ -390,7 +390,7 @@ func TestMethodCall(t *testing.T) {
 	if len(a.Nodes) == 0 {
 		t.Fatalf("Method call did not correctly parse")
 	}
-	tree := ast.ExprStmt{ast.AssignmentExpr{
+	tree := ast.ExprStmt{Expr: ast.AssignmentExpr{
 		Assignee: ast.NewVariable("res"),
 		Operator: "=",
 		Value: &ast.MethodCallExpr{
@@ -418,7 +418,7 @@ func TestProperty(t *testing.T) {
 	if len(a.Nodes) != 2 {
 		t.Fatalf("Property did not correctly parse")
 	}
-	tree := ast.ExprStmt{ast.AssignmentExpr{
+	tree := ast.ExprStmt{Expr: ast.AssignmentExpr{
 		Assignee: ast.NewVariable("res"),
 		Operator: "=",
 		Value: &ast.PropertyCallExpr{
@@ -430,7 +430,7 @@ func TestProperty(t *testing.T) {
 		t.Fatalf("Property did not correctly parse")
 	}
 
-	tree = ast.ExprStmt{ast.AssignmentExpr{
+	tree = ast.ExprStmt{Expr: ast.AssignmentExpr{
 		Assignee: &ast.PropertyCallExpr{
 			Receiver: ast.NewVariable("var"),
 			Name:     &ast.Identifier{Value: "go"},
@@ -618,7 +618,7 @@ func TestArrayLookup(t *testing.T) {
 			}},
 		},
 		ast.ExprStmt{
-			ast.AssignmentExpr{
+			Expr: ast.AssignmentExpr{
 				Assignee: ast.ArrayAppendExpr{
 					Array: &ast.PropertyCallExpr{
 						Receiver: ast.NewVariable("var"),
@@ -699,22 +699,22 @@ func TestLiterals(t *testing.T) {
 		t.Fatalf("Literals did not correctly parse")
 	}
 	tree := []ast.Node{
-		ast.ExprStmt{ast.AssignmentExpr{
+		ast.ExprStmt{Expr: ast.AssignmentExpr{
 			Assignee: ast.NewVariable("var"),
 			Value:    &ast.Literal{Type: ast.String, Value: `"one"`},
 			Operator: "=",
 		}},
-		ast.ExprStmt{ast.AssignmentExpr{
+		ast.ExprStmt{Expr: ast.AssignmentExpr{
 			Assignee: ast.NewVariable("var"),
 			Value:    &ast.Literal{Type: ast.Float, Value: "2"},
 			Operator: "=",
 		}},
-		ast.ExprStmt{ast.AssignmentExpr{
+		ast.ExprStmt{Expr: ast.AssignmentExpr{
 			Assignee: ast.NewVariable("var"),
 			Value:    &ast.Literal{Type: ast.Boolean, Value: "true"},
 			Operator: "=",
 		}},
-		ast.ExprStmt{ast.AssignmentExpr{
+		ast.ExprStmt{Expr: ast.AssignmentExpr{
 			Assignee: ast.NewVariable("var"),
 			Value:    &ast.Literal{Type: ast.Null, Value: "null"},
 			Operator: "=",
@@ -757,7 +757,7 @@ func TestScopeResolutionOperator(t *testing.T) {
 	a, _ := p.Parse("test.php", testStr)
 	tree := []ast.Node{
 		ast.ExprStmt{
-			&ast.ClassExpr{
+			Expr: &ast.ClassExpr{
 				Receiver: &ast.Identifier{Value: "MyClass"},
 				Expr: &ast.FunctionCallExpr{
 					FunctionName: &ast.Identifier{Value: "myfunc"},
@@ -770,7 +770,7 @@ func TestScopeResolutionOperator(t *testing.T) {
 		ast.Echo(&ast.ClassExpr{
 			Receiver: &ast.Identifier{Value: "MyClass"},
 			Expr: ast.ConstantExpr{
-				ast.NewVariable("myconst"),
+				Variable: ast.NewVariable("myconst"),
 			},
 		}),
 		ast.Echo(&ast.ClassExpr{
@@ -799,7 +799,7 @@ func TestCastOperator(t *testing.T) {
 	p.disableScoping = true
 	a, _ := p.Parse("test.php", testStr)
 	tree := []ast.Node{
-		ast.ExprStmt{ast.AssignmentExpr{
+		ast.ExprStmt{Expr: ast.AssignmentExpr{
 			Assignee: ast.NewVariable("var"),
 			Value: ast.UnaryCallExpr{
 				Operand:   &ast.Literal{Type: ast.Float, Value: "1.0"},

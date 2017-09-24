@@ -9,6 +9,7 @@ type Item struct {
 	Val        string
 }
 
+// NewItem returns a new Item
 func NewItem(t Token, v string) Item {
 	return Item{
 		Typ: t,
@@ -16,6 +17,7 @@ func NewItem(t Token, v string) Item {
 	}
 }
 
+// Keyword returns a Keyword
 func Keyword(t Token) Item {
 	return Item{
 		Typ: t,

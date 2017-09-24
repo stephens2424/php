@@ -9,12 +9,14 @@ import (
 	"github.com/stephens2424/php/ast"
 )
 
+// Walker is a walker implementation
 type Walker struct {
 	tabLevel int
 	ast.DefaultWalker
 	W io.Writer
 }
 
+// NewWalker returns a new Walker
 func NewWalker() *Walker {
 	return &Walker{W: os.Stdout}
 }
@@ -36,13 +38,13 @@ func (w *Walker) Walk(node ast.Node) {
 		switch children := node.Children(); children {
 		case nil:
 		default:
-			w.tabLevel += 1
+			w.tabLevel++
 			for _, child := range children {
 				if child != nil {
 					w.Walk(child)
 				}
 			}
-			w.tabLevel -= 1
+			w.tabLevel--
 		}
 	}
 }

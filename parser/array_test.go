@@ -16,7 +16,7 @@ func TestList(t *testing.T) {
 		t.Fatalf("Did not parse list correctly: %s", err)
 	}
 
-	tree := ast.ExprStmt{&ast.ListStatement{
+	expr := &ast.ListStatement{
 		Operator: "=",
 		Assignees: []ast.Assignable{
 			ast.NewVariable("one"),
@@ -28,7 +28,9 @@ func TestList(t *testing.T) {
 				{Key: nil, Value: &ast.Literal{Value: "2", Type: ast.Float}},
 			},
 		},
-	}}
+	}
+
+	tree := ast.ExprStmt{Expr: expr}
 
 	if !assertEquals(a.Nodes[0], tree) {
 		t.Fatalf("Array bracked did not parse correctly")
@@ -47,7 +49,7 @@ func TestArrayBracket(t *testing.T) {
 	}
 
 	tree := []ast.Statement{
-		ast.ExprStmt{ast.AssignmentExpr{
+		ast.ExprStmt{Expr: ast.AssignmentExpr{
 			Operator: "=",
 			Assignee: ast.NewVariable("arr"),
 			Value: &ast.ArrayExpr{
@@ -57,7 +59,7 @@ func TestArrayBracket(t *testing.T) {
 				},
 			},
 		}},
-		ast.ExprStmt{ast.AssignmentExpr{
+		ast.ExprStmt{Expr: ast.AssignmentExpr{
 			Operator: "=",
 			Assignee: ast.NewVariable("arr2"),
 			Value: &ast.ArrayExpr{

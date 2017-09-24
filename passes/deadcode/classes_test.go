@@ -44,7 +44,7 @@ func TestDeadClass(t *testing.T) {
 		delete(shouldBeDead, fnName)
 	}
 
-	for fugitive, _ := range shouldBeDead {
+	for _, fugitive := range shouldBeDead {
 		t.Errorf("%q should have been found dead, but wasn't", fugitive)
 	}
 }

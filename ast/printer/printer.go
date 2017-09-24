@@ -9,12 +9,14 @@ import (
 	"github.com/stephens2424/php/ast"
 )
 
+// Printer is a printer
 type Printer struct {
 	w         io.Writer
 	tabLevel  int
 	tabString string
 }
 
+// NewPrinter returns a Printer
 func NewPrinter(w io.Writer) *Printer {
 	return &Printer{
 		w:         w,
@@ -28,11 +30,11 @@ func (p *Printer) tab() {
 }
 
 func (p *Printer) entab() {
-	p.tabLevel += 1
+	p.tabLevel++
 }
 
 func (p *Printer) detab() {
-	p.tabLevel -= 1
+	p.tabLevel--
 }
 
 func (p *Printer) PrintNode(node ast.Node) {

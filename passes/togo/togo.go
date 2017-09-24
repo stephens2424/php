@@ -14,10 +14,12 @@ import (
 	"golang.org/x/tools/imports"
 )
 
+// Togo is a go php transpiler
 type Togo struct {
 	currentScope *phpast.Scope
 }
 
+// TranspileFile transpiles a file
 func TranspileFile(goFilename, phpFilename, phpStr string, gosrc io.Writer) error {
 	parser := parser.NewParser()
 	file, err := parser.Parse(phpFilename, phpStr)
@@ -50,6 +52,7 @@ func TranspileFile(goFilename, phpFilename, phpStr string, gosrc io.Writer) erro
 	return err
 }
 
+// File returns a new file
 func File(name string, nodes ...goast.Node) *goast.File {
 	f := &goast.File{
 		Name: goast.NewIdent("translated"),
@@ -66,7 +69,7 @@ func File(name string, nodes ...goast.Node) *goast.File {
 		case goast.Stmt:
 			stmts = append(stmts, g)
 		case goast.Expr:
-			stmts = append(stmts, &goast.ExprStmt{g})
+			stmts = append(stmts, &goast.ExprStmt{X: g})
 		}
 	}
 

@@ -64,10 +64,10 @@ func (p ParseErrorList) Error() string {
 	}
 	buf := &bytes.Buffer{}
 	for _, s := range p[:len(p)-1] {
-		buf.WriteString(s.Error())
-		buf.WriteString("\n")
+		_, _ = buf.WriteString(s.Error())
+		_, _ = buf.WriteString("\n")
 	}
-	buf.WriteString(p[len(p)-2].Error())
+	_, _ = buf.WriteString(p[len(p)-2].Error())
 	return buf.String()
 }
 
@@ -201,16 +201,6 @@ func (p *Parser) expectCurrent(i ...token.Token) {
 	p.expected(i...)
 }
 
-func (p *Parser) expectAndNext(i ...token.Token) {
-	defer p.next()
-	for _, Typ := range i {
-		if p.current.Typ == Typ {
-			return
-		}
-	}
-	p.expected(i...)
-}
-
 func (p *Parser) expect(i ...token.Token) {
 	p.next()
 	p.expectCurrent(i...)
@@ -245,10 +235,6 @@ func errorf(p *Parser, str string, args ...interface{}) ParseError {
 		e.Line = p.current.Begin.Line
 	}
 	return e
-}
-
-func (p *Parser) errorPrefix() string {
-	return fmt.Sprintf("%d", p.current.Begin.Line)
 }
 
 func (p *Parser) parseNextExpression() ast.Expr {

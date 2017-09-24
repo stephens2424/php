@@ -334,17 +334,6 @@ func (p *Parser) parseInclude() ast.Expr {
 	return inc
 }
 
-func (p *Parser) parseIgnoreError() ast.Expr {
-	p.next()
-	return p.parseExpression()
-}
-
-func (p *Parser) parseNew(originalParenLev int) ast.Expr {
-	expr := p.parseInstantiation()
-	expr = p.parseOperation(originalParenLev, expr)
-	return expr
-}
-
 func (p *Parser) parseIdentifier() (expr ast.Expr) {
 	switch typ := p.peek().Typ; {
 	case typ == token.OpenParen && !p.instantiation:

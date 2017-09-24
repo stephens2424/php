@@ -55,8 +55,7 @@ func assertItem(t *testing.T, i token.Item, expected string) {
 func TestPHPLexer(t *testing.T) {
 	l := token.Subset(NewLexer(testFile), token.Significant|token.CommentType)
 
-	var i token.Item
-	i = assertNext(t, l, token.PHPBegin)
+	i := assertNext(t, l, token.PHPBegin)
 
 	i = assertNext(t, l, token.VariableOperator)
 	i = assertNext(t, l, token.Identifier)

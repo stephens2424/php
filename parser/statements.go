@@ -98,7 +98,7 @@ func (p *Parser) parseStmt() ast.Statement {
 		p.expectStmtEnd()
 		return s
 	case token.VariableOperator, token.UnaryOperator:
-		expr := ast.ExprStmt{p.parseExpression()}
+		expr := ast.ExprStmt{Expr: p.parseExpression()}
 		p.expectStmtEnd()
 		return expr
 	case token.Print:
@@ -222,7 +222,7 @@ func (p *Parser) parseStmt() ast.Statement {
 		expr := p.parseExpression()
 		if expr != nil {
 			p.expectStmtEnd()
-			return ast.ExprStmt{expr}
+			return ast.ExprStmt{Expr: expr}
 		}
 		p.errorf("Found %s, statement or expression", p.current)
 		return nil
