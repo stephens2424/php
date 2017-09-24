@@ -205,6 +205,7 @@ func (p *Parser) parseOperand() (expr ast.Expr) {
 			p.next()
 			return p.parseUnaryExpressionRight(p.parseExpression(), *op)
 		}
+		return p.parseExpression()
 	case token.Include:
 		return p.parseInclude()
 	case token.Function:
