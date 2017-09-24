@@ -527,6 +527,7 @@ func (a AnonymousFunction) Declares() DeclarationType { return FunctionDeclarati
 type FunctionDefinition struct {
 	Name      string
 	Arguments []*FunctionArgument
+	Type      string
 }
 
 func (fd FunctionDefinition) Children() []Node {
