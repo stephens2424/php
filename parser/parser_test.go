@@ -56,6 +56,22 @@ func TestPHPParserHW(t *testing.T) {
 	}
 }
 
+func TestNestedIfElse(t *testing.T) {
+	testStr := `
+<?php function foo (){if (true) {} else {} someExpr(); }
+`
+	p := NewParser()
+	p.disableScoping = true
+	ast, err := p.Parse("", testStr)
+	if err != nil {
+		t.Fatalf("parse: %v", err)
+	}
+
+	if ast.Nodes[1].Children()[1].Children()[1].String() != "someExpr()" {
+		t.Fatal("ast incorrect")
+	}
+}
+
 func TestPHPParserHWPHP(t *testing.T) {
 	testStr := `<?php
     echo "hello world", "!";`
