@@ -152,6 +152,20 @@ func TestAssignment(t *testing.T) {
 	}
 }
 
+func TestFunctionReturnTypeDeclaration(t *testing.T) {
+	testStr := `<?php function TestFn(MyClass $myClass): string {}`
+	p := NewParser()
+	tree, err := p.Parse("", testStr)
+	if err != nil {
+		t.Fatalf("parse: %v", err)
+	}
+
+	tp := tree.Nodes[0].Children()[0].(*ast.FunctionDefinition).Type
+	if tp != "string" {
+		t.Fatalf("invalid return type: %v", t)
+	}
+}
+
 func TestFunction(t *testing.T) {
 	testStr := `<?php
     function TestFn($arg) {

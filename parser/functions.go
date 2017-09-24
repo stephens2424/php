@@ -35,6 +35,7 @@ func (p *Parser) parseFunctionDefinition() *ast.FunctionDefinition {
 	p.expect(token.OpenParen)
 	if p.peek().Typ == token.CloseParen {
 		p.expect(token.CloseParen)
+		def.Type = p.parseFunctionType()
 		return def
 	}
 	def.Arguments = append(def.Arguments, p.parseFunctionArgument())
@@ -45,12 +46,25 @@ func (p *Parser) parseFunctionDefinition() *ast.FunctionDefinition {
 			def.Arguments = append(def.Arguments, p.parseFunctionArgument())
 		case token.CloseParen:
 			p.expect(token.CloseParen)
+			def.Type = p.parseFunctionType()
 			return def
 		default:
 			p.errorf("unexpected argument separator: %s", p.current)
 			return def
 		}
 	}
+}
+
+func (p *Parser) parseFunctionType() string {
+	if p.peek().Typ != token.TernaryOperator2 {
+		return ""
+	}
+
+	// jump to the type declaration
+	p.next()
+	p.next()
+
+	return p.current.Val
 }
 
 func (p *Parser) parseFunctionArgument() *ast.FunctionArgument {
