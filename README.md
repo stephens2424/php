@@ -1,6 +1,10 @@
 php
 ===
 
+Archived: This project only supported PHP 5, and never matured beyond a basic parser and AST visualizer. Since I lost interest, it has fallen into disrepair, beyond the more conventional bugs.
+
+---
+
 Parser for PHP written in Go
 
 See [this post](https://stephensearles.com/ive-got-all-this-php-now-what-parsing-php-in-go/) for an introduction.
